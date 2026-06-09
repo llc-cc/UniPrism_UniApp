@@ -13,7 +13,7 @@
  *   例如：const res = await api.login(...); const token = res.data.token
  *   失败时 reject 一个 Error，message 取自后端 error.message。
  *
- * 已对接的后端接口（详见 UniPrism_New-main/app/api/miniapp/*）：
+ * 已对接的后端接口（详见 UniPrism_New-main/docs/MINIAPP_API.md）：
  *   1. POST /api/miniapp/auth/login        登录
  *   2. POST /api/miniapp/auth/register     注册
  *   3. POST /api/miniapp/explore/session   创建/续期探索会话
