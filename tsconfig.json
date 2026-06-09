@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "strict": false,
+    "jsx": "preserve",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "paths": {
+      "@/*": ["./*"]
+    },
+    "lib": ["esnext", "dom"],
+    "types": ["@dcloudio/types"],
+    "allowJs": true,
+    "isolatedModules": false
+  },
+  "vueCompilerOptions": {
+    "target": 3
+  },
+  "include": ["**/*.ts", "**/*.vue"],
+  "exclude": ["node_modules"]
+}

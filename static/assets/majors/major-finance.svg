@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Finance major icon">
+  <defs>
+    <linearGradient id="finance-bg" x1="18" y1="110" x2="110" y2="18" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0ea5e9"/>
+      <stop offset="1" stop-color="#10b981"/>
+    </linearGradient>
+  </defs>
+  <circle cx="64" cy="64" r="56" fill="#eef9ff"/>
+  <circle cx="64" cy="64" r="48" fill="url(#finance-bg)" opacity=".14"/>
+  <path d="M31 84h66" fill="none" stroke="#2563eb" stroke-width="8" stroke-linecap="round"/>
+  <path d="M38 78V60M54 78V47M70 78V54M86 78V34" fill="none" stroke="#0f766e" stroke-width="8" stroke-linecap="round"/>
+  <path d="M36 61l18-13l16 9l20-26" fill="none" stroke="#f59e0b" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="38" cy="61" r="5" fill="#fff7ed" stroke="#f59e0b" stroke-width="3"/>
+  <circle cx="90" cy="31" r="5" fill="#fff7ed" stroke="#f59e0b" stroke-width="3"/>
+</svg>

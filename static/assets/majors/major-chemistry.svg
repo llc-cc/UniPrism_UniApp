@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Chemistry major icon">
+  <circle cx="64" cy="64" r="56" fill="#fff7ed"/>
+  <path d="M53 24h22M58 28v28L35 91c-5 8 1 17 10 17h38c9 0 15-9 10-17L70 56V28" fill="#ffedd5" stroke="#ea580c" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M45 86h38" fill="none" stroke="#f97316" stroke-width="7" stroke-linecap="round"/>
+  <circle cx="53" cy="78" r="5" fill="#14b8a6"/>
+  <circle cx="73" cy="91" r="6" fill="#0ea5e9"/>
+  <circle cx="84" cy="42" r="6" fill="#facc15" stroke="#ca8a04" stroke-width="3"/>
+  <circle cx="94" cy="29" r="4" fill="#22c55e"/>
+</svg>

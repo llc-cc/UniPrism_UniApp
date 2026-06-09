@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Mechanical engineering major icon">
+  <circle cx="64" cy="64" r="56" fill="#f8fafc"/>
+  <path d="M64 31l6 10l12-1l4 12l10 6l-6 11l6 11l-10 6l-4 12l-12-1l-6 10l-6-10l-12 1l-4-12l-10-6l6-11l-6-11l10-6l4-12l12 1l6-10Z" fill="#e2e8f0" stroke="#475569" stroke-width="6" stroke-linejoin="round"/>
+  <circle cx="64" cy="64" r="19" fill="#fff" stroke="#0ea5e9" stroke-width="6"/>
+  <circle cx="64" cy="64" r="7" fill="#f59e0b"/>
+  <path d="M88 31l9-9M96 22l10 10M34 94l-9 9M25 103l-10-10" fill="none" stroke="#14b8a6" stroke-width="6" stroke-linecap="round"/>
+</svg>

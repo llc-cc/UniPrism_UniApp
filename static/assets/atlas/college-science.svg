@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="150" height="150" viewBox="0 0 150 150">
+  <rect width="150" height="150" rx="28" fill="#2BA8BC"/>
+  <circle cx="75" cy="58" r="22" fill="rgba(255,255,255,0.25)"/>
+  <path d="M45 108 Q75 78 105 108" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
+  <text x="75" y="132" text-anchor="middle" fill="#fff" font-size="20" font-family="Arial, sans-serif" font-weight="700">fb</text>
+</svg>

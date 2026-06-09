@@ -1,0 +1,23 @@
+{
+  "name": "uniprism-uniapp",
+  "version": "1.0.0",
+  "scripts": {
+    "dev:mp-weixin": "uni -p mp-weixin",
+    "build:mp-weixin": "uni build -p mp-weixin",
+    "assets:catalog": "node scripts/generate-md-asset-catalog.mjs",
+    "assets:fallback": "node scripts/generate-image-fallback-map.mjs",
+    "assets:sync": "node scripts/sync-miniapp-assets.mjs",
+    "questions:sync": "node scripts/sync-discover-questions.mjs",
+    "questions:verify": "node scripts/verify-discover-parity.mjs"
+  },
+  "dependencies": {
+    "@dcloudio/uni-app": "^3.0.0",
+    "@dcloudio/uni-mp-weixin": "^3.0.0",
+    "vue": "^3.4.0"
+  },
+  "devDependencies": {
+    "@dcloudio/types": "^3.0.0",
+    "@vue/compiler-sfc": "^3.4.0",
+    "typescript": "^5.0.0"
+  }
+}

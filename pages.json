@@ -1,0 +1,144 @@
+{
+  "pages": [
+    {
+      "path": "pages/auth/login",
+      "style": { "navigationBarTitleText": "登录", "navigationBarBackgroundColor": "#8b6bff", "navigationBarTextStyle": "white" }
+    },
+    {
+      "path": "pages/discover/index",
+      "style": { "navigationBarTitleText": "生涯规划" }
+    },
+    {
+      "path": "pages/discover/chat",
+      "style": {
+        "navigationBarTitleText": "兴趣探索",
+        "navigationBarBackgroundColor": "#ffffff",
+        "navigationBarTextStyle": "black"
+      }
+    },
+    {
+      "path": "pages/discover/major",
+      "style": { "navigationBarTitleText": "专业体验" }
+    },
+    {
+      "path": "pages/discover/major-detail",
+      "style": { "navigationBarTitleText": "专业详情" }
+    },
+    {
+      "path": "pages/discover/major-speed",
+      "style": { "navigationBarTitleText": "专业速体验" }
+    },
+    {
+      "path": "pages/discover/major-challenge",
+      "style": { "navigationBarTitleText": "专业挑战" }
+    },
+    {
+      "path": "pages/discover/major-course",
+      "style": { "navigationBarTitleText": "课程阅读" }
+    },
+    {
+      "path": "pages/discover/career",
+      "style": { "navigationBarTitleText": "职业模拟" }
+    },
+    {
+      "path": "pages/discover/career-detail",
+      "style": { "navigationBarTitleText": "职业详情" }
+    },
+    {
+      "path": "pages/discover/career-experience",
+      "style": { "navigationBarTitleText": "职业模拟" }
+    },
+    {
+      "path": "pages/discover/results",
+      "style": {
+        "navigationBarTitleText": "我的报告",
+        "navigationBarBackgroundColor": "#8c86ff",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/math/index",
+      "style": { "navigationBarTitleText": "数学" }
+    },
+    {
+      "path": "pages/math/challenge",
+      "style": { "navigationBarTitleText": "数学挑战" }
+    },
+    {
+      "path": "pages/profile/index",
+      "style": { "navigationBarTitleText": "个人档案" }
+    },
+    {
+      "path": "pages/placeholder/index",
+      "style": { "navigationBarTitleText": "即将上线" }
+    },
+    {
+      "path": "pages/learn/index",
+      "style": { "navigationBarTitleText": "学习" }
+    },
+    {
+      "path": "pages/achievement/index",
+      "style": { "navigationBarTitleText": "成就" }
+    },
+    {
+      "path": "pages/help/index",
+      "style": { "navigationBarTitleText": "帮助" }
+    }
+  ],
+  "subPackages": [
+    {
+      "root": "subpkg/math",
+      "name": "mathPkg",
+      "pages": [
+        {
+          "path": "course",
+          "style": { "navigationBarTitleText": "课程阅读" }
+        }
+      ]
+    }
+  ],
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#007a66",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/discover/index",
+        "text": "生涯规划",
+        "iconPath": "static/tab/tab-default.png",
+        "selectedIconPath": "static/tab/tab-active.png"
+      },
+      {
+        "pagePath": "pages/learn/index",
+        "text": "学习",
+        "iconPath": "static/tab/tab-default.png",
+        "selectedIconPath": "static/tab/tab-active.png"
+      },
+      {
+        "pagePath": "pages/achievement/index",
+        "text": "成就",
+        "iconPath": "static/tab/tab-default.png",
+        "selectedIconPath": "static/tab/tab-active.png"
+      },
+      {
+        "pagePath": "pages/profile/index",
+        "text": "个人档案",
+        "iconPath": "static/tab/tab-default.png",
+        "selectedIconPath": "static/tab/tab-active.png"
+      },
+      {
+        "pagePath": "pages/help/index",
+        "text": "帮助",
+        "iconPath": "static/tab/tab-default.png",
+        "selectedIconPath": "static/tab/tab-active.png"
+      }
+    ]
+  },
+  "globalStyle": {
+    "navigationBarBackgroundColor": "#ffffff",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#f8fafc",
+    "backgroundTextStyle": "light"
+  }
+}

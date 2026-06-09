@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="none">
+  <!-- Main triangular prism - front face -->
+  <polygon points="16,2 4,28 28,28" fill="none" stroke="#1a1a1a" stroke-width="1.8" stroke-linejoin="round"/>
+  <!-- Inner facet lines for crystalline/geometric look -->
+  <line x1="16" y1="2" x2="10" y2="28" stroke="#1a1a1a" stroke-width="0.8" opacity="0.5"/>
+  <line x1="16" y1="2" x2="22" y2="28" stroke="#1a1a1a" stroke-width="0.8" opacity="0.5"/>
+  <!-- Horizontal facet -->
+  <line x1="8" y1="18" x2="24" y2="18" stroke="#1a1a1a" stroke-width="0.8" opacity="0.4"/>
+  <!-- Light refraction rays coming out right side -->
+  <line x1="23" y1="14" x2="30" y2="10" stroke="#1a1a1a" stroke-width="1" opacity="0.7"/>
+  <line x1="24" y1="17" x2="31" y2="17" stroke="#1a1a1a" stroke-width="1" opacity="0.5"/>
+  <line x1="23" y1="20" x2="30" y2="24" stroke="#1a1a1a" stroke-width="1" opacity="0.3"/>
+  <!-- Small diamond highlight on prism face -->
+  <polygon points="14,12 16,10 18,12 16,14" fill="#1a1a1a" opacity="0.12"/>
+</svg>

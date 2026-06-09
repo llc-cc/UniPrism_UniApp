@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Actuarial major icon">
+  <circle cx="64" cy="64" r="56" fill="#f0fdfa"/>
+  <path d="M64 21l38 14v28c0 25-14 41-38 52C40 104 26 88 26 63V35l38-14Z" fill="#ccfbf1" stroke="#0f766e" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M43 80h42" fill="none" stroke="#0f766e" stroke-width="6" stroke-linecap="round"/>
+  <path d="M47 73V58M61 73V45M75 73V52" fill="none" stroke="#2563eb" stroke-width="7" stroke-linecap="round"/>
+  <path d="M45 44c9-8 20-9 32-2" fill="none" stroke="#f59e0b" stroke-width="6" stroke-linecap="round"/>
+  <path d="M43 91h42" fill="none" stroke="#64748b" stroke-width="5" stroke-linecap="round"/>
+</svg>

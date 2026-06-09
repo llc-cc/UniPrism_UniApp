@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="150" height="150" viewBox="0 0 150 150">
+  <rect width="150" height="150" rx="28" fill="#00A889"/>
+  <path d="M45 98 V62 L75 44 L105 62 V98" fill="none" stroke="#fff" stroke-width="5" stroke-linejoin="round"/>
+  <rect x="62" y="72" width="26" height="26" fill="rgba(255,255,255,0.25)"/>
+  <text x="75" y="132" text-anchor="middle" fill="#fff" font-size="20" font-family="Arial, sans-serif" font-weight="700">Ffb</text>
+</svg>
