@@ -3,10 +3,7 @@
 
 $ErrorActionPreference = "Stop"
 $Repo = "poet77/UniPrism_UniApp"
-$Root = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
-if (Test-Path (Join-Path $PSScriptRoot "..\pages.json")) {
-  $Root = Split-Path $PSScriptRoot -Parent
-}
+$Root = Split-Path $PSScriptRoot -Parent
 
 Set-Location $Root
 Write-Host "Working directory: $Root"
