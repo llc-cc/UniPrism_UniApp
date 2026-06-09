@@ -5,26 +5,45 @@ $ErrorActionPreference = "Stop"
 $Repo = "poet77/UniPrism_UniApp"
 $Root = Split-Path $PSScriptRoot -Parent
 
+function Resolve-GhCommand {
+  $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" +
+    [System.Environment]::GetEnvironmentVariable("Path", "User")
+
+  $cmd = Get-Command gh -ErrorAction SilentlyContinue
+  if ($cmd) { return $cmd.Source }
+
+  $candidates = @(
+    "C:\Program Files\GitHub CLI\gh.exe",
+    "$env:LOCALAPPDATA\Programs\GitHub CLI\gh.exe"
+  )
+  foreach ($path in $candidates) {
+    if (Test-Path $path) { return $path }
+  }
+
+  throw "未找到 GitHub CLI。请运行: winget install GitHub.cli，然后重新打开 PowerShell。"
+}
+
 Set-Location $Root
 Write-Host "Working directory: $Root"
 
-if (-not (Get-Command gh -ErrorAction SilentlyContinue)) {
-  Write-Error "未安装 GitHub CLI。请运行: winget install GitHub.cli"
-}
+$Gh = Resolve-GhCommand
+Write-Host "Using GitHub CLI: $Gh"
 
-$auth = gh auth status 2>&1
+& $Gh auth status 2>&1 | Out-Host
 if ($LASTEXITCODE -ne 0) {
   Write-Host "请先登录 GitHub（浏览器授权一次即可）..."
-  gh auth login --hostname github.com --git-protocol https --web
+  & $Gh auth login --hostname github.com --git-protocol https --web
+  if ($LASTEXITCODE -ne 0) { throw "GitHub 登录失败。" }
 }
 
 Write-Host "Creating repository $Repo (if not exists)..."
-gh repo view $Repo 2>$null
+& $Gh repo view $Repo 2>$null
 if ($LASTEXITCODE -ne 0) {
-  gh repo create $Repo --public --source=. --remote=origin --description "UniPrism WeChat mini-program (UniApp)"
+  & $Gh repo create $Repo --public --source=. --remote=origin --description "UniPrism WeChat mini-program (UniApp)"
   if ($LASTEXITCODE -ne 0) {
-    gh repo create $Repo --private --source=. --remote=origin --description "UniPrism WeChat mini-program (UniApp)"
+    & $Gh repo create $Repo --private --source=. --remote=origin --description "UniPrism WeChat mini-program (UniApp)"
   }
+  if ($LASTEXITCODE -ne 0) { throw "创建 GitHub 仓库失败。" }
 } else {
   git remote remove origin 2>$null
   git remote add origin "https://github.com/$Repo.git"
@@ -32,7 +51,10 @@ if ($LASTEXITCODE -ne 0) {
 
 git checkout main
 git push -u origin main
+if ($LASTEXITCODE -ne 0) { throw "推送 main 失败。" }
+
 git checkout feature/xiaochengxu
 git push -u origin feature/xiaochengxu
+if ($LASTEXITCODE -ne 0) { throw "推送 feature/xiaochengxu 失败。" }
 
 Write-Host "Done: https://github.com/$Repo"
