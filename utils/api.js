@@ -18,11 +18,13 @@
  *   2. POST /api/miniapp/auth/register     注册
  *   3. POST /api/miniapp/explore/session   创建/续期探索会话
  *   4. POST /api/miniapp/explore/profile   保存 RIASEC 兴趣画像
- *   5. POST /api/miniapp/reports/generate  生成 AI 报告
- *   6. POST /api/miniapp/auth/sms/send     发送手机验证码
- *   7. POST /api/miniapp/auth/sms/login    手机号验证码登录
- *   8. POST /api/miniapp/auth/invite/*      邀请码注册/登录/重置
- *   9. POST /api/miniapp/auth/wechat/login   微信一键登录（需授权手机号）
+ *   5. POST /api/miniapp/reports/generate  发起/复用 AI 报告任务
+ *   6. GET  /api/miniapp/reports/latest    查询最近一份报告任务
+ *   7. GET  /api/miniapp/reports/status    查询指定报告任务状态
+ *   8. POST /api/miniapp/auth/sms/send     发送手机验证码
+ *   9. POST /api/miniapp/auth/sms/login    手机号验证码登录
+ *   10. POST /api/miniapp/auth/invite/*    邀请码注册/登录/重置
+ *   11. POST /api/miniapp/auth/wechat/login 微信一键登录（需授权手机号）
  */
 
 /** 生产环境后端基地址。 */
@@ -47,6 +49,9 @@ const COMMON_HEADERS = {
 /** 请求超时时间（毫秒）。 */
 const REQUEST_TIMEOUT = 12000
 
+/** AI 报告生成超时（报告链路较长，需比常规请求更宽松）。 */
+const REPORT_GENERATE_TIMEOUT = 420000
+
 /**
  * 后端接口路径常量。集中管理，避免散落在各处的硬编码字符串。
  * 注意：`events` 对应的小程序后端路由尚未实现，属于预留项（见 sendEvents 注释）。
@@ -64,6 +69,8 @@ export const API_PATHS = {
   createSession: '/api/miniapp/explore/session',
   saveProfile: '/api/miniapp/explore/profile',
   generateReport: '/api/miniapp/reports/generate',
+  latestReport: '/api/miniapp/reports/latest',
+  reportStatus: '/api/miniapp/reports/status',
   sendEvents: '/api/miniapp/explore/events', // 预留，后端暂未提供
 }
 
@@ -308,6 +315,13 @@ function getErrorMessage(res) {
   return '请求失败'
 }
 
+function encodeQuery(query) {
+  const pairs = Object.entries(query || {})
+    .filter(([, value]) => value !== undefined && value !== null && value !== '')
+    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`)
+  return pairs.length ? '?' + pairs.join('&') : ''
+}
+
 /**
  * 发起一次 HTTP 请求。
  * - 自动拼接基地址、注入公共头与鉴权头
@@ -317,11 +331,13 @@ function getErrorMessage(res) {
  * @param {'GET'|'POST'|'PUT'|'DELETE'} method
  * @param {string} path 接口路径（以 / 开头）
  * @param {Object} [data] 请求体
+ * @param {number} [timeoutMs] 超时毫秒，默认 REQUEST_TIMEOUT
  * @returns {Promise<ApiEnvelope>}
  */
-function request(method, path, data) {
+function request(method, path, data, timeoutMs) {
   const token = getToken()
   const baseUrl = getBaseUrl()
+  const timeout = typeof timeoutMs === 'number' ? timeoutMs : REQUEST_TIMEOUT
 
   return new Promise((resolve, reject) => {
     uni.request({
@@ -333,7 +349,7 @@ function request(method, path, data) {
         COMMON_HEADERS,
         token ? { Authorization: 'Bearer ' + token } : {},
       ),
-      timeout: REQUEST_TIMEOUT,
+      timeout,
       success(res) {
         if (res.statusCode >= 200 && res.statusCode < 300) {
           // 业务层失败（HTTP 2xx 但 ok=false）
@@ -494,18 +510,59 @@ export const api = {
   },
 
   /**
-   * 生成 AI 兴趣报告。POST /api/miniapp/reports/generate
-   * force=false 时若已有完成的报告会直接返回缓存。
+   * 发起或复用 AI 兴趣报告任务。POST /api/miniapp/reports/generate
+   * 对齐 Web 端后，接口可能返回三类结果：
+   * 1. 已完成：直接返回 { report }
+   * 2. 排队/生成中：返回 { reportId, status, queued, workflowProgress }
+   * 3. 新建任务：生产环境入队，开发环境可能本地直跑
    * @param {string} sessionId
    * @param {boolean} [force=false] 是否强制重新生成
-   * @returns {Promise<ApiEnvelope>} data: { reportId, status, report }
+   * @returns {Promise<ApiEnvelope>} data: { reportId, status, report?, queued?, workflowProgress? }
    * 后端错误：403 会话不属于当前用户 / 404 会话不存在或未完成探索 / 429 10 分钟内最多 5 次 / 500 生成失败
    */
   generateReport(sessionId, force) {
-    return request('POST', API_PATHS.generateReport, {
-      sessionId,
-      force: Boolean(force),
-    })
+    return request(
+      'POST',
+      API_PATHS.generateReport,
+      {
+        sessionId,
+        force: Boolean(force),
+      },
+      REPORT_GENERATE_TIMEOUT,
+    )
+  },
+
+  /**
+   * 查询当前探索会话最近一份可读报告记录。GET /api/miniapp/reports/latest
+   * 返回的是任务元信息，不一定携带完整 report 内容。
+   * @param {string} sessionId
+   * @param {string} [reportType='full_explore']
+   * @returns {Promise<ApiEnvelope>}
+   */
+  getLatestReport(sessionId, reportType) {
+    return request(
+      'GET',
+      API_PATHS.latestReport + encodeQuery({
+        sessionId,
+        reportType: reportType || 'full_explore',
+      }),
+    )
+  },
+
+  /**
+   * 查询指定报告任务状态。GET /api/miniapp/reports/status
+   * @param {string} sessionId
+   * @param {string} reportId
+   * @returns {Promise<ApiEnvelope>} data: { reportId, status, queued, report?, workflowProgress?, errorMessage? }
+   */
+  getReportStatus(sessionId, reportId) {
+    return request(
+      'GET',
+      API_PATHS.reportStatus + encodeQuery({
+        sessionId,
+        reportId,
+      }),
+    )
   },
 
   /**

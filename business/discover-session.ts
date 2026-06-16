@@ -26,6 +26,7 @@ export type DiscoverPhase = 'intro' | 'chatting' | 'results';
 export type DiscoverSession = {
   phase: DiscoverPhase;
   currentQuestionIndex: number;
+  backNavigationFloorIndex: number | null;
   answers: Answer[];
   profile: RIASECProfile | null;
   recommendedMajors: MajorMatch[] | null;
@@ -36,6 +37,7 @@ export type DiscoverSession = {
 export const emptyDiscoverSession: DiscoverSession = {
   phase: 'intro',
   currentQuestionIndex: 0,
+  backNavigationFloorIndex: null,
   answers: [],
   profile: null,
   recommendedMajors: null,
@@ -44,7 +46,15 @@ export const emptyDiscoverSession: DiscoverSession = {
 };
 
 export function loadDiscoverSession(): DiscoverSession {
-  return readStorage<DiscoverSession>(DISCOVER_SESSION_KEY, emptyDiscoverSession);
+  const session = readStorage<DiscoverSession>(DISCOVER_SESSION_KEY, emptyDiscoverSession);
+  return {
+    ...emptyDiscoverSession,
+    ...session,
+    backNavigationFloorIndex:
+      typeof session.backNavigationFloorIndex === 'number' && Number.isFinite(session.backNavigationFloorIndex)
+        ? session.backNavigationFloorIndex
+        : null,
+  };
 }
 
 export function saveDiscoverSession(session: DiscoverSession) {

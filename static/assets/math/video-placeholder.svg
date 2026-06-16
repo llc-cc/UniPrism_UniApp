@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" role="img" aria-label="短视频兴趣类型占位图">
+  <rect width="960" height="540" rx="44" fill="#f8fafc"/>
+  <rect x="72" y="54" width="816" height="432" rx="36" fill="#ffffff" stroke="#dbe7ef" stroke-width="4"/>
+  <rect x="120" y="92" width="286" height="356" rx="32" fill="#102033"/>
+  <rect x="146" y="122" width="234" height="300" rx="24" fill="#f8fafc"/>
+  <circle cx="262" cy="272" r="58" fill="#14b8a6"/>
+  <path d="M245 234 L245 310 L312 272 Z" fill="#ffffff"/>
+  <rect x="182" y="384" width="160" height="14" rx="7" fill="#dbe7ef"/>
+  <rect x="458" y="98" width="162" height="86" rx="22" fill="#ebfffb" stroke="#99f6e4" stroke-width="3"/>
+  <rect x="646" y="98" width="162" height="86" rx="22" fill="#eff6ff" stroke="#bfdbfe" stroke-width="3"/>
+  <rect x="458" y="220" width="162" height="86" rx="22" fill="#fff7ed" stroke="#fed7aa" stroke-width="3"/>
+  <rect x="646" y="220" width="162" height="86" rx="22" fill="#f5f3ff" stroke="#ddd6fe" stroke-width="3"/>
+  <rect x="458" y="342" width="162" height="86" rx="22" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="3"/>
+  <rect x="646" y="342" width="162" height="86" rx="22" fill="#f8fafc" stroke="#cbd5e1" stroke-width="3"/>
+  <text x="539" y="148" text-anchor="middle" font-family="Inter, Noto Sans SC, sans-serif" font-size="25" font-weight="800" fill="#0f766e">维修改装</text>
+  <text x="727" y="148" text-anchor="middle" font-family="Inter, Noto Sans SC, sans-serif" font-size="25" font-weight="800" fill="#2563eb">硬核科普</text>
+  <text x="539" y="270" text-anchor="middle" font-family="Inter, Noto Sans SC, sans-serif" font-size="25" font-weight="800" fill="#ea580c">创作表达</text>
+  <text x="727" y="270" text-anchor="middle" font-family="Inter, Noto Sans SC, sans-serif" font-size="25" font-weight="800" fill="#6548d8">成长帮助</text>
+  <text x="539" y="392" text-anchor="middle" font-family="Inter, Noto Sans SC, sans-serif" font-size="25" font-weight="800" fill="#15803d">商业运营</text>
+  <text x="727" y="392" text-anchor="middle" font-family="Inter, Noto Sans SC, sans-serif" font-size="25" font-weight="800" fill="#475569">整理规划</text>
+  <text x="480" y="500" text-anchor="middle" font-family="Inter, Noto Sans SC, sans-serif" font-size="24" font-weight="800" fill="#64748b">刷到哪一类内容，你最愿意认真看完？</text>
+</svg>

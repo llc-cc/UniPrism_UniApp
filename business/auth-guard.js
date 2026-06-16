@@ -3,16 +3,20 @@ import { api } from '../utils/api'
 const AUTH_PAGE = '/pages/auth/login'
 const HOME_PAGE = '/pages/discover/index'
 
+/** 开发阶段跳过登录；上线前改为 false。 */
+const SKIP_LOGIN = false
+
 let redirecting = false
 
-/** 是否已登录（必须有 JWT）。 */
+/** 是否已登录（必须有 JWT）；SKIP_LOGIN 时视为已登录。 */
 export function hasAppAccess() {
+  if (SKIP_LOGIN) return true
   return api.isLoggedIn()
 }
 
 /** 清除历史测试数据（跳过登录残留）。 */
 export function cleanupStaleAuthState() {
-  if (api.isLoggedIn()) return
+  if (SKIP_LOGIN || api.isLoggedIn()) return
   uni.removeStorageSync('uniprism.token')
   uni.removeStorageSync('uniprism.user')
 }
@@ -96,4 +100,8 @@ export function setupAuthNavigationGuard() {
       return guard(options)
     },
   })
+}
+
+export function isLoginSkipped() {
+  return SKIP_LOGIN
 }

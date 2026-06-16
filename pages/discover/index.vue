@@ -101,8 +101,8 @@
 </template>
 
 <script>
-import { ALL_QUESTIONS } from '../../business/discover-questions'
 import { loadDiscoverSession } from '../../business/discover-session'
+import { DISCOVER_ACTIVE_QUESTION_COUNT } from '../../business/discover-chat-screens'
 import {
   INTEREST_SHORTCUTS,
   MAJOR_TASK_OVERVIEW,
@@ -123,7 +123,7 @@ export default {
   data() {
     return {
       answeredCount: 0,
-      totalCount: (ALL_QUESTIONS || []).length,
+      totalCount: DISCOVER_ACTIVE_QUESTION_COUNT,
       hasProfile: false,
       recommendedMajors: [],
       rankedCareers: [],
@@ -190,7 +190,19 @@ export default {
     },
     goInterest() {
       if (this.hasProfile) {
-        uni.navigateTo({ url: '/pages/discover/results' })
+        uni.showModal({
+          title: '重新探索',
+          content: '已有测评结果。重新答题会清除当前结果并生成新报告，是否继续？',
+          confirmText: '重新答题',
+          cancelText: '查看报告',
+          success: (res) => {
+            if (res.confirm) {
+              uni.navigateTo({ url: '/pages/discover/chat?retake=1' })
+            } else if (res.cancel) {
+              uni.navigateTo({ url: '/pages/discover/results' })
+            }
+          },
+        })
         return
       }
       uni.navigateTo({ url: '/pages/discover/chat' })

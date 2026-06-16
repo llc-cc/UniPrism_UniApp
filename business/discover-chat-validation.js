@@ -116,7 +116,11 @@ export function getValidationAnchorId(question, fieldErrors) {
     if (fieldErrors.firstChoiceId) return 'anchor-career-first'
     if (fieldErrors.itemChoiceIds) return 'anchor-career-items'
     if (fieldErrors.teamChoiceId) return 'anchor-career-team'
-    const openFieldId = Object.keys(fieldErrors).find((id) => id.startsWith('open-') || id.includes('open'))
+    const openFieldId = Object.keys(fieldErrors).find((id) => (
+      id !== 'firstChoiceId'
+      && id !== 'itemChoiceIds'
+      && id !== 'teamChoiceId'
+    ))
     if (openFieldId) return `anchor-career-open-${openFieldId}`
   }
   return `anchor-q-${question.id}`

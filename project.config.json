@@ -1,0 +1,21 @@
+{
+  "description": "UniPrism 微信小程序（由 UniApp 编译输出使用）",
+  "compileType": "miniprogram",
+  "appid": "wx96471f45f46073d3",
+  "projectname": "UniPrism",
+  "libVersion": "3.6.6",
+  "packOptions": {
+    "ignore": [
+      { "type": "folder", "value": ".sourcemap" },
+      { "type": "suffix", "value": ".map" }
+    ]
+  },
+  "setting": {
+    "urlCheck": false,
+    "es6": true,
+    "postcss": false,
+    "minified": false,
+    "newFeature": true,
+    "bigPackageSizeSupport": true
+  }
+}

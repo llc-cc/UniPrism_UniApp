@@ -24,6 +24,22 @@ export const LOCAL_ASSET_MAP = {
   '/images/explore/discover/icons/generated/majors/major-mechanical.svg': '/static/assets/majors/major-mechanical.svg',
   '/images/explore/discover/icons/generated/majors/major-ee.svg': '/static/assets/majors/major-ee.svg',
   '/images/explore/discover/icons/generated/majors/major-ic.svg': '/static/assets/majors/major-ic.svg',
+  '/design/math-speed/generated/math-branch-basic-card-v3.png': '/static/assets/math/math-branch-wave-a.png',
+  '/design/math-speed/generated/math-branch-applied-card-v3.png': '/static/assets/math/application-lab.svg',
+  '/design/math-speed/generated/math-branch-computational-card-v3.png': '/static/assets/math/curriculum-map.svg',
+  '/design/math-speed/generated/math-branch-statistics-card-v3.png': '/static/assets/math/career-top5.svg',
+  '/design/math-speed/generated/math-branch-financial-card-v3.png': '/static/assets/math/interdisciplinary-network.svg',
+  '/design/math-speed/generated/math-branching-start-v1.png': '/static/assets/math/math-branch-wave-b.png',
+  '/design/math-speed/generated/math-major-intro-complete-v1.png': '/static/assets/math/curriculum-map.svg',
+  '/design/math-speed/generated/math-deep-dive-complete-v1.png': '/static/assets/math/interdisciplinary-network.svg',
+  '/design/math-speed/generated/math-intro-home-curriculum-v5.png': '/static/assets/math/curriculum-map.svg',
+  '/design/math-speed/generated/math-intro-home-careers-v5.png': '/static/assets/math/career-top5.svg',
+  '/design/math-speed/generated/math-intro-home-applications-v5.png': '/static/assets/math/application-lab.svg',
+  '/design/math-speed/generated/math-intro-home-network-v5.png': '/static/assets/math/interdisciplinary-network.svg',
+  '/design/math-speed/generated/math-intro-card-major-v3.png': '/static/assets/math/curriculum-map.svg',
+  '/design/math-speed/generated/math-intro-card-problem-v3.png': '/static/assets/math/application-lab.svg',
+  '/design/math-speed/generated/math-intro-card-career-v3.png': '/static/assets/math/career-top5.svg',
+  '/design/math-speed/generated/math-intro-card-branch-v3.png': '/static/assets/math/math-branch-wave-a.png',
 }
 
 export function getLocalAsset(path) {

@@ -29,6 +29,12 @@ export const CHAT_STAGES = [
     shortLabel: '职业',
     artwork: '/images/explore/discover/career-simulation/role-to-career.png',
   },
+  {
+    id: 'report',
+    label: '报告生成',
+    shortLabel: '报告',
+    artwork: '/images/explore/discover/step-report-bg.png',
+  },
 ]
 
 /** @param {{ id?: string } | null | undefined} question */
@@ -38,7 +44,7 @@ export function getQuestionStageIndex(question) {
   if (id === 'basic-profile' || id.startsWith('interest-tags')) return 0
   if (id.startsWith('personality-')) return 1
   if (id.startsWith('ability-')) return 2
-  if (id === 'value-life-goal') return 3
+  if (id === 'value-life-goal' || id.startsWith('value-')) return 3
   return 0
 }
 

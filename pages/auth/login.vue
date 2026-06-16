@@ -27,15 +27,18 @@
 
       <!-- 邀请码 -->
       <view v-if="method !== 'phone'">
-        <view v-if="inviteMode === 'register' && inviteStep === 'invite'" class="field input-row">
-          <text class="input-icon">🎫</text>
-          <input
-            class="input flex-input"
-            v-model="inviteCode"
-            placeholder="请输入邀请码"
-            maxlength="96"
-          />
-        </view>
+        <template v-if="inviteMode === 'register' && inviteStep === 'invite'">
+          <view class="field input-row">
+            <text class="input-icon">🎫</text>
+            <input
+              class="input flex-input"
+              v-model="inviteCode"
+              placeholder="请输入邀请码"
+              maxlength="96"
+            />
+          </view>
+          <text v-if="inviteCodeIssue" class="field-issue">{{ inviteCodeIssue }}</text>
+        </template>
 
         <template v-else>
           <view v-if="inviteMode === 'register' && inviteStep === 'details'" class="invite-chip">
@@ -52,6 +55,7 @@
               maxlength="96"
             />
           </view>
+          <text v-if="inviteCodeIssue" class="field-issue">{{ inviteCodeIssue }}</text>
 
           <text v-if="inviteHint" class="hint-purple">{{ inviteHint }}</text>
 
@@ -64,7 +68,7 @@
               maxlength="32"
             />
           </view>
-          <text v-if="showLoginIdRule" class="rule-text">{{ loginIdRuleText }}</text>
+          <text v-if="loginIdIssue" class="field-issue">{{ loginIdIssue }}</text>
 
           <view class="field input-row">
             <text class="input-icon">🔒</text>
@@ -76,7 +80,7 @@
               maxlength="32"
             />
           </view>
-          <text v-if="showPasswordRule" class="rule-text">{{ passwordRuleText }}</text>
+          <text v-if="passwordIssue" class="field-issue">{{ passwordIssue }}</text>
 
           <view v-if="inviteMode === 'reset'" class="field input-row">
             <text class="input-icon">🔒</text>
@@ -88,18 +92,17 @@
               maxlength="32"
             />
           </view>
+          <text v-if="confirmPasswordIssue" class="field-issue">{{ confirmPasswordIssue }}</text>
         </template>
       </view>
 
       <!-- 手机号 -->
       <view v-else>
-        <view class="sms-banner">
-          <text class="sms-banner-text">短信 Key 配置前可使用接口返回的 devCode 联调；接入阿里云后将自动发送真实验证码。</text>
-        </view>
         <view class="field input-row">
           <text class="input-icon">📱</text>
           <input class="input flex-input" v-model="phone" type="number" maxlength="11" placeholder="请输入手机号" />
         </view>
+        <text v-if="phoneIssue" class="field-issue">{{ phoneIssue }}</text>
         <view class="field code-row">
           <view class="code-input-wrap input-row">
             <text class="input-icon">🔢</text>
@@ -109,10 +112,10 @@
             {{ smsCooldown > 0 ? smsCooldown + 's' : (smsSending ? '发送中...' : '获取验证码') }}
           </button>
         </view>
-        <text v-if="devCodeHint" class="dev-hint">开发验证码：{{ devCodeHint }}</text>
+        <text v-if="smsCodeIssue" class="field-issue">{{ smsCodeIssue }}</text>
       </view>
 
-      <text v-if="error" class="error">{{ error }}</text>
+      <text v-if="displayError" class="error">{{ displayError }}</text>
 
       <button class="btn-primary" :disabled="loading" @tap="handleSubmit">
         {{ loading ? '处理中...' : primaryButtonText }}
@@ -154,8 +157,6 @@
         </template>
       </view>
 
-      <text v-if="devApiHint" class="dev-hint">{{ devApiHint }}</text>
-
       <text class="legal-text">*登录即代表您已阅读并同意《用户服务条款》及《隐私政策》</text>
     </view>
   </view>
@@ -166,8 +167,6 @@ import { api } from '../../utils/api'
 import { completeAuthLogin } from '../../business/explore-session-merge'
 import { hasAppAccess, goAppHome } from '../../business/auth-guard'
 import {
-  INVITE_LOGIN_ID_RULE_TEXT,
-  INVITE_PIN_RULE_TEXT,
   getInviteLoginIdIssue,
   getInvitePinIssue,
 } from '../../business/auth-credential-rules'
@@ -191,15 +190,13 @@ export default {
       smsCode: '',
       error: '',
       loading: false,
+      showFieldValidation: false,
+      showPhoneValidation: false,
       smsSending: false,
       smsCooldown: 0,
-      devCodeHint: '',
-      devApiHint: '',
       cooldownTimer: null,
       wechatLoading: false,
       wechatLoginEnabled: WECHAT_LOGIN_ENABLED,
-      loginIdRuleText: INVITE_LOGIN_ID_RULE_TEXT,
-      passwordRuleText: INVITE_PIN_RULE_TEXT,
     }
   },
   computed: {
@@ -219,22 +216,65 @@ export default {
       if (this.inviteMode === 'login') return '输入用户 ID 和密码登录'
       return ''
     },
-    showLoginIdRule() {
-      return this.method !== 'phone' && !(this.inviteMode === 'register' && this.inviteStep === 'invite')
-    },
-    showPasswordRule() {
-      return this.method !== 'phone' && (this.inviteMode === 'register' || this.inviteMode === 'reset')
-    },
     passwordPlaceholder() {
       if (this.inviteMode === 'register') return '设置密码'
       if (this.inviteMode === 'reset') return '设置新密码'
       return '输入密码'
     },
+    inviteCodeIssue() {
+      if (this.method === 'phone') return ''
+      if (!this.showFieldValidation) return ''
+      if (this.inviteMode === 'register' && this.inviteStep === 'invite') {
+        return this.inviteCode.trim() ? '' : '请填写此字段'
+      }
+      if (this.inviteMode === 'reset') {
+        return this.inviteCode.trim() ? '' : '请填写此字段'
+      }
+      return ''
+    },
+    loginIdIssue() {
+      if (this.method === 'phone') return ''
+      if (this.inviteMode === 'register' && this.inviteStep === 'invite') return ''
+      if (!this.showFieldValidation) return ''
+      if (!this.loginId.trim()) return '请填写此字段'
+      return getInviteLoginIdIssue(this.loginId) || ''
+    },
+    passwordIssue() {
+      if (this.method === 'phone') return ''
+      if (this.inviteMode === 'register' && this.inviteStep === 'invite') return ''
+      if (!this.showFieldValidation) return ''
+      if (!this.password.trim()) return '请填写此字段'
+      return getInvitePinIssue(this.password) || ''
+    },
+    confirmPasswordIssue() {
+      if (this.method === 'phone' || this.inviteMode !== 'reset') return ''
+      if (!this.showFieldValidation) return ''
+      if (!this.confirmPassword.trim()) return '请填写此字段'
+      if (this.password === this.confirmPassword) return ''
+      return '两次输入的密码不一致。'
+    },
+    phoneIssue() {
+      if (this.method !== 'phone') return ''
+      if (!this.showFieldValidation && !this.showPhoneValidation) return ''
+      return this.phone.trim() ? '' : '请填写此字段'
+    },
+    smsCodeIssue() {
+      if (this.method !== 'phone') return ''
+      if (!this.showFieldValidation) return ''
+      return this.smsCode.trim() ? '' : '请填写此字段'
+    },
+    displayError() {
+      if (!this.error) return ''
+      if (this.error === this.inviteCodeIssue) return ''
+      if (this.error === this.loginIdIssue) return ''
+      if (this.error === this.passwordIssue) return ''
+      if (this.error === this.confirmPasswordIssue) return ''
+      if (this.error === this.phoneIssue) return ''
+      if (this.error === this.smsCodeIssue) return ''
+      return this.error
+    },
   },
   onLoad() {
-    if (api.isDevBuild()) {
-      this.devApiHint = `开发 API：${api.getBaseUrl()}`
-    }
     if (hasAppAccess()) {
       goAppHome()
     }
@@ -246,6 +286,8 @@ export default {
     switchMethod(next) {
       this.method = next
       this.error = ''
+      this.showFieldValidation = false
+      this.showPhoneValidation = false
       this.password = ''
       this.confirmPassword = ''
     },
@@ -256,6 +298,8 @@ export default {
       this.password = ''
       this.confirmPassword = ''
       this.error = ''
+      this.showFieldValidation = false
+      this.showPhoneValidation = false
     },
     resetInviteRegister() {
       this.inviteMode = 'register'
@@ -264,6 +308,8 @@ export default {
       this.password = ''
       this.confirmPassword = ''
       this.error = ''
+      this.showFieldValidation = false
+      this.showPhoneValidation = false
     },
     startCooldown(seconds) {
       this.smsCooldown = seconds
@@ -292,6 +338,8 @@ export default {
       await completeAuthLogin(res, fallbackName)
       goAppHome()
     },
+    // 这里只做一件事：向微信拿 loginCode。
+    // 这个 code 会被后端拿去调用 code2Session，换取 openid / unionid。
     wxLogin() {
       return new Promise((resolve, reject) => {
         uni.login({
@@ -301,10 +349,17 @@ export default {
         })
       })
     },
+    // 微信一键登录前端链路：
+    // 1. 用户点按钮，微信返回手机号授权事件 e.detail
+    // 2. 从 e.detail.code 中取到 phoneCode
+    // 3. 再额外调用 uni.login() 获取 loginCode
+    // 4. 把 loginCode + phoneCode 一起发给后端
+    // 5. 后端完成“微信身份识别 + 手机号识别 + 账号绑定/创建 + JWT 签发”
     async handleWechatLogin(e) {
       if (!this.wechatLoginEnabled) return
 
       const detail = (e && e.detail) || {}
+      // 只有 getPhoneNumber:ok 才表示用户真正完成了手机号授权。
       if (detail.errMsg !== 'getPhoneNumber:ok') {
         if (detail.errMsg && detail.errMsg.includes('deny')) {
           this.error = '需要授权手机号才能完成微信登录'
@@ -316,6 +371,8 @@ export default {
 
       const phoneCode = detail.code
       if (!phoneCode) {
+        // 新版微信小程序获取手机号依赖服务端换取 code，
+        // 这里如果没有拿到 code，后端就无法继续。
         this.error = '未获取到手机号授权，请升级微信后重试'
         return
       }
@@ -327,6 +384,7 @@ export default {
         if (!loginRes || !loginRes.code) {
           throw new Error('微信登录失败，请重试')
         }
+        // 这里的两个 code 来自两个不同动作，缺一不可。
         const res = await api.loginWithWechat(loginRes.code, phoneCode)
         const user = (res && res.data && res.data.user) || {}
         await this.finishAuth(res, user.phone || user.name)
@@ -337,18 +395,14 @@ export default {
       }
     },
     async handleSendCode() {
-      if (!this.phone.trim()) {
-        this.error = '请输入手机号'
+      this.showPhoneValidation = true
+      if (this.phoneIssue) {
         return
       }
       this.error = ''
-      this.devCodeHint = ''
       this.smsSending = true
       try {
-        const res = await api.sendSmsCode(this.phone.trim())
-        if (res.data && res.data.devCode) {
-          this.devCodeHint = res.data.devCode
-        }
+        await api.sendSmsCode(this.phone.trim())
         this.startCooldown(60)
       } catch (e) {
         this.error = e.message || '验证码发送失败'
@@ -361,8 +415,8 @@ export default {
       this.loading = true
       try {
         if (this.method === 'phone') {
-          if (!this.phone.trim() || !this.smsCode.trim()) {
-            this.error = '请填写手机号和验证码'
+          this.showFieldValidation = true
+          if (this.phoneIssue || this.smsCodeIssue) {
             return
           }
           const res = await api.loginWithPhone(this.phone.trim(), this.smsCode.trim())
@@ -371,21 +425,22 @@ export default {
         }
 
         if (this.inviteMode === 'register' && this.inviteStep === 'invite') {
-          if (!this.inviteCode.trim()) {
-            this.error = '请输入邀请码'
+          this.showFieldValidation = true
+          if (this.inviteCodeIssue) {
             return
           }
           await api.checkInviteStatus(this.inviteCode.trim())
           this.loginId = ''
           this.password = ''
           this.inviteStep = 'details'
+          this.showFieldValidation = false
           return
         }
 
         if (this.inviteMode === 'register') {
+          this.showFieldValidation = true
           const issue = this.validateInviteCredentials(false)
           if (issue) {
-            this.error = issue
             return
           }
           const res = await api.registerWithInvite(
@@ -398,13 +453,12 @@ export default {
         }
 
         if (this.inviteMode === 'reset') {
-          if (!this.inviteCode.trim()) {
-            this.error = '请输入初始邀请码'
+          this.showFieldValidation = true
+          if (this.inviteCodeIssue) {
             return
           }
           const issue = this.validateInviteCredentials(true)
           if (issue) {
-            this.error = issue
             return
           }
           const res = await api.resetInvitePassword(
@@ -416,9 +470,9 @@ export default {
           return
         }
 
+        this.showFieldValidation = true
         const issue = this.validateInviteCredentials(false)
         if (issue) {
-          this.error = issue
           return
         }
         const res = await api.loginWithLoginId(this.loginId.trim(), this.password)
@@ -524,7 +578,7 @@ export default {
 .invite-chip-text { flex: 1; font-size: 28rpx; color: #666; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .invite-change { font-size: 24rpx; color: #6b23ff; font-weight: 600; margin-left: 16rpx; }
 .hint-purple { display: block; text-align: center; font-size: 26rpx; color: #6b23ff; font-weight: 600; margin: -8rpx 0 20rpx; line-height: 1.6; }
-.rule-text { display: block; margin: -12rpx 0 20rpx 4rpx; font-size: 22rpx; color: #666; line-height: 1.55; }
+.field-issue { display: block; margin: -12rpx 0 20rpx 4rpx; font-size: 22rpx; color: #d14343; line-height: 1.55; }
 .sms-banner {
   margin-bottom: 24rpx;
   padding: 20rpx 24rpx;
@@ -548,7 +602,6 @@ export default {
   border-radius: 20rpx;
 }
 .btn-code[disabled] { color: #9ca3af; background: #f3f4f6; border-color: #e5e7eb; }
-.dev-hint { display: block; font-size: 22rpx; color: #6b23ff; margin: -8rpx 0 16rpx; }
 .error { display: block; font-size: 24rpx; color: #d14343; margin-bottom: 16rpx; line-height: 1.6; }
 .btn-primary {
   width: 100%;

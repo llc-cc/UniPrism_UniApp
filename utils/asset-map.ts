@@ -2,18 +2,12 @@ import { getLocalAsset } from '../business/local-asset-map'
 import { getImageFallback } from '../business/image-fallback-map'
 import { getDownloadedRemoteAsset, isVerifiedRemoteAsset, VERIFIED_REMOTE_ASSET_PATHS } from '../business/remote-asset-registry'
 import { isMdCatalogAsset } from '../business/md-asset-catalog'
-import { api } from './api'
-
 /** 生产环境默认域名，与 mini-program-asset-urls.md 一致 */
 export const DEFAULT_ASSET_HOST = 'https://uniprism.cn'
 
-/** 与 API 基地址共用配置（本地调试可改 uniprism.apiBaseUrl） */
+/** 静态资源域名与 API 分离，避免开发态回落到 127.0.0.1 导致图片失效 */
 export function getAssetHost(): string {
-  try {
-    return api.getBaseUrl() || DEFAULT_ASSET_HOST
-  } catch {
-    return DEFAULT_ASSET_HOST
-  }
+  return DEFAULT_ASSET_HOST
 }
 
 /** @deprecated 请使用 getAssetHost() */
@@ -36,15 +30,13 @@ function normalizePath(src: string): string | null {
   return src.startsWith('/') ? src : `/${src}`
 }
 
-function buildRemoteUrl(objectPath: string): string {
-  const host = getAssetHost().replace(/\/$/, '')
-  // 优先走 OSS 代理；小程序不依赖 Next.js rewrite
-  return `${host}/api/oss-assets${objectPath}`
-}
-
 function buildDirectUrl(objectPath: string): string {
   const host = getAssetHost().replace(/\/$/, '')
   return `${host}${objectPath}`
+}
+
+function isInterestChoiceIcon(objectPath: string): boolean {
+  return objectPath.includes('/images/explore/discover/icons/generated/discover-choice-icon-interest-')
 }
 
 /**
@@ -70,14 +62,22 @@ export function resolveAsset(src: string | undefined): string {
 
   if (isMdCatalogAsset(objectPath)) {
     if (!registryReady || isVerifiedRemoteAsset(objectPath)) {
-      if (objectPath.startsWith('/design/') || objectPath.startsWith('/videos/')) {
-        return buildRemoteUrl(objectPath)
-      }
       return buildDirectUrl(objectPath)
     }
   }
 
+  if (objectPath.startsWith('/explore-static/')) {
+    return buildDirectUrl(objectPath)
+  }
+
+  if (objectPath.startsWith('/design/')) {
+    return buildDirectUrl(objectPath)
+  }
+
   if (objectPath.startsWith('/images/')) {
+    if (isInterestChoiceIcon(objectPath)) {
+      return buildDirectUrl(objectPath)
+    }
     const fallback = getImageFallback(objectPath)
     if (fallback) return fallback
     return buildDirectUrl(objectPath)
@@ -86,7 +86,7 @@ export function resolveAsset(src: string | undefined): string {
   return ''
 }
 
-/** 返回候选 URL（local → direct → oss 代理 → /images fallback） */
+/** 返回候选 URL（local → direct → /images fallback） */
 export function resolveAssetCandidates(src: string | undefined): string[] {
   if (!src) return []
 
@@ -104,20 +104,31 @@ export function resolveAssetCandidates(src: string | undefined): string[] {
   const allowRemote = isMdCatalogAsset(objectPath) && (!registryReady || isVerifiedRemoteAsset(objectPath))
 
   if (allowRemote) {
-    if (objectPath.startsWith('/design/') || objectPath.startsWith('/videos/')) {
-      candidates.push(buildRemoteUrl(objectPath))
-      candidates.push(buildDirectUrl(objectPath))
-    } else {
-      candidates.push(buildDirectUrl(objectPath))
-      candidates.push(buildRemoteUrl(objectPath))
-    }
+    candidates.push(buildDirectUrl(objectPath))
+  }
+
+  if (objectPath.startsWith('/explore-static/')) {
+    candidates.push(buildDirectUrl(objectPath))
+    candidates.push('/static/assets/discover/icon-generic.svg')
+    return [...new Set(candidates.filter(Boolean))]
+  }
+
+  if (objectPath.startsWith('/design/')) {
+    candidates.push(buildDirectUrl(objectPath))
+    return [...new Set(candidates.filter(Boolean))]
   }
 
   if (objectPath.startsWith('/images/')) {
+    if (isInterestChoiceIcon(objectPath)) {
+      candidates.push(buildDirectUrl(objectPath))
+      const fallback = getImageFallback(objectPath)
+      if (fallback) candidates.push(fallback)
+      candidates.push('/static/assets/discover/icon-generic.svg')
+      return [...new Set(candidates.filter(Boolean))]
+    }
     const fallback = getImageFallback(objectPath)
     if (fallback) candidates.push(fallback)
     candidates.push(buildDirectUrl(objectPath))
-    candidates.push(buildRemoteUrl(objectPath))
     if (objectPath.includes('/icons/generated/discover-choice-icon-')) {
       candidates.push('/static/assets/discover/icon-generic.svg')
     }

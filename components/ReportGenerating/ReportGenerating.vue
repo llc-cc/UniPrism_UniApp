@@ -5,6 +5,10 @@
         <text class="generating-badge">报告生成中</text>
         <text class="generating-title">正在生成你的综合报告</text>
         <text class="generating-desc">我们正在把你的答题记录、职业倾向和专业匹配整理成一份可读报告。</text>
+        <view v-if="progress.backendTitle" class="generating-backend">
+          <text class="generating-backend-title">{{ progress.backendTitle }}</text>
+          <text v-if="progress.backendDescription" class="generating-backend-desc">{{ progress.backendDescription }}</text>
+        </view>
         <view class="generating-bar-track">
           <view
             class="generating-bar-fill"
@@ -14,7 +18,11 @@
         </view>
         <view v-if="error" class="generating-error">
           <text class="generating-error-text">{{ error }}</text>
-          <button class="generating-retry" @tap="$emit('retry')">重试生成</button>
+          <text class="generating-error-hint">重新生成只会再次生成报告；重新测试会从题目阶段重新开始。</text>
+          <view class="generating-actions">
+            <button class="generating-regenerate" @tap="$emit('retry')">重新生成</button>
+            <button class="generating-retry" @tap="$emit('restart')">重新测试</button>
+          </view>
         </view>
       </view>
 
@@ -57,7 +65,7 @@ export default {
     },
     error: { type: String, default: '' },
   },
-  emits: ['retry'],
+  emits: ['retry', 'restart'],
   data() {
     return { steps: REPORT_GENERATION_STEPS }
   },
@@ -125,6 +133,26 @@ export default {
   line-height: 1.9;
   color: #596275;
 }
+.generating-backend {
+  margin-top: 28rpx;
+  padding: 20rpx 24rpx;
+  border-radius: 28rpx;
+  background: #f6f3ff;
+}
+.generating-backend-title {
+  display: block;
+  font-size: 28rpx;
+  line-height: 1.5;
+  color: #4f2db8;
+  font-weight: 700;
+}
+.generating-backend-desc {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  line-height: 1.6;
+  color: #6b5fa7;
+}
 .generating-bar-track {
   margin-top: 40rpx;
   height: 24rpx;
@@ -153,16 +181,36 @@ export default {
   color: #b91c1c;
   font-weight: 700;
 }
-.generating-retry {
+.generating-error-hint {
+  display: block;
+  margin-top: 12rpx;
+  font-size: 24rpx;
+  line-height: 1.6;
+  color: #7f1d1d;
+}
+.generating-actions {
+  display: flex;
+  gap: 16rpx;
   margin-top: 20rpx;
-  background: #6b23ff;
-  color: #fff;
-  border: none;
+}
+.generating-regenerate,
+.generating-retry {
+  flex: 1;
   border-radius: 22rpx;
   height: 72rpx;
   line-height: 72rpx;
   font-size: 28rpx;
   font-weight: 700;
+}
+.generating-regenerate {
+  background: #fff;
+  color: #6b23ff;
+  border: 2rpx solid #c4b5fd;
+}
+.generating-retry {
+  background: #6b23ff;
+  color: #fff;
+  border: none;
 }
 .step-list { display: flex; flex-direction: column; gap: 16rpx; }
 .step-item {

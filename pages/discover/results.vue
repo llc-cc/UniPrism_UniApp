@@ -4,7 +4,8 @@
       v-if="phase === 'generating'"
       :progress="reportProgress"
       :error="reportError"
-      @retry="startGeneration"
+      @retry="retryGeneration"
+      @restart="restart"
     />
 
     <view v-else-if="!profile" class="empty-state">
@@ -30,13 +31,18 @@
 <script>
 import { loadDiscoverSession, resetDiscoverSession } from '../../business/discover-session'
 import { navigateToMajor } from '../../business/major-routes'
-import { clearProfileUploadFlag, syncDiscoverProfileToBackend } from '../../business/profile-sync'
+import {
+  clearDiscoverReportCache,
+  clearExploreBackendSession,
+  clearProfileUploadFlag,
+  readDiscoverReportCache,
+  syncDiscoverProfileToBackend,
+  writeDiscoverReportCache,
+} from '../../business/profile-sync'
 import { INITIAL_REPORT_PROGRESS, runReportGenerationChain } from '../../business/report-generation'
 import { api } from '../../utils/api'
 import ReportGenerating from '../../components/ReportGenerating/ReportGenerating.vue'
 import DiscoverReportView from '../../components/DiscoverReportView/DiscoverReportView.vue'
-
-const REPORT_CACHE_KEY = 'uniprism.discoverReport'
 
 function extractNickname(session) {
   const answers = (session && session.answers) || []
@@ -84,7 +90,7 @@ export default {
         return
       }
 
-      const cachedReport = uni.getStorageSync(REPORT_CACHE_KEY)
+      const cachedReport = readDiscoverReportCache(session)
       if (cachedReport && !this.shouldGenerate) {
         this.report = cachedReport
         this.phase = 'ready'
@@ -94,7 +100,7 @@ export default {
 
       this.startGeneration()
     },
-    async startGeneration() {
+    async startGeneration(forceRegenerate) {
       if (this.phase === 'generating' && !this.reportError) return
       const session = this.discoverSession || loadDiscoverSession()
       if (!session.profile) {
@@ -107,6 +113,7 @@ export default {
       this.phase = 'generating'
       this.reportError = ''
       this.report = null
+      clearDiscoverReportCache(session)
       this.reportProgress = { ...INITIAL_REPORT_PROGRESS }
 
       try {
@@ -114,16 +121,21 @@ export default {
           session,
           syncDiscoverProfileToBackend,
           api,
+          forceRegenerate: Boolean(forceRegenerate),
           onProgress: (progress) => {
             this.reportProgress = progress
           },
         })
         this.report = report
-        uni.setStorageSync(REPORT_CACHE_KEY, report)
+        const latestSession = loadDiscoverSession()
+        writeDiscoverReportCache(latestSession, report)
         this.phase = 'ready'
       } catch (error) {
         this.reportError = (error && error.message) || '报告生成失败，请稍后重试'
       }
+    },
+    retryGeneration() {
+      this.startGeneration(true)
     },
     openMajor(majorId) {
       navigateToMajor(majorId)
@@ -133,9 +145,9 @@ export default {
     },
     restart() {
       resetDiscoverSession()
+      clearExploreBackendSession()
       clearProfileUploadFlag()
-      uni.removeStorageSync('uniprism.sessionId')
-      uni.removeStorageSync(REPORT_CACHE_KEY)
+      clearDiscoverReportCache()
       uni.reLaunch({ url: '/pages/discover/index' })
     },
   },

@@ -2,6 +2,7 @@
   <view class="chat-asset-wrap" :class="wrapClass" :style="wrapStyle">
     <image
       v-if="displaySrc && !failedAll"
+      class="chat-asset-image"
       :class="imageClass"
       :src="displaySrc"
       :mode="mode"
@@ -84,7 +85,7 @@ function handleLoad() {
   width: 100%;
   overflow: hidden;
 }
-.chat-asset-wrap image {
+.chat-asset-image {
   position: relative;
   z-index: 1;
 }
