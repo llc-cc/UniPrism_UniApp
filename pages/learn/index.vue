@@ -16,7 +16,7 @@
 
 <script setup>
 function goPlan() {
-  uni.switchTab({ url: '/pages/discover/index' })
+  uni.reLaunch({ url: '/pages/discover/index' })
 }
 </script>
 

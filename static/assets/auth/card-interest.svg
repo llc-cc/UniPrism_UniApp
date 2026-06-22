@@ -1,0 +1,34 @@
+<svg preserveAspectRatio="none" width="100%" height="100%" overflow="visible" style="display: block;" viewBox="0 0 90 88.974" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Group 32">
+<g id="Vector" filter="url(#filter0_d_0_34)">
+<path d="M41.2341 81.8009C63.8228 81.8009 82.1346 63.4892 82.1346 40.9005C82.1346 18.3118 63.8228 0 41.2341 0C18.6454 0 0.333676 18.3118 0.333676 40.9005C0.333676 63.4892 18.6454 81.8009 41.2341 81.8009Z" fill="var(--fill-0, #9762FF)"/>
+</g>
+<path id="Vector_2" d="M41.2341 72.3624C58.61 72.3624 72.696 58.2764 72.696 40.9005C72.696 23.5246 58.61 9.43862 41.2341 9.43862C23.8581 9.43862 9.77218 23.5246 9.77218 40.9005C9.77218 58.2764 23.8581 72.3624 41.2341 72.3624Z" fill="var(--fill-0, white)"/>
+<path id="Vector_3" d="M41.234 4.71937V17.3041" stroke="var(--stroke-0, #B1B1FA)" stroke-width="7.86547" stroke-linecap="round"/>
+<path id="Vector_4" d="M77.4151 40.9006H64.8303" stroke="var(--stroke-0, #B1B1FA)" stroke-width="7.86547" stroke-linecap="round"/>
+<path id="Vector_5" d="M17.6377 40.9006H5.05293" stroke="var(--stroke-0, #B1B1FA)" stroke-width="7.86547" stroke-linecap="round"/>
+<g id="Vector_6">
+<path d="M34.3213 35.3135L62.0812 21.0443L48.313 46.4064L34.3213 35.3135Z" fill="var(--fill-0, #F4A261)"/>
+<path d="M34.3213 35.3135L21.1973 60.2717L48.313 46.4064L34.3213 35.3135Z" fill="var(--fill-0, #F4A261)"/>
+</g>
+<path id="Vector_7" d="M41.2336 50.3391C46.4464 50.3391 50.6722 46.1133 50.6722 40.9005C50.6722 35.6878 46.4464 31.462 41.2336 31.462C36.0209 31.462 31.7951 35.6878 31.7951 40.9005C31.7951 46.1133 36.0209 50.3391 41.2336 50.3391Z" fill="var(--fill-0, #8080EF)"/>
+<path id="Vector_8" d="M41.2342 44.8333C43.4062 44.8333 45.1669 43.0725 45.1669 40.9005C45.1669 38.7285 43.4062 36.9678 41.2342 36.9678C39.0622 36.9678 37.3015 38.7285 37.3015 40.9005C37.3015 43.0725 39.0622 44.8333 41.2342 44.8333Z" fill="var(--fill-0, #FFECB4)"/>
+<path id="Vector_9" d="M41.234 64.4968V77.0816" stroke="var(--stroke-0, #B1B1FA)" stroke-width="7.86547" stroke-linecap="round"/>
+<rect id="Rectangle 3478853" x="12.206" y="70.551" width="5.87487" height="18.2706" rx="2.93743" transform="rotate(34.099 12.206 70.551)" fill="var(--fill-0, #1273EB)"/>
+<circle id="Ellipse 685" cx="18.4873" cy="64.1071" r="12.725" transform="rotate(71.4029 18.4873 64.1071)" fill="var(--fill-0, #C5E9FF)" stroke="var(--stroke-0, #1273EB)" stroke-width="3.73985"/>
+<path id="Vector 1" d="M24.4031 58.5554C25.9436 60.01 27.9644 63.2759 25.3144 67.127" stroke="var(--stroke-0, white)" stroke-width="1.86992" stroke-linecap="round"/>
+<circle id="Ellipse 686" cx="23.2519" cy="69.7937" r="0.934962" transform="rotate(-18.5971 23.2519 69.7937)" fill="var(--fill-0, white)"/>
+<path id="Vector_10" d="M74.2691 0L79.5127 8.84866L90 10.6184L83.0085 17.6973L84.7564 28.3157L74.2691 23.0065L63.7818 28.3157L65.5296 17.6973L58.5381 10.6184L69.0254 8.84866L74.2691 0Z" fill="var(--fill-0, #FFDE3E)"/>
+</g>
+<defs>
+<filter id="filter0_d_0_34" x="0.333676" y="0" width="81.8009" height="84.755" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="2.95409"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0.243137 0 0 0 0 0.0392157 0 0 0 0 0.662745 0 0 0 1 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_0_34"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_0_34" result="shape"/>
+</filter>
+</defs>
+</svg>

@@ -117,6 +117,21 @@ export function readDiscoverReportCache(session) {
   return cached.report
 }
 
+export function markDiscoverReportComplete(session) {
+  if (!session) return
+  uni.setStorageSync(`${buildDiscoverReportCacheKey(session)}.complete`, true)
+}
+
+export function isDiscoverReportComplete(session) {
+  if (!session) return false
+  return uni.getStorageSync(`${buildDiscoverReportCacheKey(session)}.complete`) === true
+}
+
+export function clearDiscoverReportCompleteFlag(session) {
+  if (!session) return
+  uni.removeStorageSync(`${buildDiscoverReportCacheKey(session)}.complete`)
+}
+
 export function writeDiscoverReportCache(session, report) {
   if (!session || !isBackendReportShape(report)) return
   uni.setStorageSync(buildDiscoverReportCacheKey(session), {
@@ -124,11 +139,13 @@ export function writeDiscoverReportCache(session, report) {
     savedAt: Date.now(),
     report,
   })
+  markDiscoverReportComplete(session)
 }
 
 export function clearDiscoverReportCache(session) {
   uni.removeStorageSync(LEGACY_REPORT_CACHE_KEY)
   if (session && session.profile) {
     uni.removeStorageSync(buildDiscoverReportCacheKey(session))
+    clearDiscoverReportCompleteFlag(session)
   }
 }

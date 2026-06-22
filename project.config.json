@@ -1,21 +1,32 @@
 {
   "description": "UniPrism 微信小程序（由 UniApp 编译输出使用）",
   "compileType": "miniprogram",
-  "appid": "wx96471f45f46073d3",
+  "appid": "wx531ddd1f08193819",
   "projectname": "UniPrism",
   "libVersion": "3.6.6",
   "packOptions": {
     "ignore": [
       { "type": "folder", "value": ".sourcemap" },
-      { "type": "suffix", "value": ".map" }
+      { "type": "folder", "value": "scripts" },
+      { "type": "file", "value": "static/assets/math/math-branch-wave-a.png" },
+      { "type": "file", "value": "static/assets/math/math-branch-wave-b.png" },
+      { "type": "file", "value": "static/assets/auth/launch-1.png" },
+      { "type": "file", "value": "static/assets/auth/launch-2.png" },
+      { "type": "file", "value": "static/assets/auth/launch-3.png" },
+      { "type": "file", "value": "static/assets/auth/launch-4.png" },
+      { "type": "file", "value": "static/assets/auth/launch-deep-assessment.png" },
+      { "type": "suffix", "value": ".map" },
+      { "type": "suffix", "value": ".bak-20260612-transition-opt" }
     ]
   },
   "setting": {
     "urlCheck": false,
     "es6": true,
     "postcss": false,
-    "minified": false,
+    "minified": true,
     "newFeature": true,
+    "ignoreDevUnusedFiles": true,
+    "ignoreUploadUnusedFiles": true,
     "bigPackageSizeSupport": true
   }
 }

@@ -64,7 +64,7 @@ export const SURAKARTA_PUZZLESET_V2 = {
       prompt: {
         kind: 'count_step_moves',
         targetPiece: 'C3',
-        text: '黑棋 C3 不经过回路时，有几种合法邻移？',
+        text: '黑棋在 C3 时，如果只按普通相邻移动、不使用回路吃子，有几种合法走法？',
       },
       answer: {
         value: 3,

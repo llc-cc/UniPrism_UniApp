@@ -2,8 +2,10 @@
  * 小程序 ↔ 后端 接口层（UniApp / 微信小程序）
  * ------------------------------------------------------------------
  * 统一封装所有对后端的 HTTP 请求，约定：
- *   - 基地址：生产默认 https://uniprism.cn；开发构建默认 http://127.0.0.1:3000
- *   - 可通过本地存储 uniprism.apiBaseUrl 或 VUE_APP_API_BASE_URL 覆盖
+ *   - 基地址：生产 https://uniprism.cn；开发见 business/dev-api-env.js
+ *   - 本地模拟器：npm run dev:mp-weixin 或 api.useDevApiMode('local')
+ *   - 真机调试：  npm run dev:mp-weixin:device 或 api.useDevApiMode('device')
+ *   - 上线：      npm run build:mp-weixin（自动连 uniprism.cn）
  *   - 鉴权：登录后保存 JWT，后续请求自动带上 `Authorization: Bearer <token>`
  *   - 响应：后端统一返回信封结构
  *       成功 -> { ok: true,  data: <业务数据> }
@@ -26,6 +28,17 @@
  *   10. POST /api/miniapp/auth/invite/*    邀请码注册/登录/重置
  *   11. POST /api/miniapp/auth/wechat/login 微信一键登录（需授权手机号）
  */
+
+import {
+  DEV_API_BUILD_MODE_KEY,
+  DEV_API_MODE_KEY,
+  DEV_API_MODES,
+  getBuildDevApiMode,
+  getDevApiModeLabel,
+  isWechatDevtools,
+  resolveDevApiBaseUrl,
+  resolveRuntimeDevApiMode,
+} from '../business/dev-api-env'
 
 /** 生产环境后端基地址。 */
 const PRODUCTION_BASE_URL = 'https://uniprism.cn'
@@ -66,6 +79,8 @@ export const API_PATHS = {
   inviteLogin: '/api/miniapp/auth/invite/login',
   invitePasswordReset: '/api/miniapp/auth/invite/password-reset',
   wechatLogin: '/api/miniapp/auth/wechat/login',
+  wechatLoginStatus: '/api/miniapp/auth/wechat/status',
+  authMe: '/api/miniapp/auth/me',
   createSession: '/api/miniapp/explore/session',
   saveProfile: '/api/miniapp/explore/profile',
   generateReport: '/api/miniapp/reports/generate',
@@ -153,11 +168,44 @@ function getEnvBaseUrl() {
  * 当前构建下的默认基地址（未写入 Storage 时生效）。
  * 开发构建 → 本地 Next.js；生产构建 → uniprism.cn。
  */
+function getActiveDevApiMode() {
+  const stored = uni.getStorageSync(DEV_API_MODE_KEY)
+  if (stored === DEV_API_MODES.device || stored === DEV_API_MODES.local) {
+    if (isWechatDevtools() && stored === DEV_API_MODES.device) {
+      return DEV_API_MODES.local
+    }
+    if (!isWechatDevtools() && stored === DEV_API_MODES.local) {
+      return DEV_API_MODES.device
+    }
+    return stored
+  }
+  return resolveRuntimeDevApiMode()
+}
+
+function applyDevApiMode(mode) {
+  const baseUrl = resolveDevApiBaseUrl(mode)
+  uni.setStorageSync(DEV_API_MODE_KEY, mode)
+  uni.setStorageSync(STORAGE_KEYS.apiBaseUrl, baseUrl)
+  return baseUrl
+}
+
 function getDefaultBaseUrl() {
   const envUrl = getEnvBaseUrl()
-  if (envUrl && !shouldUseLocalDevApi()) return envUrl
-  if (shouldUseLocalDevApi()) return LOCAL_DEV_BASE_URL
+  if (shouldUseLocalDevApi()) {
+    if (envUrl) return envUrl
+    return resolveDevApiBaseUrl(getActiveDevApiMode())
+  }
   return envUrl || PRODUCTION_BASE_URL
+}
+
+function isKnownDevApiUrl(url) {
+  const value = normalizeBaseUrl(url)
+  return (
+    value === resolveDevApiBaseUrl(DEV_API_MODES.local) ||
+    value === resolveDevApiBaseUrl(DEV_API_MODES.device) ||
+    value === LOCAL_DEV_BASE_URL ||
+    value === 'http://localhost:3000'
+  )
 }
 
 /**
@@ -176,7 +224,7 @@ function getBaseUrl() {
     ) {
       return storageUrl
     }
-    return LOCAL_DEV_BASE_URL
+    return getDefaultBaseUrl()
   }
 
   return storageUrl || getDefaultBaseUrl()
@@ -187,15 +235,23 @@ function getBaseUrl() {
  * @returns {string} 生效后的地址
  */
 function initApiConfig() {
-  if (!shouldUseLocalDevApi()) return getBaseUrl()
-
-  const stored = normalizeBaseUrl(uni.getStorageSync(STORAGE_KEYS.apiBaseUrl))
-  if (!stored || stored === PRODUCTION_BASE_URL || stored.startsWith('https://uniprism.cn')) {
-    uni.setStorageSync(STORAGE_KEYS.apiBaseUrl, LOCAL_DEV_BASE_URL)
+  if (!shouldUseLocalDevApi()) {
+    uni.removeStorageSync(DEV_API_MODE_KEY)
+    uni.removeStorageSync(DEV_API_BUILD_MODE_KEY)
+    return getBaseUrl()
   }
 
+  const runtimeMode = resolveRuntimeDevApiMode()
+  const runtimeUrl = resolveDevApiBaseUrl(runtimeMode)
+  uni.setStorageSync(DEV_API_BUILD_MODE_KEY, runtimeMode)
+  uni.setStorageSync(DEV_API_MODE_KEY, runtimeMode)
+  uni.setStorageSync(STORAGE_KEYS.apiBaseUrl, runtimeUrl)
+
   const baseUrl = getBaseUrl()
-  console.info('[UniPrism] 开发模式 API 基地址:', baseUrl)
+  console.info(
+    `[UniPrism] 开发 API · ${getDevApiModeLabel(runtimeMode)} (${runtimeMode})${isWechatDevtools() ? ' [模拟器]' : ' [真机]' }:`,
+    baseUrl,
+  )
   return baseUrl
 }
 
@@ -257,6 +313,15 @@ function setAuthSession(token, user) {
 function clearAuthSession() {
   uni.removeStorageSync(STORAGE_KEYS.token)
   uni.removeStorageSync(STORAGE_KEYS.user)
+}
+
+/** 将后端返回的头像路径转为可加载的完整 URL。 */
+function resolveUserAvatarUrl(path) {
+  const value = String(path || '').trim()
+  if (!value) return ''
+  if (/^https?:\/\//i.test(value)) return value
+  const base = getBaseUrl()
+  return `${base}${value.startsWith('/') ? value : `/${value}`}`
 }
 
 /* ------------------------------------------------------------------ *
@@ -386,8 +451,42 @@ export const api = {
   isDevBuild,
   initApiConfig,
   setBaseUrl,
+  /** 开发态切换：'local' 模拟器 | 'device' 真机 */
+  useDevApiMode(mode) {
+    if (!shouldUseLocalDevApi()) {
+      console.warn('[UniPrism] 正式版不可切换开发 API')
+      return getBaseUrl()
+    }
+    if (mode !== DEV_API_MODES.local && mode !== DEV_API_MODES.device) {
+      throw new Error('useDevApiMode 仅支持 local 或 device')
+    }
+    const url = applyDevApiMode(mode)
+    console.info(`[UniPrism] 已切换为 ${getDevApiModeLabel(mode)}:`, url)
+    return url
+  },
+  getDevApiProfile() {
+    if (!shouldUseLocalDevApi()) {
+      return { mode: 'production', label: '生产环境', baseUrl: getBaseUrl(), buildMode: null }
+    }
+    const mode = getActiveDevApiMode()
+    return {
+      mode,
+      label: getDevApiModeLabel(mode),
+      baseUrl: getBaseUrl(),
+      buildMode: getBuildDevApiMode(),
+    }
+  },
   useLocalDevApi() {
-    return setBaseUrl(LOCAL_DEV_BASE_URL)
+    if (!shouldUseLocalDevApi()) return getBaseUrl()
+    const url = applyDevApiMode(DEV_API_MODES.local)
+    console.info(`[UniPrism] 已切换为 ${getDevApiModeLabel(DEV_API_MODES.local)}:`, url)
+    return url
+  },
+  useDeviceDevApi() {
+    if (!shouldUseLocalDevApi()) return getBaseUrl()
+    const url = applyDevApiMode(DEV_API_MODES.device)
+    console.info(`[UniPrism] 已切换为 ${getDevApiModeLabel(DEV_API_MODES.device)}:`, url)
+    return url
   },
   useProductionApi() {
     return setBaseUrl(PRODUCTION_BASE_URL)
@@ -397,6 +496,7 @@ export const api = {
   isLoggedIn,
   setAuthSession,
   clearAuthSession,
+  resolveUserAvatarUrl,
 
   /**
    * 登录。POST /api/miniapp/auth/login
@@ -461,13 +561,28 @@ export const api = {
   },
 
   /**
-   * 微信一键登录（需用户授权手机号）。POST /api/miniapp/auth/wechat/login
+   * 微信一键登录（需用户授权手机号，并提交微信昵称与头像）。
+   * POST /api/miniapp/auth/wechat/login
    * @param {string} loginCode wx.login 返回的 code
    * @param {string} phoneCode getPhoneNumber 返回的 code
+   * @param {{ nickName?: string, avatarBase64?: string }} [profile]
    * @returns {Promise<ApiEnvelope>} data: { token, user }
    */
-  loginWithWechat(loginCode, phoneCode) {
-    return request('POST', API_PATHS.wechatLogin, { loginCode, phoneCode })
+  loginWithWechat(loginCode, phoneCode, profile) {
+    const payload = { loginCode, phoneCode }
+    if (profile && profile.nickName) payload.nickName = profile.nickName
+    if (profile && profile.avatarBase64) payload.avatarBase64 = profile.avatarBase64
+    return request('POST', API_PATHS.wechatLogin, payload)
+  },
+
+  /** 查询微信一键登录是否可用。GET /api/miniapp/auth/wechat/status */
+  getWechatLoginStatus() {
+    return request('GET', API_PATHS.wechatLoginStatus)
+  },
+
+  /** 获取当前登录用户资料。GET /api/miniapp/auth/me */
+  getCurrentUser() {
+    return request('GET', API_PATHS.authMe)
   },
 
   /**

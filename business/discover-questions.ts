@@ -1,10 +1,17 @@
 /**
  * AUTO-SYNCED from UniPrism_New-main/lib/discover-questions.ts
  * Do not edit manually — run: npm run questions:sync
- * Synced at: 2026-06-11T14:44:32.550Z
+ * Synced at: 2026-06-18T05:00:23.775Z
  */
 
-import { RIASECDimension, RIASECScores } from './riasecEngine';
+import {
+  HOLLAND_FINE_DIMENSION_DATA,
+  HOLLAND_FINE_DIMENSION_ORDER,
+  type HollandFineBankItem,
+  type HollandFineBankSection,
+} from './hollandFineQuestionBank';
+import { DISCOVER_ABILITY_QUESTION_IDS } from './discoverAbilityModule';
+import { getTopDimensions, normalizeScores, RIASECDimension, RIASECScores } from './riasecEngine';
 import { SURAKARTA_PUZZLES_V2, type SurakartaPuzzle } from './surakarta/puzzles';
 
 export type QuestionType =
@@ -16,6 +23,8 @@ export type QuestionType =
   | 'slider'
   | 'card-select'
   | 'career-scenario'
+  | 'holland-fine-grained'
+  | 'career-calibration-scale'
   | 'free-text'
   | 'ai-dialogue';
 
@@ -27,6 +36,14 @@ export interface QuestionOption {
   correct?: boolean;
   riasecWeights: Partial<Record<RIASECDimension, number>>;
   personalityTags?: string[];
+  hollandFineAxis?: {
+    dimension: RIASECDimension;
+    axisKey: string;
+    axisLabel: string;
+    side: 'left' | 'right';
+    sideKey: string;
+    sideLabel: string;
+  };
 }
 
 export interface ScenarioPair {
@@ -103,6 +120,29 @@ export interface CareerScenarioConfig {
   openFields: ProfileField[];
 }
 
+export interface HollandFineQuestionConfig extends HollandFineBankSection {
+  dimension: RIASECDimension;
+  dimensionLabel: string;
+  sourcePath: string;
+}
+
+export type CareerCalibrationDimensionKey =
+  | 'stabilityChangeTolerance'
+  | 'innovationMeaningNeed'
+  | 'moneyStatusWeight'
+  | 'riskUncertaintyTolerance'
+  | 'workLifeBoundaryPreference';
+
+export type CareerCalibrationScoringDirection = 'positive' | 'reverse';
+
+export interface CareerCalibrationQuestionConfig {
+  sourcePath: string;
+  dimension: CareerCalibrationDimensionKey;
+  dimensionLabel: string;
+  scoringDirection: CareerCalibrationScoringDirection;
+  questionNumber: number;
+}
+
 export interface Question {
   id: string;
   phase: 'A' | 'B' | 'C' | 'D';
@@ -114,6 +154,8 @@ export interface Question {
   abilitySetup?: AbilitySetup;
   abilityPuzzle?: AbilityPuzzle;
   careerScenario?: CareerScenarioConfig;
+  hollandFine?: HollandFineQuestionConfig;
+  careerCalibration?: CareerCalibrationQuestionConfig;
   options?: QuestionOption[];
   scenarioPair?: ScenarioPair;
   rankWeights?: number[];
@@ -153,6 +195,15 @@ export interface CareerScenarioAnswer {
   aiDialogue: AiDialogueAnswer;
 }
 
+export interface HollandFineAnswerItemValue {
+  selectedOptionIds?: string[];
+  openResponses?: Record<string, string>;
+}
+
+export interface HollandFineAnswer {
+  items: Record<string, HollandFineAnswerItemValue>;
+}
+
 export type AnswerValue =
   | string
   | string[]
@@ -160,6 +211,7 @@ export type AnswerValue =
   | { text: string }
   | { fields: Record<string, string | string[]> }
   | CareerScenarioAnswer
+  | HollandFineAnswer
   | AiDialogueAnswer;
 
 export interface Answer {
@@ -195,8 +247,14 @@ export interface MbtiProfile {
 
 const DISCOVER_IMAGE = (index: number) => `/images/explore/discover/generated/interest-q-${String(index).padStart(2, '0')}-v1.png`;
 const DISCOVER_GENERATED_IMAGE = (fileName: string) => `/images/explore/discover/generated/${fileName}`;
-const DISCOVER_MBTI_IMAGE = (slug: string) =>
-  DISCOVER_GENERATED_IMAGE(`discover-question-scene-mbti-${slug}-20260610-flat2d-r1.png`);
+const DISCOVER_ASSESSMENT_MBTI_IMAGE = (sectionKey: string, index: number) =>
+  DISCOVER_GENERATED_IMAGE(`discover-question-scene-mbti-${sectionKey}-doc-${String(index + 1).padStart(2, '0')}-20260615-semantic-v5.png`);
+const DISCOVER_ASSESSMENT_HOLLAND_IMAGE = (sectionSlug: string, index: number) =>
+  DISCOVER_GENERATED_IMAGE(`discover-question-scene-holland-${sectionSlug}-${String(index + 1).padStart(2, '0')}-20260615-semantic-v5.png`);
+const DISCOVER_ASSESSMENT_DEEP_HOLLAND_IMAGE = (sectionSlug: string, index: number) =>
+  DISCOVER_GENERATED_IMAGE(`discover-question-scene-deep-holland-${sectionSlug}-${String(index + 1).padStart(3, '0')}-20260615-semantic-v5.png`);
+const DISCOVER_CAREER_CALIBRATION_IMAGE = (index: number) =>
+  DISCOVER_GENERATED_IMAGE(`discover-question-scene-career-calibration-${String(index + 1).padStart(2, '0')}-20260616-semantic-v1.png`);
 const DISCOVER_CHOICE_ICON = (fileName: string) => `/images/explore/discover/icons/generated/${fileName}`;
 
 type InterestTagSource = {
@@ -245,7 +303,6 @@ const INTEREST_TAG_SOURCES: InterestTagSource[] = [
   { id: 'literature', label: '文学', category: 'AI' },
   { id: 'makeup', label: '美妆', category: 'AE' },
   { id: 'food-review', label: '美食探店', category: 'AES' },
-  { id: 'psychology', label: '心理学', category: 'IS' },
   { id: 'calligraphy', label: '书法', category: 'A' },
   { id: 'skincare', label: '护肤', category: 'A' },
   { id: 'coffee', label: '咖啡', category: 'RA' },
@@ -256,7 +313,6 @@ const INTEREST_TAG_SOURCES: InterestTagSource[] = [
   { id: 'cars', label: '汽车', category: 'RI' },
   { id: 'handcraft', label: '手工', category: 'RA' },
   { id: 'trend-items', label: '潮流单品', category: 'AE' },
-  { id: 'local-snacks', label: '地方小吃', category: 'RAC' },
   { id: 'foreign-language', label: '外语', category: 'IS' },
   { id: 'fitness', label: '健身', category: 'RS' },
   { id: 'sneaker-culture', label: '球鞋文化', category: 'AEC' },
@@ -280,6 +336,13 @@ function stableInterestHash(value: string) {
     hash = Math.imul(hash, 16777619);
   }
   return hash >>> 0;
+}
+
+function stableOptionShuffle<T extends { id: string }>(items: T[], seed: string): T[] {
+  return [...items].sort((left, right) =>
+    stableInterestHash(`${seed}:${left.id}:career-option-order-20260611`) -
+    stableInterestHash(`${seed}:${right.id}:career-option-order-20260611`),
+  );
 }
 
 function getInterestWeights(category: string): Partial<Record<RIASECDimension, number>> {
@@ -374,24 +437,6 @@ const BASIC_INFO: Question[] = [
           { id: 'clarity-career', label: '有明确职业', riasecWeights: { E: 2, C: 1 }, personalityTags: ['goal-oriented'] },
           { id: 'clarity-area', label: '只有大概领域', riasecWeights: { I: 1, A: 1, R: 1 }, personalityTags: ['exploring'] },
           { id: 'clarity-none', label: '完全没有', riasecWeights: { S: 1, A: 1 }, personalityTags: ['open'] },
-        ],
-      },
-      {
-        id: 'dislike',
-        label: '下面哪3类事情最消耗你？',
-        type: 'multi',
-        maxSelections: 3,
-        options: [
-          { id: 'hate-proof', label: '长时间抽象推理和证明', riasecWeights: { I: -2, C: -1 }, personalityTags: ['avoid-abstraction'] },
-          { id: 'hate-debug', label: '反复调试、失败、重做', riasecWeights: { R: -2, I: -1 }, personalityTags: ['avoid-iteration'] },
-          { id: 'hate-writing', label: '写长文、表达观点、做展示', riasecWeights: { A: -2, S: -1 }, personalityTags: ['avoid-expression'] },
-          { id: 'hate-social', label: '大量社交、协调、处理冲突', riasecWeights: { S: -2, E: -1 }, personalityTags: ['avoid-social-load'] },
-          { id: 'hate-detail', label: '长期做表格、文档和细节核对', riasecWeights: { C: -3 }, personalityTags: ['avoid-detail'] },
-          { id: 'hate-risk', label: '竞争、压力和不确定结果', riasecWeights: { E: -3 }, personalityTags: ['avoid-risk'] },
-          { id: 'hate-lab', label: '重复实验和精密操作', riasecWeights: { R: -2, C: -1 }, personalityTags: ['avoid-lab'] },
-          { id: 'hate-care', label: '持续照顾他人情绪和需求', riasecWeights: { S: -3 }, personalityTags: ['avoid-care'] },
-          { id: 'hate-opencreate', label: '没有标准答案的创作任务', riasecWeights: { A: -3 }, personalityTags: ['avoid-ambiguity'] },
-          { id: 'hate-business', label: '谈判、销售、争取资源', riasecWeights: { E: -2, S: -1 }, personalityTags: ['avoid-persuasion'] },
         ],
       },
     ],
@@ -566,315 +611,339 @@ function personalityOption(id: string, label: string, tag: string): QuestionOpti
   };
 }
 
+type MbtiQuestionSeed = {
+  id: string;
+  prompt: string;
+  leftLabel: string;
+  leftLetter: MbtiLetter;
+  rightLabel: string;
+  rightLetter: MbtiLetter;
+};
+
+const MBTI_QUESTION_SECTIONS = {
+  ei: {
+    leftLetter: 'E',
+    rightLetter: 'I',
+    items: [
+      ['到一个新班级或新社团时，我通常会：', '主动和别人聊天，尽快熟悉环境', '先观察一段时间，等熟悉后再交流'],
+      ['忙了一周后，我更想通过以下方式恢复状态：', '约朋友出去玩、聊天、参加活动', '一个人休息、看书、听音乐或打游戏'],
+      ['小组讨论时，我更常：', '边说边整理想法', '先想清楚，再选择性发言'],
+      ['当我有一个新想法时，我通常会：', '很快说出来，和别人一起碰撞', '先自己琢磨，想成熟后再说'],
+      ['在很多人参加的活动中，我通常：', '越聊越有精神', '时间久了会想安静一下'],
+      ['面对陌生同学，我通常：', '比较容易主动开启话题', '需要一点时间进入状态'],
+      ['我更喜欢的课堂形式是：', '有互动、讨论、展示和活动', '有安静思考、独立完成任务的空间'],
+      ['当遇到烦恼时，我更可能：', '找朋友说出来，边说边理清楚', '先自己消化，不一定马上告诉别人'],
+      ['在团队项目中，我更自然的角色是：', '带动气氛，协调大家交流', '深入思考，负责比较安静但重要的部分'],
+      ['别人通常会觉得我：', '比较外向、好接近', '比较安静、慢热'],
+      ['我在表达观点时，通常：', '说出来以后更容易想清楚', '想清楚以后才更愿意说出来'],
+      ['如果连续几天都有社交活动，我会：', '觉得挺充实，甚至还想继续', '感觉消耗比较大，需要独处恢复'],
+      ['在课间或宿舍休息时，我通常更倾向于：', '找人聊天、开玩笑或一起活动', '安静待一会儿，做自己的事情'],
+      ['当老师提出一个开放性问题时，我通常会：', '比较愿意现场说出自己的看法', '更希望先思考，再决定是否回答'],
+      ['对我来说，认识新朋友通常是：', '一件比较自然、轻松的事情', '一件需要时间慢慢适应的事情'],
+    ],
+  },
+  sn: {
+    leftLetter: 'S',
+    rightLetter: 'N',
+    items: [
+      ['学习新知识时，我更喜欢：', '先看具体例子、步骤和应用', '先理解整体概念、规律和意义'],
+      ['选择专业时，我更关注：', '这个专业具体学什么、就业路径是否清楚', '这个专业未来可能带来的发展空间'],
+      ['做作业或项目时，我更擅长：', '按要求一步步完成', '提出新想法、新角度'],
+      ['听老师讲课时，我更容易记住：', '具体案例、定义、公式、操作方法', '背后的逻辑、趋势、框架和可能性'],
+      ['我更喜欢的学习资料是：', '重点明确、结构清晰、有例题', '启发思考、有观点、有延展内容'],
+      ['当别人提出一个计划时，我通常先想：', '现实中能不能执行', '有没有更有创意的可能'],
+      ['我更喜欢的任务是：', '要求清楚、目标具体', '空间较大、可以自由发挥'],
+      ['看待问题时，我更常关注：', '眼前实际情况和已有事实', '未来趋势和潜在机会'],
+      ['我更相信：', '已经验证过的方法', '新思路和新可能'],
+      ['做选择时，我更喜欢依据：', '现实条件、数据、经验', '灵感、方向感、长远想象'],
+      ['当我读一本书或看一个视频时，我更容易被吸引的是：', '具体内容是否实用', '它带来的启发和想象空间'],
+      ['我通常更像：', '关注细节、事实和当下', '关注概念、意义和未来'],
+      ['面对一个复杂问题时，我通常会先：', '找出已有信息和具体条件', '思考这个问题背后的可能规律'],
+      ['当老师布置一个开放作业时，我更希望：', '老师给出清楚要求和评分标准', '老师给我较大的发挥空间'],
+      ['我在理解一个知识点时，更依赖：', '例题、步骤、图表和实际操作', '比喻、联想、框架和整体理解'],
+    ],
+  },
+  tf: {
+    leftLetter: 'T',
+    rightLetter: 'F',
+    items: [
+      ['朋友向我倾诉问题时，我通常会：', '帮他分析原因，提出解决办法', '先理解他的感受，给他情绪支持'],
+      ['小组合作中，如果有人拖延，我更倾向于：', '直接指出问题，希望提高效率', '注意表达方式，避免伤害关系'],
+      ['做重要决定时，我更看重：', '逻辑是否成立，结果是否有效', '是否照顾到自己和他人的感受'],
+      ['我更希望别人评价我：', '理性、公正、有判断力', '温暖、体贴、善解人意'],
+      ['发生争论时，我通常更在意：', '哪个观点更有道理', '双方关系会不会变僵'],
+      ['如果老师或同学批评我，我更容易关注：', '批评内容是否合理，能否帮助改进', '对方语气和态度是否让我舒服'],
+      ['团队做决策时，我更倾向于：', '按标准、数据、效率判断', '考虑大家是否能接受'],
+      ['我认为一个好决定应该首先：', '客观、清楚、有效', '合适、体贴、让人舒服'],
+      ['当规则和人情冲突时，我通常更倾向于：', '维护规则和公平', '结合具体情况照顾感受'],
+      ['我在表达不同意见时，更看重：', '把问题讲清楚', '让对方更容易接受'],
+      ['面对一个失败的项目，我首先会想：', '问题出在哪里，如何改进', '大家的感受如何，如何安抚和鼓励'],
+      ['我更像是：', '用理性分析做判断', '用价值感和关系感做判断'],
+      ['当朋友问我真实意见时，我通常会：', '直接说出我的判断，即使不太好听', '尽量用温和方式表达，避免让对方难受'],
+      ['在评价一个方案时，我更重视：', '方案是否高效、合理、有结果', '方案是否照顾到参与者的感受'],
+      ['当班级或小组需要分工时，我更倾向于：', '按能力和效率分配任务', '尽量考虑每个人的意愿和感受'],
+    ],
+  },
+  jp: {
+    leftLetter: 'J',
+    rightLetter: 'P',
+    items: [
+      ['面对考试复习，我通常会：', '提前安排计划，按进度推进', '看状态调整，临近考试时效率更高'],
+      ['我的书桌、电脑文件或学习资料通常：', '比较有分类和秩序', '不一定整齐，但我自己知道在哪里'],
+      ['做项目时，我更喜欢：', '尽早确定主题和方案', '多探索一段时间，最后再定'],
+      ['周末安排上，我更喜欢：', '提前约好时间和活动', '随性一点，看当天状态'],
+      ['当计划被临时改变时，我通常：', '会有点不舒服，希望重新安排', '可以接受，随机应变也不错'],
+      ['我更喜欢的任务状态是：', '截止时间清楚、要求明确', '空间灵活，可以边做边调整'],
+      ['完成作业时，我更接近：', '分阶段完成，尽量不拖到最后', '灵感来了集中完成'],
+      ['对未来规划，我更倾向于：', '尽早设定目标，按计划推进', '保持开放，边探索边决定'],
+      ['当有很多任务时，我通常会：', '列清单、排优先级', '先做最想做或最紧急的'],
+      ['我更喜欢：', '确定感和稳定节奏', '灵活感和变化空间'],
+      ['如果一个活动没有明确安排，我会：', '想知道具体流程和时间', '觉得这样也挺自由'],
+      ['我通常更像：', '先计划，再行动', '先行动，再根据情况调整'],
+      ['面对一项长期任务，我更习惯：', '先拆分步骤，再逐步完成', '先大致开始，过程中不断调整'],
+      ['当截止日期还比较远时，我通常会：', '提前启动，避免最后赶工', '等压力明显后再集中完成'],
+      ['我对生活和学习安排的偏好更接近：', '有计划、有节奏、心里更踏实', '保持弹性、随时调整、更自在'],
+    ],
+  },
+} as const satisfies Record<string, {
+  leftLetter: MbtiLetter;
+  rightLetter: MbtiLetter;
+  items: readonly (readonly [string, string, string])[];
+}>;
+
+function createMbtiQuestions(sectionKey: keyof typeof MBTI_QUESTION_SECTIONS): Question[] {
+  const section = MBTI_QUESTION_SECTIONS[sectionKey];
+  return section.items.map(([prompt, leftLabel, rightLabel], index) => {
+    const questionId = `personality-${sectionKey}-doc-${String(index + 1).padStart(2, '0')}`;
+    return {
+      id: questionId,
+      phase: 'C',
+      type: 'card-select',
+      imageSrc: DISCOVER_ASSESSMENT_MBTI_IMAGE(sectionKey, index),
+      prompt,
+      options: [
+        personalityOption(`${questionId}-a`, leftLabel, section.leftLetter),
+        personalityOption(`${questionId}-b`, rightLabel, section.rightLetter),
+      ],
+    };
+  });
+}
+
+type HollandScaleQuestionSeed = {
+  dimension: RIASECDimension;
+  slug: string;
+  prompts: string[];
+};
+
+const HOLLAND_SCALE_CHOICES = [
+  { id: '5', label: '非常符合', score: 5 },
+  { id: '4', label: '符合', score: 4 },
+  { id: '3', label: '一般', score: 3 },
+  { id: '2', label: '不符合', score: 2 },
+  { id: '1', label: '非常不符合', score: 1 },
+] as const;
+
+const HOLLAND_SCALE_SECTIONS: HollandScaleQuestionSeed[] = [
+  {
+    dimension: 'R',
+    slug: 'r',
+    prompts: [
+      '我喜欢研究电子产品、电脑配件、相机、无人机或游戏设备是怎么工作的。',
+      '如果学校有机器人、无人机、赛车模型、3D打印或工程制作类活动，我会想参加。',
+      '我喜欢把一个想法真正做出来，比如模型、装置、手工、实验作品或技术作品。',
+      '比起只听理论课，我更喜欢实验课、实训课、体育训练课或实践操作课。',
+      '当电脑、耳机、手机、打印机或其他设备出问题时，我会想尝试自己解决。',
+      '我愿意学习摄影设备、剪辑设备、实验仪器、运动器械或专业工具的使用方法。',
+      '我对智能硬件、汽车、建筑、航空、机械、电子设备或运动训练比较感兴趣。',
+      '如果一个任务需要搭建、调试、安装、修复或操作设备，我通常不会排斥。',
+      '我喜欢看到自己亲手完成的东西有实际效果，而不只是停留在想法上。',
+      '如果未来的专业或职业能接触技术设备、工程现场、实验室或运动训练，我会觉得有吸引力。',
+    ],
+  },
+  {
+    dimension: 'I',
+    slug: 'i',
+    prompts: [
+      '我喜欢研究一个现象背后的原因，比如为什么某个App会火，为什么短视频让人停不下来。',
+      '当一个观点很流行时，我会想查资料、看数据，而不是马上相信。',
+      '我对AI、心理学、医学、经济、科技、社会热点背后的规律感兴趣。',
+      '我喜欢分析问题，比如学习效率为什么下降、一个产品为什么成功、一个游戏机制为什么吸引人。',
+      '遇到复杂问题时，我愿意慢慢推理，而不是只听别人给结论。',
+      '我喜欢用数据、证据、实验或逻辑来支持自己的看法。',
+      '我愿意学习编程、数据分析、统计、建模、实验设计或AI工具的原理。',
+      '如果一个游戏、影视作品、品牌或社交平台很受欢迎，我会想分析它成功的原因。',
+      '我喜欢解决有挑战的问题，比如数学题、推理题、策略题、编程题或商业案例分析。',
+      '如果未来能做研究、数据分析、科技开发、医学、金融分析或咨询类工作，我会感兴趣。',
+    ],
+  },
+  {
+    dimension: 'A',
+    slug: 'a',
+    prompts: [
+      '我喜欢拍照、剪视频、写文案、做海报、画画、设计PPT或制作内容。',
+      '我会注意一个视频、账号、游戏、电影、品牌或海报的画面风格和审美。',
+      '我喜欢有创意发挥空间的作业，比如短片、演讲、故事、展示、海报或活动策划。',
+      '我经常会想到一些有趣的点子，比如视频选题、人物设定、标题文案、视觉风格或剧情创意。',
+      '我喜欢用文字、图片、音乐、视频、表演或设计来表达自己的想法。',
+      '如果班级或社团要做宣传片、公众号推文、活动海报或短视频，我愿意参与创意制作。',
+      '我不太喜欢所有事情都只有标准答案，更喜欢可以表达个人想法的任务。',
+      '我对影视、动画、音乐、设计、摄影、文学、新媒体、游戏美术或内容创作感兴趣。',
+      '我希望自己的作品有个人风格，而不是和别人看起来完全一样。',
+      '如果未来能做设计、传媒、影视、广告、品牌策划、游戏内容或自媒体相关工作，我会感兴趣。',
+    ],
+  },
+  {
+    dimension: 'S',
+    slug: 's',
+    prompts: [
+      '当朋友情绪不好或遇到困扰时，我愿意听他倾诉。',
+      '我喜欢和别人交流想法，也愿意理解不同人的感受和处境。',
+      '如果同学学习上遇到困难，我愿意给他讲题、分享方法或帮他整理思路。',
+      '我对心理、教育、医学、公益、社会服务、校园辅导等方向有兴趣。',
+      '我愿意参加志愿服务、迎新活动、支教活动、公益项目或校园服务工作。',
+      '当我帮助别人解决问题或变得更好时，我会有成就感。',
+      '在团队中，我常常会注意大家的状态，愿意协调关系或缓和气氛。',
+      '我喜欢需要沟通、陪伴、教学、引导、咨询或服务他人的任务。',
+      '如果学校有朋辈辅导、学习互助、社团培训、心理活动或志愿者项目，我会愿意参与。',
+      '如果未来能做教师、心理咨询、医生、护理、人力资源、培训、公益服务等工作，我会感兴趣。',
+    ],
+  },
+  {
+    dimension: 'E',
+    slug: 'e',
+    prompts: [
+      '我喜欢组织活动，比如班级活动、社团招新、比赛项目、校园市集或线上活动。',
+      '我对赚钱、创业、商业模式、品牌运营、直播带货、市场营销等话题感兴趣。',
+      '在小组合作中，我愿意负责分工、推进进度、协调资源或带大家完成任务。',
+      '如果有机会做校园小生意、线上账号、二手交易、活动策划或创业项目，我会想尝试。',
+      '我喜欢表达观点，也愿意说服别人接受一个方案、产品或想法。',
+      '我会关注热门品牌、网红店、App、游戏、产品为什么能火。',
+      '我希望未来的学习和工作有成长空间、竞争感、影响力和成就感。',
+      '我愿意参加商业挑战赛、创业比赛、模拟公司、辩论赛、演讲比赛或营销策划活动。',
+      '遇到机会时，我更倾向于主动争取，而不是一直等别人安排。',
+      '如果未来能做管理、市场、金融、销售、法律、创业、产品经理或商务拓展类工作，我会感兴趣。',
+    ],
+  },
+  {
+    dimension: 'C',
+    slug: 'c',
+    prompts: [
+      '我喜欢把学习资料、文件、笔记、照片、任务清单或网盘内容整理得有条理。',
+      '我做事比较重视准确性，不喜欢马虎、混乱或没有规则。',
+      '我愿意处理表格、数据、账目、流程、计划安排、报名信息或活动预算。',
+      '相比变化很大、规则不清的任务，我更喜欢要求明确、步骤清楚的任务。',
+      '我能接受需要耐心、细心、重复检查的工作，比如核对信息、整理数据、检查格式。',
+      '做小组项目时，我愿意负责记录、排期、资料整理、预算统计或提交文件。',
+      '我喜欢用日程表、待办清单、Excel、Notion、飞书、备忘录等工具管理学习和任务。',
+      '我觉得稳定、有秩序、有明确规则的学习或工作环境更适合我。',
+      '我对会计、财务、审计、行政、数据管理、银行、运营、供应链等方向不排斥。',
+      '如果未来能做财务、审计、行政管理、银行业务、数据运营、项目执行或流程管理，我会感兴趣。',
+    ],
+  },
+];
+
+function hollandScaleOption(questionId: string, dimension: RIASECDimension, choice: (typeof HOLLAND_SCALE_CHOICES)[number]): QuestionOption {
+  const riasecWeights: Partial<Record<RIASECDimension, number>> = { [dimension]: choice.score };
+  return {
+    id: `${questionId}-${choice.id}`,
+    label: choice.label,
+    riasecWeights,
+  };
+}
+
+function createHollandScaleQuestions(section: HollandScaleQuestionSeed): Question[] {
+  return section.prompts.map((prompt, index) => {
+    const questionId = `personality-holland-${section.slug}-${String(index + 1).padStart(2, '0')}`;
+    return {
+      id: questionId,
+      phase: 'C',
+      type: 'card-select',
+      imageSrc: DISCOVER_ASSESSMENT_HOLLAND_IMAGE(section.slug, index),
+      prompt,
+      options: HOLLAND_SCALE_CHOICES.map((choice) => hollandScaleOption(questionId, section.dimension, choice)),
+    };
+  });
+}
+
+export const PERSONALITY_MBTI_QUESTION_IDS = (Object.keys(MBTI_QUESTION_SECTIONS) as Array<keyof typeof MBTI_QUESTION_SECTIONS>)
+  .flatMap((sectionKey) =>
+    MBTI_QUESTION_SECTIONS[sectionKey].items.map((_, index) =>
+      `personality-${sectionKey}-doc-${String(index + 1).padStart(2, '0')}`,
+    ),
+  );
+
+export const PERSONALITY_HOLLAND_SCALE_QUESTION_IDS = HOLLAND_SCALE_SECTIONS.flatMap((section) =>
+  section.prompts.map((_, index) => `personality-holland-${section.slug}-${String(index + 1).padStart(2, '0')}`),
+);
+
+function stableHash(value: string) {
+  let hash = 2166136261;
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
+function stableShuffle<T>(items: readonly T[], seed: string): T[] {
+  return items
+    .map((item, index) => ({
+      item,
+      index,
+      sortKey: stableHash(`${seed}:${index}:${String(item)}`),
+    }))
+    .sort((a, b) => a.sortKey - b.sortKey || a.index - b.index)
+    .map(({ item }) => item);
+}
+
+function interleaveStableShuffledGroups<T>(groups: readonly (readonly T[])[], seed: string): T[] {
+  const shuffledGroups = groups.map((group, index) => stableShuffle(group, `${seed}:group-${index}`));
+  const maxLength = Math.max(...shuffledGroups.map((group) => group.length));
+  const result: T[] = [];
+
+  for (let row = 0; row < maxLength; row += 1) {
+    const groupOrder = stableShuffle(
+      groups.map((_, index) => index),
+      `${seed}:row-${row}`,
+    );
+
+    for (const groupIndex of groupOrder) {
+      const item = shuffledGroups[groupIndex]?.[row];
+      if (item !== undefined) result.push(item);
+    }
+  }
+
+  return result;
+}
+
+export const PERSONALITY_MBTI_DISPLAY_QUESTION_IDS = interleaveStableShuffledGroups(
+  [
+    PERSONALITY_MBTI_QUESTION_IDS.slice(0, 15),
+    PERSONALITY_MBTI_QUESTION_IDS.slice(15, 30),
+    PERSONALITY_MBTI_QUESTION_IDS.slice(30, 45),
+    PERSONALITY_MBTI_QUESTION_IDS.slice(45, 60),
+  ],
+  'discover-second-stage-mbti-display-20260614',
+);
+
+export const PERSONALITY_HOLLAND_SCALE_DISPLAY_QUESTION_IDS = interleaveStableShuffledGroups(
+  [
+    PERSONALITY_HOLLAND_SCALE_QUESTION_IDS.slice(0, 10),
+    PERSONALITY_HOLLAND_SCALE_QUESTION_IDS.slice(10, 20),
+    PERSONALITY_HOLLAND_SCALE_QUESTION_IDS.slice(20, 30),
+    PERSONALITY_HOLLAND_SCALE_QUESTION_IDS.slice(30, 40),
+    PERSONALITY_HOLLAND_SCALE_QUESTION_IDS.slice(40, 50),
+    PERSONALITY_HOLLAND_SCALE_QUESTION_IDS.slice(50, 60),
+  ],
+  'discover-second-stage-holland-display-20260614',
+);
+
 const PERSONALITY_QUESTIONS: Question[] = [
-  {
-    id: 'personality-ei-new-student-dinner',
-    phase: 'C',
-    type: 'card-select',
-    imageSrc: DISCOVER_MBTI_IMAGE('ei-new-student-dinner'),
-    prompt: '新生见面会或大学新生群组织了一次线下聚餐，会有很多新同学参加。你更可能：',
-    options: [
-      personalityOption('personality-ei-new-student-dinner-a', '很期待，主动去认识大家，聊得热火朝天', 'E'),
-      personalityOption('personality-ei-new-student-dinner-b', '有点犹豫，担心人多会累，或者只和同宿舍的坐一起', 'I'),
-    ],
-  },
-  {
-    id: 'personality-ei-social-day-after',
-    phase: 'C',
-    type: 'card-select',
-    imageSrc: DISCOVER_MBTI_IMAGE('ei-social-day-after'),
-    prompt: '周末参加了一次社团露营或朋友聚会，从早到晚都和人待在一起。结束时你通常：',
-    options: [
-      personalityOption('personality-ei-social-day-after-a', '还想续摊，觉得越玩越有劲', 'E'),
-      personalityOption('personality-ei-social-day-after-b', '电量耗尽，需要一个人静静，比如戴上耳机听歌或闷头睡一觉', 'I'),
-    ],
-  },
-  {
-    id: 'personality-ei-group-speaking',
-    phase: 'C',
-    type: 'card-select',
-    imageSrc: DISCOVER_MBTI_IMAGE('ei-group-speaking'),
-    prompt: '在小组讨论或线上会议中，你通常是：',
-    options: [
-      personalityOption('personality-ei-group-speaking-a', '想到想法时会比较快地说出来，边交流边整理', 'E'),
-      personalityOption('personality-ei-group-speaking-b', '会先在心里整理一下，确认表达清楚后再开口', 'I'),
-    ],
-  },
-  {
-    id: 'personality-ei-cafeteria-lunch',
-    phase: 'C',
-    type: 'card-select',
-    imageSrc: DISCOVER_MBTI_IMAGE('ei-cafeteria-lunch'),
-    prompt: '在学校食堂吃午饭，你更喜欢：',
-    options: [
-      personalityOption('personality-ei-cafeteria-lunch-a', '坐到人多的地方，边吃边聊', 'E'),
-      personalityOption('personality-ei-cafeteria-lunch-b', '找一个相对安静的角落，独自吃完或者只和 1 个熟人一起', 'I'),
-    ],
-  },
-  {
-    id: 'personality-ei-weekend-morning',
-    phase: 'C',
-    type: 'card-select',
-    imageSrc: DISCOVER_MBTI_IMAGE('ei-weekend-morning'),
-    prompt: '周六早上醒来，你更想做：',
-    options: [
-      personalityOption('personality-ei-weekend-morning-a', '立刻看手机有没有人约，或者主动找人出去玩', 'E'),
-      personalityOption('personality-ei-weekend-morning-b', '先享受一段完全属于自己的安静时间，比如发呆、听歌或打游戏', 'I'),
-    ],
-  },
-  {
-    id: 'personality-ei-self-introduction',
-    phase: 'C',
-    type: 'card-select',
-    imageSrc: DISCOVER_MBTI_IMAGE('ei-self-introduction'),
-    prompt: '在一个新班级或新团队里做自我介绍，你通常：',
-    options: [
-      personalityOption('personality-ei-self-introduction-a', '声音洪亮，讲得比较长，希望给别人留下印象', 'E'),
-      personalityOption('personality-ei-self-introduction-b', '简短几句，希望快点结束，不太习惯成为焦点', 'I'),
-    ],
-  },
-  {
-    id: 'personality-ei-last-minute-event',
-    phase: 'C',
-    type: 'card-select',
-    imageSrc: DISCOVER_MBTI_IMAGE('ei-last-minute-event'),
-    prompt: '临时收到一个感兴趣的活动通知，朋友问你要不要一起去。你更可能：',
-    options: [
-      personalityOption('personality-ei-last-minute-event-a', '马上在群里回应，顺手拉几个人一起参加', 'E'),
-      personalityOption('personality-ei-last-minute-event-b', '先自己判断是否想去，晚点再决定是否回应', 'I'),
-    ],
-  },
-  {
-    id: 'personality-sn-dorm-recommendation',
-    phase: 'C',
-    type: 'card-select',
-    imageSrc: DISCOVER_MBTI_IMAGE('sn-dorm-recommendation'),
-    prompt: '你在小红书或抖音刷到一篇“大学宿舍必备好物”分享。你更在意：',
-    options: [
-      personalityOption('personality-sn-dorm-recommendation-a', '具体的价格、尺寸、链接、实拍细节图', 'S'),
-      personalityOption('personality-sn-dorm-recommendation-b', '这个博主整体营造的生活氛围和改造灵感', 'N'),
-    ],
-  },
-  {
-    id: 'personality-sn-course-project',
-    phase: 'C',
-    type: 'card-select',
-    imageSrc: DISCOVER_MBTI_IMAGE('sn-course-project'),
-    prompt: '老师布置了一个开放性课题，比如设计一个小程序或策划一场活动。你习惯：',
-    options: [
-      personalityOption('personality-sn-course-project-a', '先找现成的案例和成熟模板，按照成功经验来做', 'S'),
-      personalityOption('personality-sn-course-project-b', '自己先天马行空想几个有意思的点子，再慢慢落地', 'N'),
-    ],
-  },
-  {
-    id: 'personality-sn-favorite-creator',
-    phase: 'C',
-    type: 'card-select',
-    imageSrc: DISCOVER_MBTI_IMAGE('sn-favorite-creator'),
-    prompt: '你更愿意关注哪种类型的博主或 up 主？',
-    options: [
-      personalityOption('personality-sn-favorite-creator-a', '实用型：教你怎么学、怎么省、怎么解决实际问题', 'S'),
-      personalityOption('personality-sn-favorite-creator-b', '创意型：脑洞大、视角独特、总能给你新鲜感', 'N'),
-    ],
-  },
-  {
-    id: 'personality-sn-ai-news',
-    phase: 'C',
-    type: 'card-select',
-    imageSrc: DISCOVER_MBTI_IMAGE('sn-ai-news'),
-    prompt: '刷到一条关于“AI 发展”的新闻，你更容易被哪部分吸引？',
-    options: [
-      personalityOption('personality-sn-ai-news-a', '具体数据：最新模型的参数、成本、应用案例', 'S'),
-      personalityOption('personality-sn-ai-news-b', '未来想象：AI 会如何改变人类生活、带来哪些可能性', 'N'),
-    ],
-  },
-  {
-    id: 'personality-sn-new-skill',
-    phase: 'C',
-    type: 'card-select',
-    imageSrc: DISCOVER_MBTI_IMAGE('sn-new-skill'),
-    prompt: '你想学一个手机剪辑软件。你更倾向于：',
-    options: [
-      personalityOption('personality-sn-new-skill-a', '找一份图文教程，一步步跟着操作', 'S'),
-      personalityOption('personality-sn-new-skill-b', '自己先乱点乱试，遇到不懂的再查，或者直接看创意混剪找灵感', 'N'),
-    ],
-  },
-  {
-    id: 'personality-sn-travel-story',
-    phase: 'C',
-    type: 'card-select',
-    imageSrc: DISCOVER_MBTI_IMAGE('sn-travel-story'),
-    prompt: '朋友刚从外地回来，跟你讲旅途经历。你更喜欢听：',
-    options: [
-      personalityOption('personality-sn-travel-story-a', '他去了哪些具体景点、花了多少钱、吃了什么好吃的', 'S'),
-      personalityOption('personality-sn-travel-story-b', '他整个旅程的心情变化、遇到的有趣陌生人或意外的奇遇', 'N'),
-    ],
-  },
-  {
-    id: 'personality-sn-new-course',
-    phase: 'C',
-    type: 'card-select',
-    imageSrc: DISCOVER_MBTI_IMAGE('sn-new-course'),
-    prompt: '准备选一门从没接触过的新课时，你更可能先看：',
-    options: [
-      personalityOption('personality-sn-new-course-a', '教学大纲、作业形式、考核要求和每周要做什么', 'S'),
-      personalityOption('personality-sn-new-course-b', '这门课想解决什么大问题，以及它可能打开什么视野', 'N'),
-    ],
-  },
-  {
-    id: 'personality-tf-summer-job',
-    phase: 'C',
-    type: 'card-select',
-    imageSrc: DISCOVER_MBTI_IMAGE('tf-summer-job'),
-    prompt: '你打算找一份暑假兼职。两份工作时薪差不多，一份是数据录入，枯燥但稳定；另一份是奶茶店员，与人打交道多，氛围轻松但偶尔会受气。你更看重：',
-    options: [
-      personalityOption('personality-tf-summer-job-a', '哪份工作更高效、更划算、更符合你的实际收益', 'T'),
-      personalityOption('personality-tf-summer-job-b', '哪份工作做起来更开心、同事关系更融洽', 'F'),
-    ],
-  },
-  {
-    id: 'personality-tf-friend-breakup',
-    phase: 'C',
-    type: 'card-select',
-    imageSrc: DISCOVER_MBTI_IMAGE('tf-friend-breakup'),
-    prompt: '你的好朋友失恋了，半夜给你发消息。你会：',
-    options: [
-      personalityOption('personality-tf-friend-breakup-a', '先帮他梳理发生了什么、主要矛盾和下一步选择', 'T'),
-      personalityOption('personality-tf-friend-breakup-b', '先接住他的情绪，听他说完，再让他知道你会陪着他', 'F'),
-    ],
-  },
-  {
-    id: 'personality-tf-group-partner',
-    phase: 'C',
-    type: 'card-select',
-    imageSrc: DISCOVER_MBTI_IMAGE('tf-group-partner'),
-    prompt: '做一个重要的分组作业，你可以选择搭档。A 同学逻辑强、做事快，但说话直接；B 同学性格好、配合度高，但能力一般。你更可能选：',
-    options: [
-      personalityOption('personality-tf-group-partner-a', 'A 同学，效率优先', 'T'),
-      personalityOption('personality-tf-group-partner-b', 'B 同学，合作舒服优先', 'F'),
-    ],
-  },
-  {
-    id: 'personality-tf-debate',
-    phase: 'C',
-    type: 'card-select',
-    imageSrc: DISCOVER_MBTI_IMAGE('tf-debate'),
-    prompt: '你看了一场辩论赛，正反方观点都很有道理。你更容易被哪一方说服？',
-    options: [
-      personalityOption('personality-tf-debate-a', '逻辑更严密、数据更充分、反驳更有力的一方', 'T'),
-      personalityOption('personality-tf-debate-b', '表达更打动人、更有人情味、更能引发共情的一方', 'F'),
-    ],
-  },
-  {
-    id: 'personality-tf-dorm-rule',
-    phase: 'C',
-    type: 'card-select',
-    imageSrc: DISCOVER_MBTI_IMAGE('tf-dorm-rule'),
-    prompt: '你和室友一起制定宿舍公约。关于空调温度设定，有人怕冷有人怕热。你更倾向：',
-    options: [
-      personalityOption('personality-tf-dorm-rule-a', '投票决定一个固定温度，少数服从多数，严格执行', 'T'),
-      personalityOption('personality-tf-dorm-rule-b', '大家灵活商量，热的时候可以调低，冷了就调高，以都舒服为主', 'F'),
-    ],
-  },
-  {
-    id: 'personality-tf-public-criticism',
-    phase: 'C',
-    type: 'card-select',
-    imageSrc: DISCOVER_MBTI_IMAGE('tf-public-criticism'),
-    prompt: '老师或领导当着别人的面批评了你，但他说得确实有道理。你的第一反应是：',
-    options: [
-      personalityOption('personality-tf-public-criticism-a', '先记下哪些意见确实有道理，之后再调整', 'T'),
-      personalityOption('personality-tf-public-criticism-b', '会先在意沟通方式，希望对方换成更尊重的表达', 'F'),
-    ],
-  },
-  {
-    id: 'personality-tf-team-disagreement',
-    phase: 'C',
-    type: 'card-select',
-    imageSrc: DISCOVER_MBTI_IMAGE('tf-team-disagreement'),
-    prompt: '团队对一个方案出现分歧，大家都觉得自己的理由很充分。你更可能先推动：',
-    options: [
-      personalityOption('personality-tf-team-disagreement-a', '比较各方案的成本、风险和可验证结果', 'T'),
-      personalityOption('personality-tf-team-disagreement-b', '确认每个人的顾虑和接受度，再找能推进的折中方案', 'F'),
-    ],
-  },
-  {
-    id: 'personality-jp-summer-plan',
-    phase: 'C',
-    type: 'card-select',
-    imageSrc: DISCOVER_MBTI_IMAGE('jp-summer-plan'),
-    prompt: '暑假快到了，你通常：',
-    options: [
-      personalityOption('personality-jp-summer-plan-a', '提前把实习、旅行、学习安排成清楚日程', 'J'),
-      personalityOption('personality-jp-summer-plan-b', '只有一个大概想法，比如这个暑假要减肥或学个技能，具体再说', 'P'),
-    ],
-  },
-  {
-    id: 'personality-jp-term-paper',
-    phase: 'C',
-    type: 'card-select',
-    imageSrc: DISCOVER_MBTI_IMAGE('jp-term-paper'),
-    prompt: '你有两周时间完成一篇期末论文。你的习惯是：',
-    options: [
-      personalityOption('personality-jp-term-paper-a', '较早查资料、列大纲，分几天推进，尽量提前完成', 'J'),
-      personalityOption('personality-jp-term-paper-b', '前期先收集想法和材料，临近截止时集中整理成文', 'P'),
-    ],
-  },
-  {
-    id: 'personality-jp-phone-home',
-    phase: 'C',
-    type: 'card-select',
-    imageSrc: DISCOVER_MBTI_IMAGE('jp-phone-home'),
-    prompt: '看一眼你的手机主屏幕或电脑桌面，更像哪种：',
-    options: [
-      personalityOption('personality-jp-phone-home-a', '分类放在文件夹里，只有少量常用 App 留在外面，很整洁', 'J'),
-      personalityOption('personality-jp-phone-home-b', '好几屏 App 散落，图标位置比较随意，但你找得到', 'P'),
-    ],
-  },
-  {
-    id: 'personality-jp-movie-weekend',
-    phase: 'C',
-    type: 'card-select',
-    imageSrc: DISCOVER_MBTI_IMAGE('jp-movie-weekend'),
-    prompt: '你打算周末看一部电影。你通常：',
-    options: [
-      personalityOption('personality-jp-movie-weekend-a', '提前选好片子、下载好、定好几点开始看', 'J'),
-      personalityOption('personality-jp-movie-weekend-b', '到了时间随便翻，看到哪个海报顺眼就看哪个', 'P'),
-    ],
-  },
-  {
-    id: 'personality-jp-travel-planner',
-    phase: 'C',
-    type: 'card-select',
-    imageSrc: DISCOVER_MBTI_IMAGE('jp-travel-planner'),
-    prompt: '和朋友计划一次短期旅游。你在团队里通常扮演：',
-    options: [
-      personalityOption('personality-jp-travel-planner-a', '负责订车票、酒店、列出每日景点和时间表的人', 'J'),
-      personalityOption('personality-jp-travel-planner-b', '跟着走就行，或者只提“我想去这个地方”，具体随性', 'P'),
-    ],
-  },
-  {
-    id: 'personality-jp-exam-notes',
-    phase: 'C',
-    type: 'card-select',
-    imageSrc: DISCOVER_MBTI_IMAGE('jp-exam-notes'),
-    prompt: '期末考试前复习，你的笔记或电子文档通常是：',
-    options: [
-      personalityOption('personality-jp-exam-notes-a', '有清晰的大纲、标题、分点，查找方便', 'J'),
-      personalityOption('personality-jp-exam-notes-b', '比较分散，有些写在书上、有些在便签、有些在手机备忘录，但自己知道在哪', 'P'),
-    ],
-  },
-  {
-    id: 'personality-jp-competition-signup',
-    phase: 'C',
-    type: 'card-select',
-    imageSrc: DISCOVER_MBTI_IMAGE('jp-competition-signup'),
-    prompt: '准备报名一项比赛或作品征集时，你更自然的状态是：',
-    options: [
-      personalityOption('personality-jp-competition-signup-a', '先确定报名、训练、提交节点，并按计划推进', 'J'),
-      personalityOption('personality-jp-competition-signup-b', '先保持开放，边准备边根据状态调整投入方式', 'P'),
-    ],
-  },
+  ...createMbtiQuestions('ei'),
+  ...createMbtiQuestions('sn'),
+  ...createMbtiQuestions('tf'),
+  ...createMbtiQuestions('jp'),
+  ...HOLLAND_SCALE_SECTIONS.flatMap(createHollandScaleQuestions),
 ];
 
 const LEGACY_ABILITY_TESTS: Question[] = [
@@ -1880,6 +1949,297 @@ const AI_DIALOGUE_QUESTIONS: Question[] = [
   },
 ];
 
+function scrambleCareerScenarioOptions(question: Question): Question {
+  const scenario = question.careerScenario;
+  if (!scenario) return question;
+
+  return {
+    ...question,
+    careerScenario: {
+      ...scenario,
+      firstOptions: stableOptionShuffle(scenario.firstOptions, `${question.id}:first`),
+      itemOptions: stableOptionShuffle(scenario.itemOptions, `${question.id}:items`),
+      teamOptions: scenario.teamOptions
+        ? stableOptionShuffle(scenario.teamOptions, `${question.id}:team`)
+        : scenario.teamOptions,
+    },
+  };
+}
+
+const SCRAMBLED_VALUE_TESTS = VALUE_TESTS.map(scrambleCareerScenarioOptions);
+
+const HOLLAND_FINE_DIMENSION_IMAGES: Record<RIASECDimension, string> = {
+  R: DISCOVER_ASSESSMENT_DEEP_HOLLAND_IMAGE('r', 0),
+  I: DISCOVER_ASSESSMENT_DEEP_HOLLAND_IMAGE('i', 0),
+  A: DISCOVER_ASSESSMENT_DEEP_HOLLAND_IMAGE('a', 0),
+  S: DISCOVER_ASSESSMENT_DEEP_HOLLAND_IMAGE('s', 0),
+  E: DISCOVER_ASSESSMENT_DEEP_HOLLAND_IMAGE('e', 0),
+  C: DISCOVER_ASSESSMENT_DEEP_HOLLAND_IMAGE('c', 0),
+};
+
+const HOLLAND_FINE_ACCEPTED_DEEP_IMAGE_DIMENSIONS = new Set<RIASECDimension>(['R', 'I', 'A', 'S', 'E', 'C']);
+
+function getAcceptedHollandFineItemSceneImageSrc(
+  dimension: RIASECDimension,
+  item: HollandFineBankItem,
+  itemIndex: number,
+) {
+  if (!HOLLAND_FINE_ACCEPTED_DEEP_IMAGE_DIMENSIONS.has(dimension)) return item.sceneImageSrc;
+  const globalItemIndex = Number(item.id.match(/-(\d{3})$/)?.[1] ?? itemIndex + 1) - 1;
+  return DISCOVER_ASSESSMENT_DEEP_HOLLAND_IMAGE(dimension.toLowerCase(), globalItemIndex);
+}
+
+function createHollandFineQuestion(dimension: RIASECDimension, section: HollandFineBankSection): Question {
+  const dimensionData = HOLLAND_FINE_DIMENSION_DATA[dimension];
+  return {
+    id: section.id,
+    phase: 'D',
+    type: 'holland-fine-grained',
+    prompt: `${dimensionData.label}｜${section.title}`,
+    subtext: section.sectionIntro,
+    imageSrc: HOLLAND_FINE_DIMENSION_IMAGES[dimension],
+    hollandFine: {
+      ...section,
+      dimension,
+      dimensionLabel: dimensionData.label,
+      sourcePath: dimensionData.sourcePath,
+      items: section.items.map((item, itemIndex) => ({
+        ...item,
+        sceneImageSrc: getAcceptedHollandFineItemSceneImageSrc(dimension, item, itemIndex),
+      })) as HollandFineBankItem[],
+    },
+  };
+}
+
+export const HOLLAND_FINE_QUESTIONS: Question[] = HOLLAND_FINE_DIMENSION_ORDER.flatMap((dimension) =>
+  HOLLAND_FINE_DIMENSION_DATA[dimension].sections.map((section) => createHollandFineQuestion(dimension, section)),
+);
+
+export const HOLLAND_FINE_QUESTION_IDS = HOLLAND_FINE_QUESTIONS.map((question) => question.id);
+
+export function getHollandFineQuestionIdsForDimensions(dimensions: RIASECDimension[]) {
+  const uniqueDimensions = Array.from(new Set(dimensions)).filter((dimension) => HOLLAND_FINE_DIMENSION_DATA[dimension]);
+  return uniqueDimensions.flatMap((dimension) =>
+    HOLLAND_FINE_DIMENSION_DATA[dimension].sections.map((section) => section.id),
+  );
+}
+
+export function getHollandFineQuestionsForDimensions(dimensions: RIASECDimension[]) {
+  const ids = new Set(getHollandFineQuestionIdsForDimensions(dimensions));
+  return HOLLAND_FINE_QUESTIONS.filter((question) => ids.has(question.id));
+}
+
+export const FINAL_CAREER_CALIBRATION_SOURCE_PATH =
+  'docs/Zhiye_Huolande_Doc/final_career_recommendation_assessment.md';
+
+export const CAREER_CALIBRATION_DIMENSIONS: Array<{
+  key: CareerCalibrationDimensionKey;
+  label: string;
+  highMeaning: string;
+  lowMeaning: string;
+}> = [
+  {
+    key: 'stabilityChangeTolerance',
+    label: '稳定与变化承受',
+    highMeaning: '更能接受稳定流程、固定岗位、重复任务和长期积累。',
+    lowMeaning: '更需要变化、新问题、移动空间和阶段性更新。',
+  },
+  {
+    key: 'innovationMeaningNeed',
+    label: '创新与意义需求',
+    highMeaning: '更需要创新、表达、探索、问题解决和可感知的工作意义。',
+    lowMeaning: '可以接受任务意义不强但稳定清晰的工作安排。',
+  },
+  {
+    key: 'moneyStatusWeight',
+    label: '金钱与外部评价权重',
+    highMeaning: '更重视收入增长、社会认可、头衔、行业排名和可见成就。',
+    lowMeaning: '更能接受低曝光、低排名压力或回报较慢的方向。',
+  },
+  {
+    key: 'riskUncertaintyTolerance',
+    label: '风险与不确定性承受',
+    highMeaning: '可以接受不确定路径、竞争压力、阶段性失败和结果波动。',
+    lowMeaning: '更适合路径清晰、培养稳定、规则明确和风险较低的方向。',
+  },
+  {
+    key: 'workLifeBoundaryPreference',
+    label: '工作生活边界与节奏偏好',
+    highMeaning: '更需要清晰边界、稳定节奏、可预期作息和长期生活安排。',
+    lowMeaning: '能接受高强度、项目制、即时响应和阶段性投入。',
+  },
+];
+
+const CAREER_CALIBRATION_DIMENSION_BY_KEY = new Map(
+  CAREER_CALIBRATION_DIMENSIONS.map((dimension) => [dimension.key, dimension]),
+);
+
+export const CAREER_CALIBRATION_SCALE_OPTIONS: QuestionOption[] = [
+  { id: 'final-career-calibration-scale-5', label: '非常符合', riasecWeights: {} },
+  { id: 'final-career-calibration-scale-4', label: '比较符合', riasecWeights: {} },
+  { id: 'final-career-calibration-scale-3', label: '一般', riasecWeights: {} },
+  { id: 'final-career-calibration-scale-2', label: '不太符合', riasecWeights: {} },
+  { id: 'final-career-calibration-scale-1', label: '非常不符合', riasecWeights: {} },
+];
+
+type FinalCareerCalibrationQuestionSource = {
+  prompt: string;
+  dimension: CareerCalibrationDimensionKey;
+  scoringDirection: CareerCalibrationScoringDirection;
+};
+
+const FINAL_CAREER_CALIBRATION_SOURCES: FinalCareerCalibrationQuestionSource[] = [
+  {
+    dimension: 'stabilityChangeTolerance',
+    scoringDirection: 'positive',
+    prompt: '如果一份工作每天面对相似流程、相似对象和相似评价标准，只要它稳定可靠，我可以长期投入。',
+  },
+  {
+    dimension: 'stabilityChangeTolerance',
+    scoringDirection: 'positive',
+    prompt: '我能接受几年内工作内容变化不大，只要职责清楚、收入稳定、组织规则明确。',
+  },
+  {
+    dimension: 'stabilityChangeTolerance',
+    scoringDirection: 'reverse',
+    prompt: '如果一份工作很少出现新任务、新人群或新问题，即使条件不错，我也会明显感到消耗。',
+  },
+  {
+    dimension: 'stabilityChangeTolerance',
+    scoringDirection: 'positive',
+    prompt: '相比频繁换项目、换团队、换目标，我更愿意在一个熟悉岗位里把细节越做越稳。',
+  },
+  {
+    dimension: 'stabilityChangeTolerance',
+    scoringDirection: 'reverse',
+    prompt: '当生活和工作过于可预测时，我会主动寻找新的任务、环境或挑战来打破惯性。',
+  },
+  {
+    dimension: 'innovationMeaningNeed',
+    scoringDirection: 'positive',
+    prompt: '如果一份工作长期只是执行已有流程，没有提出新想法或改进方法的空间，我很难保持投入。',
+  },
+  {
+    dimension: 'innovationMeaningNeed',
+    scoringDirection: 'positive',
+    prompt: '选择专业或职业时，我会认真考虑这件事是否能让我接触真实问题，而不只是完成被分配的任务。',
+  },
+  {
+    dimension: 'innovationMeaningNeed',
+    scoringDirection: 'reverse',
+    prompt: '如果工作收入稳定、要求明确、压力可控，即使它本身没有太多创造性，我也可以接受。',
+  },
+  {
+    dimension: 'innovationMeaningNeed',
+    scoringDirection: 'positive',
+    prompt: '当一个方向能让我做出新方案、新表达、新产品或新解释时，它会明显增加我的兴趣。',
+  },
+  {
+    dimension: 'innovationMeaningNeed',
+    scoringDirection: 'positive',
+    prompt: '我不希望未来的工作只是在系统里处理任务、提交结果，而看不到它连接的真实人、问题或变化。',
+  },
+  {
+    dimension: 'moneyStatusWeight',
+    scoringDirection: 'positive',
+    prompt: '选择专业或职业时，未来收入上限会明显影响我的判断。',
+  },
+  {
+    dimension: 'moneyStatusWeight',
+    scoringDirection: 'positive',
+    prompt: '如果一个方向社会评价高、身边人也认可，我会更愿意认真考虑它。',
+  },
+  {
+    dimension: 'moneyStatusWeight',
+    scoringDirection: 'reverse',
+    prompt: '即使一个方向不热门、收入增长慢，只要它符合我的长期兴趣，我也能接受。',
+  },
+  {
+    dimension: 'moneyStatusWeight',
+    scoringDirection: 'positive',
+    prompt: '我希望自己的工作成果能被清楚看见，例如排名、奖金、晋升、作品传播或项目影响力。',
+  },
+  {
+    dimension: 'moneyStatusWeight',
+    scoringDirection: 'positive',
+    prompt: '如果一份工作很有价值但长期缺少外部认可、公开反馈或职业身份感，我会犹豫。',
+  },
+  {
+    dimension: 'riskUncertaintyTolerance',
+    scoringDirection: 'positive',
+    prompt: '如果一个职业方向前期路径不清晰，但有较大成长空间，我愿意用实习、项目和试错去验证。',
+  },
+  {
+    dimension: 'riskUncertaintyTolerance',
+    scoringDirection: 'positive',
+    prompt: '面对竞争强、淘汰快、反馈直接的环境，我会紧张，但不一定会回避。',
+  },
+  {
+    dimension: 'riskUncertaintyTolerance',
+    scoringDirection: 'reverse',
+    prompt: '如果一个方向需要长期承受收入波动、机会不稳定或项目失败，我会倾向避开。',
+  },
+  {
+    dimension: 'riskUncertaintyTolerance',
+    scoringDirection: 'positive',
+    prompt: '我可以接受先进入一个变化很快的行业，再根据真实反馈调整自己的位置。',
+  },
+  {
+    dimension: 'riskUncertaintyTolerance',
+    scoringDirection: 'reverse',
+    prompt: '相比高回报但不确定的路线，我更愿意选择培养路径、考试规则或晋升方式更明确的路线。',
+  },
+  {
+    dimension: 'workLifeBoundaryPreference',
+    scoringDirection: 'positive',
+    prompt: '选择职业时，我会认真考虑它是否长期占用晚上、周末或假期。',
+  },
+  {
+    dimension: 'workLifeBoundaryPreference',
+    scoringDirection: 'positive',
+    prompt: '如果一份工作经常需要临时响应、加班或根据项目节奏调整生活，我会比较难适应。',
+  },
+  {
+    dimension: 'workLifeBoundaryPreference',
+    scoringDirection: 'reverse',
+    prompt: '为了获得更快成长、更高收入或更好的机会，我可以接受一段时间的高强度工作。',
+  },
+  {
+    dimension: 'workLifeBoundaryPreference',
+    scoringDirection: 'positive',
+    prompt: '我希望未来工作结束后，仍然能保留稳定的家庭、朋友、休息和个人兴趣时间。',
+  },
+  {
+    dimension: 'workLifeBoundaryPreference',
+    scoringDirection: 'reverse',
+    prompt: '如果工作本身足够吸引我，我可以接受它阶段性占据生活中的大部分注意力。',
+  },
+];
+
+export const FINAL_CAREER_CALIBRATION_QUESTIONS: Question[] = FINAL_CAREER_CALIBRATION_SOURCES.map((source, index) => {
+  const dimension = CAREER_CALIBRATION_DIMENSION_BY_KEY.get(source.dimension);
+  if (!dimension) throw new Error(`Missing career calibration dimension: ${source.dimension}`);
+  const questionNumber = index + 1;
+  return {
+    id: `final-career-calibration-${String(questionNumber).padStart(2, '0')}`,
+    phase: 'D',
+    type: 'career-calibration-scale',
+    imageSrc: DISCOVER_CAREER_CALIBRATION_IMAGE(index),
+    prompt: source.prompt,
+    careerCalibration: {
+      sourcePath: FINAL_CAREER_CALIBRATION_SOURCE_PATH,
+      dimension: source.dimension,
+      dimensionLabel: dimension.label,
+      scoringDirection: source.scoringDirection,
+      questionNumber,
+    },
+    options: CAREER_CALIBRATION_SCALE_OPTIONS,
+  };
+});
+
+export const FINAL_CAREER_CALIBRATION_QUESTION_IDS =
+  FINAL_CAREER_CALIBRATION_QUESTIONS.map((question) => question.id);
+
 const FULL_QUESTION_BANK: Question[] = [
   ...BASIC_INFO,
   ...INTEREST_TAG_QUESTIONS,
@@ -1890,61 +2250,33 @@ const FULL_QUESTION_BANK: Question[] = [
   ...SURAKARTA_ABILITY_TESTS,
   ...SCENARIO_TESTS,
   ...AI_DIALOGUE_QUESTIONS,
-  ...VALUE_TESTS,
+  ...HOLLAND_FINE_QUESTIONS,
+  ...FINAL_CAREER_CALIBRATION_QUESTIONS,
+  ...SCRAMBLED_VALUE_TESTS,
 ];
+
+const FULL_QUESTION_BY_ID = new Map(FULL_QUESTION_BANK.map((question) => [question.id, question]));
+
+export function getDiscoverQuestionDefinition(questionId: string) {
+  return FULL_QUESTION_BY_ID.get(questionId) ?? null;
+}
+
+export const DISCOVER_ABILITY_MODULE_QUESTIONS: Question[] = DISCOVER_ABILITY_QUESTION_IDS.map((questionId) => {
+  const question = getDiscoverQuestionDefinition(questionId);
+  if (!question) throw new Error(`Missing inactive Discover ability question: ${questionId}`);
+  return question;
+});
 
 const ACTIVE_QUESTION_IDS = [
   'basic-profile',
-  'interest-tags-1',
-  'interest-tags-2',
-  'interest-tags-3',
-  'personality-ei-new-student-dinner',
-  'personality-ei-social-day-after',
-  'personality-ei-group-speaking',
-  'personality-ei-cafeteria-lunch',
-  'personality-ei-weekend-morning',
-  'personality-ei-self-introduction',
-  'personality-ei-last-minute-event',
-  'personality-sn-dorm-recommendation',
-  'personality-sn-course-project',
-  'personality-sn-favorite-creator',
-  'personality-sn-ai-news',
-  'personality-sn-new-skill',
-  'personality-sn-travel-story',
-  'personality-sn-new-course',
-  'personality-tf-summer-job',
-  'personality-tf-friend-breakup',
-  'personality-tf-group-partner',
-  'personality-tf-debate',
-  'personality-tf-dorm-rule',
-  'personality-tf-public-criticism',
-  'personality-tf-team-disagreement',
-  'personality-jp-summer-plan',
-  'personality-jp-term-paper',
-  'personality-jp-phone-home',
-  'personality-jp-movie-weekend',
-  'personality-jp-travel-planner',
-  'personality-jp-exam-notes',
-  'personality-jp-competition-signup',
-  'ability-jinchao-lamp-1',
-  'ability-jinchao-lamp-2',
-  'ability-jinchao-lamp-3',
-  'ability-jinchao-lamp-4',
-  'ability-jinchao-lamp-6',
-  'ability-surakarta-1-step-count',
-  'ability-surakarta-2-capture-targets',
-  'ability-surakarta-3-side-captures',
-  'ability-surakarta-4-piece-legal-moves',
-  'value-life-goal',
-  'value-ai-life-route',
-  'value-17th-century',
-  'value-roommate-rules',
-  'value-family-pet-decision',
-  'value-future-self-letter',
+  ...PERSONALITY_MBTI_QUESTION_IDS,
+  ...PERSONALITY_HOLLAND_SCALE_QUESTION_IDS,
+  ...HOLLAND_FINE_QUESTION_IDS,
+  ...FINAL_CAREER_CALIBRATION_QUESTION_IDS,
 ] as const;
 
 export const ALL_QUESTIONS: Question[] = ACTIVE_QUESTION_IDS.map((questionId) => {
-  const question = FULL_QUESTION_BANK.find((item) => item.id === questionId);
+  const question = getDiscoverQuestionDefinition(questionId);
   if (!question) throw new Error(`Missing active Discover question: ${questionId}`);
   return question;
 });
@@ -2000,6 +2332,25 @@ export function isCareerScenarioValue(value: AnswerValue | undefined): value is 
   );
 }
 
+export function createEmptyHollandFineAnswer(question?: Question): HollandFineAnswer {
+  const items: Record<string, HollandFineAnswerItemValue> = {};
+  for (const item of question?.hollandFine?.items ?? []) {
+    items[item.id] = item.mode === 'open' ? { openResponses: {} } : { selectedOptionIds: [] };
+  }
+  return { items };
+}
+
+export function isHollandFineAnswerValue(value: AnswerValue | undefined): value is HollandFineAnswer {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    !Array.isArray(value) &&
+    'items' in value &&
+    typeof (value as { items?: unknown }).items === 'object' &&
+    (value as { items?: unknown }).items !== null
+  );
+}
+
 function collectProfileOptions(question: Question, value: AnswerValue): QuestionOption[] {
   if (!question.profileFields || !isProfileValue(value)) return [];
   const options: QuestionOption[] = [];
@@ -2016,19 +2367,420 @@ function collectProfileOptions(question: Question, value: AnswerValue): Question
   return options;
 }
 
-export function computeRawScores(answers: Answer[]): RIASECScores {
-  const scores: RIASECScores = { R: 0, I: 0, A: 0, S: 0, E: 0, C: 0 };
+const RIASEC_DIMENSIONS: RIASECDimension[] = ['R', 'I', 'A', 'S', 'E', 'C'];
+export const DISCOVER_RIASEC_SECTION_WEIGHTS = {
+  preCareer: 1,
+  fineGrained: 0,
+  // Legacy keys are kept for older audit/debug callers.
+  interest: 1,
+  career: 0,
+} as const;
+
+export type AbilityQuestionType = 'language_understanding' | 'board_reasoning';
+
+export interface AbilityPerformanceItem {
+  questionId: string;
+  questionType: AbilityQuestionType;
+  questionTypeLabel: string;
+  selectedOptionId: string;
+  selectedLabel: string;
+  correctOptionId: string;
+  correctLabel: string;
+  isCorrect: boolean;
+}
+
+export interface AbilityPerformanceByType {
+  questionType: AbilityQuestionType;
+  questionTypeLabel: string;
+  totalCount: number;
+  correctCount: number;
+  incorrectCount: number;
+}
+
+export interface AbilityPerformanceSummary {
+  version: 'ability_performance_v1';
+  totalCount: number;
+  correctCount: number;
+  incorrectCount: number;
+  byQuestionType: AbilityPerformanceByType[];
+  items: AbilityPerformanceItem[];
+}
+
+function createEmptyRiasecScores(): RIASECScores {
+  return { R: 0, I: 0, A: 0, S: 0, E: 0, C: 0 };
+}
+
+function addRiasecWeights(
+  scores: RIASECScores,
+  weights: Partial<Record<RIASECDimension, number>>,
+  multiplier = 1,
+) {
+  for (const [dim, weight] of Object.entries(weights)) {
+    const numericWeight = Number(weight);
+    if (!Number.isFinite(numericWeight)) continue;
+    scores[dim as RIASECDimension] += numericWeight * multiplier;
+  }
+}
+
+function addCareerScenarioClosedChoiceScores(
+  scores: RIASECScores,
+  question: Question,
+  value: AnswerValue,
+) {
+  if (!isCareerScenarioValue(value)) return;
+  const scenario = question.careerScenario;
+  if (!scenario) return;
+
+  const firstOption = scenario.firstOptions.find((option) => option.id === value.firstChoiceId);
+  if (firstOption) addRiasecWeights(scores, firstOption.riasecWeights);
+
+  for (const optId of value.itemChoiceIds) {
+    const option = scenario.itemOptions.find((item) => item.id === optId);
+    if (option) addRiasecWeights(scores, option.riasecWeights);
+  }
+
+  const teamOption = scenario.teamOptions?.find((option) => option.id === value.teamChoiceId);
+  if (teamOption) addRiasecWeights(scores, teamOption.riasecWeights);
+}
+
+function scoreTotal(scores: RIASECScores) {
+  return RIASEC_DIMENSIONS.reduce((total, dimension) => total + Math.max(0, scores[dimension]), 0);
+}
+
+function collectHollandFineOptions(question: Question, value: AnswerValue): QuestionOption[] {
+  if (!question.hollandFine || !isHollandFineAnswerValue(value)) return [];
+  const options: QuestionOption[] = [];
+
+  for (const item of question.hollandFine.items) {
+    const answerItem = value.items[item.id];
+    const selectedIds = answerItem?.selectedOptionIds ?? [];
+    for (const optionId of selectedIds) {
+      const option = item.options?.find((candidate) => candidate.id === optionId);
+      if (option) options.push(option);
+    }
+  }
+
+  return options;
+}
+
+function addHollandFineClosedChoiceScores(
+  scores: RIASECScores,
+  question: Question,
+  value: AnswerValue,
+) {
+  for (const option of collectHollandFineOptions(question, value)) {
+    addRiasecWeights(scores, option.riasecWeights);
+  }
+}
+
+export function computeInterestTagScores(answers: Answer[]): RIASECScores {
+  const scores = createEmptyRiasecScores();
 
   for (const answer of answers) {
-    const question = ALL_QUESTIONS.find((q) => q.id === answer.questionId);
+    const question = getDiscoverQuestionDefinition(answer.questionId);
+    if (question?.type !== 'interest-tag-grid' || !question.id.startsWith('interest-tags-')) continue;
+    const selectedIds = Array.isArray(answer.value) ? answer.value : [];
+    for (const optId of selectedIds) {
+      const option = question.options?.find((item) => item.id === optId);
+      if (option) addRiasecWeights(scores, option.riasecWeights);
+    }
+  }
+
+  return scores;
+}
+
+export function computeCareerScenarioScores(answers: Answer[]): RIASECScores {
+  const scores = createEmptyRiasecScores();
+
+  for (const answer of answers) {
+    const question = getDiscoverQuestionDefinition(answer.questionId);
+    if (question?.type !== 'career-scenario') continue;
+    addCareerScenarioClosedChoiceScores(scores, question, answer.value);
+  }
+
+  return scores;
+}
+
+export function computeHollandFineScores(answers: Answer[]): RIASECScores {
+  const scores = createEmptyRiasecScores();
+
+  for (const answer of answers) {
+    const question = getDiscoverQuestionDefinition(answer.questionId);
+    if (question?.type !== 'holland-fine-grained') continue;
+    addHollandFineClosedChoiceScores(scores, question, answer.value);
+  }
+
+  return scores;
+}
+
+export function computeSecondStageHollandScaleScores(answers: Answer[]): RIASECScores {
+  const scores = createEmptyRiasecScores();
+
+  for (const answer of answers) {
+    const question = getDiscoverQuestionDefinition(answer.questionId);
+    if (question?.type !== 'card-select' || !question.id.startsWith('personality-holland-')) continue;
+    const selectedId = typeof answer.value === 'string' ? answer.value : '';
+    const option = question.options?.find((item) => item.id === selectedId);
+    if (option) addRiasecWeights(scores, option.riasecWeights);
+  }
+
+  return scores;
+}
+
+export function computeBlendedRiasecScores(answers: Answer[]): RIASECScores {
+  const interestScores = computeInterestTagScores(answers);
+  const hollandScaleScores = computeSecondStageHollandScaleScores(answers);
+  const hasInterestScores = scoreTotal(interestScores) > 0;
+  const hasHollandScaleScores = scoreTotal(hollandScaleScores) > 0;
+
+  if (hasHollandScaleScores) return normalizeScores(hollandScaleScores);
+  if (hasInterestScores) return normalizeScores(interestScores);
+
+  return createEmptyRiasecScores();
+}
+
+export function computePreCareerRiasecScores(answers: Answer[]): RIASECScores {
+  const blendedScores = computeBlendedRiasecScores(answers);
+  if (scoreTotal(blendedScores) > 0) return blendedScores;
+
+  const preCareerAnswers = answers.filter((answer) => {
+    const question = getDiscoverQuestionDefinition(answer.questionId);
+    return question &&
+      question.phase !== 'D' &&
+      (
+        question.type === 'profile-form' ||
+        question.type === 'interest-tag-grid' ||
+        question.type === 'multi-select' ||
+        question.type === 'rank-select' ||
+        question.type === 'scenario-pair' ||
+        question.type === 'slider'
+      );
+  });
+  return normalizeScores(computeRawScores(preCareerAnswers));
+}
+
+export function computePreCareerRiasecTopDimensions(answers: Answer[], count = 2): RIASECDimension[] {
+  return getTopDimensions(computePreCareerRiasecScores(answers), count);
+}
+
+export function computeWeightedRiasecScores(answers: Answer[]): RIASECScores {
+  return computePreCareerRiasecScores(answers);
+}
+
+function getAbilityQuestionType(question: Question): {
+  questionType: AbilityQuestionType;
+  questionTypeLabel: string;
+} | null {
+  if (question.id.startsWith('ability-jinchao-lamp-')) {
+    return { questionType: 'language_understanding', questionTypeLabel: '语言理解' };
+  }
+  if (question.id.startsWith('ability-surakarta-')) {
+    return { questionType: 'board_reasoning', questionTypeLabel: '棋类逻辑' };
+  }
+  return null;
+}
+
+function createAbilityPerformanceGroup(
+  questionType: AbilityQuestionType,
+  questionTypeLabel: string,
+): AbilityPerformanceByType {
+  return {
+    questionType,
+    questionTypeLabel,
+    totalCount: 0,
+    correctCount: 0,
+    incorrectCount: 0,
+  };
+}
+
+export function computeAbilityPerformance(answers: Answer[]): AbilityPerformanceSummary {
+  const items: AbilityPerformanceItem[] = [];
+  const groups = new Map<AbilityQuestionType, AbilityPerformanceByType>();
+
+  for (const answer of answers) {
+    const question = getDiscoverQuestionDefinition(answer.questionId);
+    if (!question || question.type !== 'card-select') continue;
+    const typeInfo = getAbilityQuestionType(question);
+    if (!typeInfo) continue;
+    const selectedOptionId = typeof answer.value === 'string' ? answer.value : '';
+    if (!selectedOptionId) continue;
+
+    const selectedOption = question.options?.find((option) => option.id === selectedOptionId);
+    const correctOption = question.options?.find((option) => option.correct);
+    if (!correctOption) continue;
+
+    const isCorrect = selectedOptionId === correctOption.id;
+    const item: AbilityPerformanceItem = {
+      questionId: question.id,
+      questionType: typeInfo.questionType,
+      questionTypeLabel: typeInfo.questionTypeLabel,
+      selectedOptionId,
+      selectedLabel: selectedOption?.label ?? selectedOptionId,
+      correctOptionId: correctOption.id,
+      correctLabel: correctOption.label,
+      isCorrect,
+    };
+    items.push(item);
+
+    const group = groups.get(typeInfo.questionType) ??
+      createAbilityPerformanceGroup(typeInfo.questionType, typeInfo.questionTypeLabel);
+    group.totalCount += 1;
+    if (isCorrect) {
+      group.correctCount += 1;
+    } else {
+      group.incorrectCount += 1;
+    }
+    groups.set(typeInfo.questionType, group);
+  }
+
+  const correctCount = items.filter((item) => item.isCorrect).length;
+  const totalCount = items.length;
+
+  return {
+    version: 'ability_performance_v1',
+    totalCount,
+    correctCount,
+    incorrectCount: totalCount - correctCount,
+    byQuestionType: Array.from(groups.values()),
+    items,
+  };
+}
+
+export type CareerCalibrationLevel = 'low' | 'medium' | 'high';
+
+export interface CareerCalibrationDimensionScore {
+  key: CareerCalibrationDimensionKey;
+  label: string;
+  score: number;
+  maxScore: number;
+  average: number;
+  normalizedScore: number;
+  level: CareerCalibrationLevel;
+  answeredCount: number;
+  questionIds: string[];
+  selectedOptionIds: string[];
+  highMeaning: string;
+  lowMeaning: string;
+}
+
+export interface CareerCalibrationProfile {
+  version: 'final_career_calibration_v1';
+  sourcePath: string;
+  answeredCount: number;
+  totalQuestions: number;
+  completed: boolean;
+  scale: Array<{ score: number; label: string }>;
+  dimensions: Record<CareerCalibrationDimensionKey, CareerCalibrationDimensionScore>;
+  answerIds: string[];
+  selectedOptionIds: string[];
+}
+
+export function getCareerCalibrationOptionScore(optionId: string) {
+  const match = optionId.match(/^final-career-calibration-scale-([1-5])$/);
+  return match ? Number(match[1]) : null;
+}
+
+function getCareerCalibrationLevel(score: number): CareerCalibrationLevel {
+  if (score <= 11) return 'low';
+  if (score <= 18) return 'medium';
+  return 'high';
+}
+
+export function computeCareerCalibrationProfile(answers: Answer[]): CareerCalibrationProfile {
+  const scoreBuckets = new Map<CareerCalibrationDimensionKey, {
+    score: number;
+    answeredCount: number;
+    questionIds: string[];
+    selectedOptionIds: string[];
+  }>();
+  const answerIds: string[] = [];
+  const selectedOptionIds: string[] = [];
+
+  for (const dimension of CAREER_CALIBRATION_DIMENSIONS) {
+    scoreBuckets.set(dimension.key, {
+      score: 0,
+      answeredCount: 0,
+      questionIds: [],
+      selectedOptionIds: [],
+    });
+  }
+
+  for (const answer of answers) {
+    const question = getDiscoverQuestionDefinition(answer.questionId);
+    const calibration = question?.careerCalibration;
+    if (question?.type !== 'career-calibration-scale' || !calibration || typeof answer.value !== 'string') continue;
+    const rawScore = getCareerCalibrationOptionScore(answer.value);
+    if (!rawScore) continue;
+    const adjustedScore = calibration.scoringDirection === 'reverse' ? 6 - rawScore : rawScore;
+    const bucket = scoreBuckets.get(calibration.dimension);
+    if (!bucket) continue;
+    bucket.score += adjustedScore;
+    bucket.answeredCount += 1;
+    bucket.questionIds.push(question.id);
+    bucket.selectedOptionIds.push(answer.value);
+    answerIds.push(question.id);
+    selectedOptionIds.push(answer.value);
+  }
+
+  const dimensions = Object.fromEntries(
+    CAREER_CALIBRATION_DIMENSIONS.map((dimension) => {
+      const bucket = scoreBuckets.get(dimension.key) ?? {
+        score: 0,
+        answeredCount: 0,
+        questionIds: [],
+        selectedOptionIds: [],
+      };
+      const average = bucket.answeredCount > 0 ? bucket.score / bucket.answeredCount : 0;
+      const score = bucket.score;
+      const normalizedScore = Math.max(0, Math.min(100, Math.round(((score - 5) / 20) * 100)));
+      return [
+        dimension.key,
+        {
+          key: dimension.key,
+          label: dimension.label,
+          score,
+          maxScore: 25,
+          average: Math.round(average * 100) / 100,
+          normalizedScore,
+          level: getCareerCalibrationLevel(score),
+          answeredCount: bucket.answeredCount,
+          questionIds: bucket.questionIds,
+          selectedOptionIds: bucket.selectedOptionIds,
+          highMeaning: dimension.highMeaning,
+          lowMeaning: dimension.lowMeaning,
+        },
+      ];
+    }),
+  ) as Record<CareerCalibrationDimensionKey, CareerCalibrationDimensionScore>;
+
+  return {
+    version: 'final_career_calibration_v1',
+    sourcePath: FINAL_CAREER_CALIBRATION_SOURCE_PATH,
+    answeredCount: answerIds.length,
+    totalQuestions: FINAL_CAREER_CALIBRATION_QUESTION_IDS.length,
+    completed: answerIds.length >= FINAL_CAREER_CALIBRATION_QUESTION_IDS.length,
+    scale: CAREER_CALIBRATION_SCALE_OPTIONS.map((option, index) => ({
+      score: getCareerCalibrationOptionScore(option.id) ?? index + 1,
+      label: option.label,
+    })),
+    dimensions,
+    answerIds,
+    selectedOptionIds,
+  };
+}
+
+// Legacy aggregate for scoring audits. Product recommendations should use computeWeightedRiasecScores.
+export function computeRawScores(answers: Answer[]): RIASECScores {
+  const scores = createEmptyRiasecScores();
+
+  for (const answer of answers) {
+    const question = getDiscoverQuestionDefinition(answer.questionId);
     if (!question) continue;
 
     switch (question.type) {
       case 'profile-form': {
         for (const opt of collectProfileOptions(question, answer.value)) {
-          for (const [dim, weight] of Object.entries(opt.riasecWeights)) {
-            scores[dim as RIASECDimension] += weight;
-          }
+          addRiasecWeights(scores, opt.riasecWeights);
         }
         break;
       }
@@ -2038,11 +2790,7 @@ export function computeRawScores(answers: Answer[]): RIASECScores {
         const selectedIds = Array.isArray(answer.value) ? answer.value : [];
         for (const optId of selectedIds) {
           const opt = question.options?.find((o) => o.id === optId);
-          if (opt) {
-            for (const [dim, weight] of Object.entries(opt.riasecWeights)) {
-              scores[dim as RIASECDimension] += weight;
-            }
-          }
+          if (opt) addRiasecWeights(scores, opt.riasecWeights);
         }
         break;
       }
@@ -2055,9 +2803,7 @@ export function computeRawScores(answers: Answer[]): RIASECScores {
           if (rankWeight <= 0) return;
           const opt = question.options?.find((o) => o.id === optId);
           if (!opt) return;
-          for (const [dim, weight] of Object.entries(opt.riasecWeights)) {
-            scores[dim as RIASECDimension] += weight * rankWeight;
-          }
+          addRiasecWeights(scores, opt.riasecWeights, rankWeight);
         });
         break;
       }
@@ -2065,47 +2811,23 @@ export function computeRawScores(answers: Answer[]): RIASECScores {
       case 'career-scenario': {
         const careerValue = answer.value;
         if (!isCareerScenarioValue(careerValue)) break;
-        const scenario = question.careerScenario;
-        if (!scenario) break;
-
-        const firstOption = scenario.firstOptions.find((option) => option.id === careerValue.firstChoiceId);
-        if (firstOption) {
-          for (const [dim, weight] of Object.entries(firstOption.riasecWeights)) {
-            scores[dim as RIASECDimension] += weight;
-          }
-        }
-
-        for (const optId of careerValue.itemChoiceIds) {
-          const opt = scenario.itemOptions.find((option) => option.id === optId);
-          if (!opt) continue;
-          for (const [dim, weight] of Object.entries(opt.riasecWeights)) {
-            scores[dim as RIASECDimension] += weight;
-          }
-        }
-
-        const teamOption = scenario.teamOptions?.find((option) => option.id === careerValue.teamChoiceId);
-        if (teamOption) {
-          for (const [dim, weight] of Object.entries(teamOption.riasecWeights)) {
-            scores[dim as RIASECDimension] += weight;
-          }
-        }
+        addCareerScenarioClosedChoiceScores(scores, question, careerValue);
 
         if (isAiDialogueValue(careerValue.aiDialogue)) {
-          for (const [dim, weight] of Object.entries(careerValue.aiDialogue.scoringSummary.deltas)) {
-            scores[dim as RIASECDimension] += Number(weight);
-          }
+          addRiasecWeights(scores, careerValue.aiDialogue.scoringSummary.deltas);
         }
+        break;
+      }
+
+      case 'holland-fine-grained': {
+        addHollandFineClosedChoiceScores(scores, question, answer.value);
         break;
       }
 
       case 'card-select': {
         const selectedId = typeof answer.value === 'string' ? answer.value : '';
         const opt = question.options?.find((o) => o.id === selectedId);
-        if (opt) {
-          for (const [dim, weight] of Object.entries(opt.riasecWeights)) {
-            scores[dim as RIASECDimension] += weight;
-          }
-        }
+        if (opt) addRiasecWeights(scores, opt.riasecWeights);
         break;
       }
 
@@ -2114,9 +2836,7 @@ export function computeRawScores(answers: Answer[]): RIASECScores {
         const pair = question.scenarioPair;
         if (!pair) break;
         const chosen = selectedId === pair.optionA.id ? pair.optionA : pair.optionB;
-        for (const [dim, weight] of Object.entries(chosen.riasecWeights)) {
-          scores[dim as RIASECDimension] += weight;
-        }
+        addRiasecWeights(scores, chosen.riasecWeights);
         break;
       }
 
@@ -2127,23 +2847,18 @@ export function computeRawScores(answers: Answer[]): RIASECScores {
         const leftFactor = (100 - sliderValue) / 100;
         const rightFactor = sliderValue / 100;
 
-        for (const [dim, weight] of Object.entries(config.leftWeights)) {
-          scores[dim as RIASECDimension] += weight * leftFactor;
-        }
-        for (const [dim, weight] of Object.entries(config.rightWeights)) {
-          scores[dim as RIASECDimension] += weight * rightFactor;
-        }
+        addRiasecWeights(scores, config.leftWeights, leftFactor);
+        addRiasecWeights(scores, config.rightWeights, rightFactor);
         break;
       }
 
       case 'free-text':
+      case 'career-calibration-scale':
         break;
 
       case 'ai-dialogue': {
         if (!isAiDialogueValue(answer.value)) break;
-        for (const [dim, weight] of Object.entries(answer.value.scoringSummary.deltas)) {
-          scores[dim as RIASECDimension] += weight;
-        }
+        addRiasecWeights(scores, answer.value.scoringSummary.deltas);
         break;
       }
     }
@@ -2156,7 +2871,7 @@ export function extractPersonalityTraits(answers: Answer[]): Record<string, numb
   const traits: Record<string, number> = {};
 
   for (const answer of answers) {
-    const question = ALL_QUESTIONS.find((q) => q.id === answer.questionId);
+    const question = getDiscoverQuestionDefinition(answer.questionId);
     if (!question) continue;
 
     const collectTags = (opt: QuestionOption) => {
@@ -2203,6 +2918,12 @@ export function extractPersonalityTraits(answers: Answer[]): Record<string, numb
         if (teamOption) collectTags(teamOption);
         break;
       }
+      case 'holland-fine-grained': {
+        for (const option of collectHollandFineOptions(question, answer.value)) {
+          collectTags(option);
+        }
+        break;
+      }
       case 'card-select': {
         const selectedId = typeof answer.value === 'string' ? answer.value : '';
         const opt = question.options?.find((o) => o.id === selectedId);
@@ -2219,6 +2940,7 @@ export function extractPersonalityTraits(answers: Answer[]): Record<string, numb
       }
       case 'slider':
       case 'free-text':
+      case 'career-calibration-scale':
       case 'ai-dialogue':
         break;
     }
@@ -2233,10 +2955,10 @@ const MBTI_DIMENSIONS: Array<{
   right: MbtiLetter;
   fallback: MbtiLetter;
 }> = [
-  { key: 'EI', left: 'E', right: 'I', fallback: 'I' },
-  { key: 'SN', left: 'S', right: 'N', fallback: 'N' },
+  { key: 'EI', left: 'E', right: 'I', fallback: 'E' },
+  { key: 'SN', left: 'S', right: 'N', fallback: 'S' },
   { key: 'TF', left: 'T', right: 'F', fallback: 'T' },
-  { key: 'JP', left: 'J', right: 'P', fallback: 'P' },
+  { key: 'JP', left: 'J', right: 'P', fallback: 'J' },
 ];
 
 const MBTI_DIMENSION_BY_LETTER = new Map<MbtiLetter, MbtiDimensionKey>(
@@ -2266,7 +2988,7 @@ function buildMbtiDimensions(
       ? left
       : rightScore > leftScore
         ? right
-        : lastSelectedByDimension[key] ?? fallback;
+        : fallback;
 
     return {
       dimension: key,
@@ -2325,7 +3047,7 @@ export function computeMbtiProfile(answers: Answer[]): MbtiProfile | null {
 
   for (const answer of orderedAnswers) {
     if (answer.questionId === MBTI_KNOWN_QUESTION_ID || typeof answer.value !== 'string') continue;
-    const question = ALL_QUESTIONS.find((item) => item.id === answer.questionId);
+    const question = getDiscoverQuestionDefinition(answer.questionId);
     const option = question?.options?.find((item) => item.id === answer.value);
     if (!question || !option) continue;
 
@@ -2363,7 +3085,7 @@ export function extractOpenEndedAnswers(answers: Answer[]): Record<string, strin
   const result: Record<string, string> = {};
 
   for (const answer of answers) {
-    const question = ALL_QUESTIONS.find((q) => q.id === answer.questionId);
+    const question = getDiscoverQuestionDefinition(answer.questionId);
     if (question?.type === 'free-text' && typeof answer.value === 'object' && 'text' in answer.value) {
       result[question.id] = answer.value.text;
     }
@@ -2376,6 +3098,14 @@ export function extractOpenEndedAnswers(answers: Answer[]): Record<string, strin
         .map((message) => message.content)
         .join('\n');
       if (userText) result[`${question.id}.agent`] = userText;
+    }
+    if (question?.type === 'holland-fine-grained' && isHollandFineAnswerValue(answer.value)) {
+      for (const item of question.hollandFine?.items ?? []) {
+        const answerItem = answer.value.items[item.id];
+        for (const [fieldId, text] of Object.entries(answerItem?.openResponses ?? {})) {
+          if (text.trim()) result[`${question.id}.${item.id}.${fieldId}`] = text;
+        }
+      }
     }
     if (question?.type === 'ai-dialogue' && isAiDialogueValue(answer.value)) {
       const userText = answer.value.messages

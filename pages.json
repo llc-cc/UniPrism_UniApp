@@ -2,18 +2,26 @@
   "pages": [
     {
       "path": "pages/auth/login",
-      "style": { "navigationBarTitleText": "登录", "navigationBarBackgroundColor": "#8b6bff", "navigationBarTextStyle": "white" }
+      "style": { "navigationStyle": "custom", "backgroundColor": "#7e63ff" }
+    },
+    {
+      "path": "pages/auth/launch",
+      "style": { "navigationStyle": "custom", "backgroundColor": "#f2f0f8" }
     },
     {
       "path": "pages/discover/index",
-      "style": { "navigationBarTitleText": "生涯规划" }
+      "style": {
+        "navigationBarTitleText": "兴趣探索",
+        "navigationBarBackgroundColor": "#ffffff",
+        "navigationBarTextStyle": "black",
+        "backgroundColor": "#f2f0f8"
+      }
     },
     {
       "path": "pages/discover/chat",
       "style": {
-        "navigationBarTitleText": "兴趣探索",
-        "navigationBarBackgroundColor": "#ffffff",
-        "navigationBarTextStyle": "black"
+        "navigationStyle": "custom",
+        "backgroundColor": "#f5f6fa"
       }
     },
     {
@@ -51,18 +59,40 @@
     {
       "path": "pages/discover/results",
       "style": {
-        "navigationBarTitleText": "我的报告",
-        "navigationBarBackgroundColor": "#8c86ff",
-        "navigationBarTextStyle": "white"
+        "navigationBarTitleText": "生成报告",
+        "navigationBarBackgroundColor": "#f1e8fb",
+        "navigationBarTextStyle": "black"
+      }
+    },
+    {
+      "path": "pages/discover/college-subjects",
+      "style": {
+        "navigationBarTitleText": "学院",
+        "navigationBarBackgroundColor": "#ffffff",
+        "navigationBarTextStyle": "black"
       }
     },
     {
       "path": "pages/math/index",
-      "style": { "navigationBarTitleText": "数学" }
+      "style": { "navigationBarTitleText": "数学专业介绍", "backgroundColor": "#f8fafc" }
+    },
+    {
+      "path": "pages/math/deep-explore",
+      "style": {
+        "navigationBarTitleText": "数学深入探索",
+        "navigationBarBackgroundColor": "#f8fafc",
+        "backgroundColor": "#f8fafc",
+        "backgroundColorTop": "#f8fafc",
+        "backgroundColorBottom": "#f8fafc"
+      }
+    },
+    {
+      "path": "pages/math/progress",
+      "style": { "navigationBarTitleText": "学习进度", "backgroundColor": "#f8fafc" }
     },
     {
       "path": "pages/math/challenge",
-      "style": { "navigationBarTitleText": "数学挑战" }
+      "style": { "navigationBarTitleText": "数学挑战", "backgroundColor": "#f8fafc" }
     },
     {
       "path": "pages/profile/index",
@@ -83,6 +113,22 @@
     {
       "path": "pages/help/index",
       "style": { "navigationBarTitleText": "帮助" }
+    },
+    {
+      "path": "pages/progress/index",
+      "style": {
+        "navigationBarTitleText": "学习进度",
+        "navigationBarBackgroundColor": "#ffffff",
+        "navigationBarTextStyle": "black"
+      }
+    },
+    {
+      "path": "pages/profile/feedback",
+      "style": { "navigationBarTitleText": "意见反馈" }
+    },
+    {
+      "path": "pages/profile/personal-info",
+      "style": { "navigationBarTitleText": "个人信息" }
     }
   ],
   "subPackages": [
@@ -92,49 +138,11 @@
       "pages": [
         {
           "path": "course",
-          "style": { "navigationBarTitleText": "课程阅读" }
+          "style": { "navigationBarTitleText": "课程阅读", "backgroundColor": "#f8fafc" }
         }
       ]
     }
   ],
-  "tabBar": {
-    "color": "#999999",
-    "selectedColor": "#007a66",
-    "backgroundColor": "#ffffff",
-    "borderStyle": "white",
-    "list": [
-      {
-        "pagePath": "pages/discover/index",
-        "text": "生涯规划",
-        "iconPath": "static/tab/tab-default.png",
-        "selectedIconPath": "static/tab/tab-active.png"
-      },
-      {
-        "pagePath": "pages/learn/index",
-        "text": "学习",
-        "iconPath": "static/tab/tab-default.png",
-        "selectedIconPath": "static/tab/tab-active.png"
-      },
-      {
-        "pagePath": "pages/achievement/index",
-        "text": "成就",
-        "iconPath": "static/tab/tab-default.png",
-        "selectedIconPath": "static/tab/tab-active.png"
-      },
-      {
-        "pagePath": "pages/profile/index",
-        "text": "个人档案",
-        "iconPath": "static/tab/tab-default.png",
-        "selectedIconPath": "static/tab/tab-active.png"
-      },
-      {
-        "pagePath": "pages/help/index",
-        "text": "帮助",
-        "iconPath": "static/tab/tab-default.png",
-        "selectedIconPath": "static/tab/tab-active.png"
-      }
-    ]
-  },
   "globalStyle": {
     "navigationBarBackgroundColor": "#ffffff",
     "navigationBarTextStyle": "black",

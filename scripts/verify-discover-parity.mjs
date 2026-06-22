@@ -12,30 +12,28 @@ const root = path.resolve(__dirname, '..')
 const webPath = path.resolve(root, '..', 'UniPrism_New-main', 'lib', 'discover-questions.ts')
 const appPath = path.join(root, 'business', 'discover-questions.ts')
 
-function extractActiveIds(content) {
-  const match = content.match(/const ACTIVE_QUESTION_IDS = \[([\s\S]*?)\] as const/)
+function extractActiveIdsBlock(content) {
+  const match = content.match(/const ACTIVE_QUESTION_IDS = \[([\s\S]*?)\] as const;/)
   if (!match) throw new Error('ACTIVE_QUESTION_IDS not found')
-  return [...match[1].matchAll(/'([^']+)'/g)].map((m) => m[1])
+  return match[1]
 }
 
-const webIds = extractActiveIds(fs.readFileSync(webPath, 'utf8'))
+function normalizeBlock(block) {
+  return block.replace(/\s+/g, ' ').trim()
+}
+
+const webContent = fs.readFileSync(webPath, 'utf8')
 const appContent = fs.readFileSync(appPath, 'utf8')
-const appIds = extractActiveIds(appContent)
+const webIdsBlock = extractActiveIdsBlock(webContent)
+const appIdsBlock = extractActiveIdsBlock(appContent)
 
 let ok = true
-if (webIds.length !== appIds.length) {
-  console.error(`Count mismatch: web=${webIds.length} app=${appIds.length}`)
+if (normalizeBlock(webIdsBlock) !== normalizeBlock(appIdsBlock)) {
+  console.error('ACTIVE_QUESTION_IDS block mismatch between Web and MiniApp')
   ok = false
 }
 
-for (let i = 0; i < Math.max(webIds.length, appIds.length); i += 1) {
-  if (webIds[i] !== appIds[i]) {
-    console.error(`ID mismatch at ${i}: web=${webIds[i]} app=${appIds[i]}`)
-    ok = false
-  }
-}
-
-const expectedTypes = new Set(['profile-form', 'interest-tag-grid', 'card-select', 'free-text'])
+const expectedTypes = new Set(['profile-form', 'card-select', 'holland-fine-grained', 'career-calibration-scale'])
 const typeMatches = [...appContent.matchAll(/type: '([^']+)'/g)].map((m) => m[1])
 const activeBlock = appContent.slice(appContent.indexOf('export const ALL_QUESTIONS'))
 const activeTypes = [...activeBlock.matchAll(/type: '([^']+)'/g)].map((m) => m[1])
@@ -45,8 +43,8 @@ if (unexpected.length) {
   ok = false
 }
 
-console.log(`Web active questions: ${webIds.length}`)
-console.log(`App active questions: ${appIds.length}`)
+console.log(`Web ACTIVE_QUESTION_IDS block length: ${webIdsBlock.length}`)
+console.log(`App ACTIVE_QUESTION_IDS block length: ${appIdsBlock.length}`)
 console.log(`Active types: ${[...new Set(activeTypes)].join(', ')}`)
 
 if (ok) {

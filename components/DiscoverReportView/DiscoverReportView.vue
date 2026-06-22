@@ -55,7 +55,7 @@
         <text class="section-title">推荐专业</text>
         <text class="section-badge">TOP3</text>
       </view>
-      <view v-for="(major, idx) in majorRows" :key="major.id" class="rank-card" @tap="$emit('major-click', major.id)">
+      <view v-for="(major, idx) in majorRows" :key="major.id" class="rank-card">
         <view class="rank-visual-row">
           <ChatAssetImage
             :path="major.iconPath || defaultMajorImagePath"
@@ -123,7 +123,7 @@
 
     <view class="action-row">
       <button class="btn-ghost" @tap="$emit('restart')">重新测试</button>
-      <button class="btn-primary" @tap="$emit('go-major')">体验推荐专业 →</button>
+      <button class="btn-primary" @tap="$emit('go-home')">返回首页</button>
     </view>
   </scroll-view>
 </template>
@@ -305,7 +305,7 @@ export default {
     report: { type: Object, default: null },
     nickname: { type: String, default: '同学' },
   },
-  emits: ['major-click', 'restart', 'go-major'],
+  emits: ['restart', 'go-home'],
   computed: {
     displayTopDimensions() {
       const reportDims = dimensionsFromReportCode(this.report && this.report.riasec && this.report.riasec.code)
@@ -436,22 +436,22 @@ export default {
 <style scoped>
 .report-page {
   min-height: 100vh;
-  background: linear-gradient(180deg, #efe6ff 0%, #f7f8fb 38%, #f7f8fb 100%);
+  background: linear-gradient(180deg, #efe6ff 0%, #f7f3ff 22%, #f7f8fb 44%, #f7f8fb 100%);
   padding: 24rpx 24rpx 48rpx;
   box-sizing: border-box;
 }
 .report-header-card,
 .report-section {
   background: #fff;
-  border-radius: 50rpx;
-  box-shadow: 0 8rpx 64rpx rgba(0, 0, 0, 0.05);
+  border-radius: 40rpx;
+  box-shadow: 0 16rpx 56rpx rgba(15, 23, 42, 0.08);
   padding: 36rpx 32rpx;
   margin-bottom: 24rpx;
 }
 .report-brand { display: block; font-size: 24rpx; color: #6b23ff; font-weight: 700; }
 .report-greeting { display: block; margin-top: 20rpx; font-size: 52rpx; color: #283248; font-weight: 700; }
 .report-subtitle { display: block; margin-top: 8rpx; font-size: 28rpx; color: #687184; }
-.report-hero-wrap { margin-top: 28rpx; min-height: 260rpx; border-radius: 36rpx; overflow: hidden; background: linear-gradient(180deg, #f6f0ff 0%, #ffffff 100%); }
+.report-hero-wrap { margin-top: 28rpx; min-height: 260rpx; border-radius: 28rpx; overflow: hidden; background: linear-gradient(180deg, #f6f0ff 0%, #ffffff 100%); }
 .report-hero-image { width: 100%; height: 260rpx; display: block; }
 .report-tags { display: flex; flex-wrap: wrap; gap: 16rpx; margin-top: 28rpx; }
 .report-code { display: block; margin-top: 20rpx; font-size: 24rpx; color: #6b23ff; font-weight: 700; }
@@ -471,7 +471,7 @@ export default {
   color: #4b5563;
 }
 .report-section--compass { overflow: hidden; }
-.compass-image-wrap { margin-top: 16rpx; min-height: 320rpx; border-radius: 32rpx; overflow: hidden; background: linear-gradient(180deg, #f9f6ff 0%, #ffffff 100%); }
+.compass-image-wrap { margin-top: 16rpx; min-height: 320rpx; border-radius: 28rpx; overflow: hidden; background: linear-gradient(180deg, #f9f6ff 0%, #ffffff 100%); }
 .compass-image { width: 100%; height: 320rpx; display: block; }
 .section-head { display: flex; align-items: center; gap: 12rpx; margin-bottom: 20rpx; }
 .section-icon { font-size: 36rpx; }
@@ -493,9 +493,9 @@ export default {
 .analysis-card {
   margin-top: 20rpx;
   padding: 24rpx;
-  border-radius: 28rpx;
-  background: #f8fafc;
-  border: 2rpx solid #eef2f7;
+  border-radius: 24rpx;
+  background: linear-gradient(180deg, #fbfaff 0%, #ffffff 100%);
+  border: 2rpx solid #efe8ff;
 }
 .analysis-eyebrow {
   display: block;
@@ -515,12 +515,12 @@ export default {
 .rank-card {
   margin-top: 20rpx;
   padding: 24rpx;
-  border-radius: 28rpx;
-  background: #f8fafc;
-  border: 2rpx solid #eef2f7;
+  border-radius: 24rpx;
+  background: linear-gradient(180deg, #fbfaff 0%, #ffffff 100%);
+  border: 2rpx solid #efe8ff;
 }
 .rank-visual-row { display: flex; align-items: center; gap: 20rpx; }
-.rank-icon-wrap { width: 112rpx; min-width: 112rpx; height: 112rpx; min-height: 112rpx; border-radius: 28rpx; overflow: hidden; background: linear-gradient(180deg, #f2ebff 0%, #ffffff 100%); }
+.rank-icon-wrap { width: 112rpx; min-width: 112rpx; height: 112rpx; min-height: 112rpx; border-radius: 24rpx; overflow: hidden; background: linear-gradient(180deg, #f2ebff 0%, #ffffff 100%); }
 .rank-icon-wrap--career { background: linear-gradient(180deg, #fff6dd 0%, #ffffff 100%); }
 .rank-icon-image { width: 112rpx; height: 112rpx; display: block; }
 .rank-main { flex: 1; min-width: 0; }
@@ -531,7 +531,7 @@ export default {
   margin-top: 16rpx;
   height: 12rpx;
   border-radius: 999rpx;
-  background: #e5e7eb;
+  background: #ece8f8;
   overflow: hidden;
 }
 .rank-bar-fill {
@@ -547,7 +547,7 @@ export default {
   line-height: 1.7;
   color: #687184;
 }
-.report-section--summary { background: #f8fafc; }
+.report-section--summary { background: linear-gradient(180deg, #faf7ff 0%, #ffffff 100%); }
 .growth-list { margin-top: 24rpx; display: flex; flex-direction: column; gap: 16rpx; }
 .growth-item { display: flex; gap: 16rpx; }
 .growth-week { width: 120rpx; font-size: 24rpx; color: #6b23ff; font-weight: 700; flex-shrink: 0; }
@@ -564,7 +564,7 @@ export default {
   flex: 1;
   background: #fff;
   color: #6b7280;
-  border: 2rpx solid #e5e7eb;
+  border: 2rpx solid #ece8f8;
   border-radius: 48rpx;
   height: 88rpx;
   line-height: 88rpx;

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 750 1080" fill="none">
+  <defs>
+    <marker id="road-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M 0 0 L 8 4 L 0 8 Z" fill="#a4a6ff"/>
+    </marker>
+  </defs>
+  <!-- 主线管道 -->
+  <path
+    d="M 142 182
+    C 100 300 200 410 368 416
+    C 488 414 606 406 644 488
+    C 674 614 526 726 314 806
+    C 146 866 60 990 340 1190"
+    stroke="#B0B0FA" stroke-opacity=".52" stroke-width="58" stroke-linecap="round" stroke-linejoin="round"
+  />
+  <!-- 左侧小装饰箭头 -->
+  <path d="M 125 330 C 145 420 185 470 235 490" stroke="#A4A6FF" stroke-width="5" stroke-linecap="round" fill="none" marker-end="url(#road-arrow)" opacity=".72"/>
+  <!-- 右侧向下小箭头 -->
+  <path d="M 670 620 C 640 690 595 735 535 760" stroke="#A4A6FF" stroke-width="5" stroke-linecap="round" fill="none" marker-end="url(#road-arrow)" opacity=".9"/>
+</svg>

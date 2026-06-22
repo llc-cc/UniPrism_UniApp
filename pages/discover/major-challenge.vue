@@ -9,29 +9,29 @@
       </view>
     </view>
 
-    <scroll-view class="body" scroll-y>
+    <scroll-view class="body" scroll-y :scroll-into-view="scrollIntoView" scroll-with-animation>
       <view class="card">
         <text class="card-label">任务：形成一条可复核判断链</text>
         <text class="card-goal">{{ interaction.goal }}</text>
 
-        <view class="field">
+        <view id="anchor-input" class="field">
           <text class="field-label">先确认哪个输入对象？</text>
           <picker :range="interaction.inputs" :value="inputIndex" @change="onInputChange">
-            <view class="picker-value">{{ selectedInput || '请选择' }}</view>
+            <view class="picker-value" :class="{ 'picker-value--err': fieldErrors.input }">{{ selectedInput || '请选择' }}</view>
           </picker>
         </view>
 
-        <view class="field">
+        <view id="anchor-action" class="field">
           <text class="field-label">下一步专业动作？</text>
           <picker :range="interaction.actions" :value="actionIndex" @change="onActionChange">
-            <view class="picker-value">{{ selectedAction || '请选择' }}</view>
+            <view class="picker-value" :class="{ 'picker-value--err': fieldErrors.action }">{{ selectedAction || '请选择' }}</view>
           </picker>
         </view>
 
-        <view class="field">
+        <view id="anchor-feedback" class="field">
           <text class="field-label">最可能的错误来源？</text>
           <picker :range="interaction.feedback" :value="feedbackIndex" @change="onFeedbackChange">
-            <view class="picker-value">{{ selectedFeedback || '请选择' }}</view>
+            <view class="picker-value" :class="{ 'picker-value--err': fieldErrors.feedback }">{{ selectedFeedback || '请选择' }}</view>
           </picker>
         </view>
 
@@ -52,6 +52,9 @@
         </view>
 
         <button class="btn-submit" @tap="submit">提交诊断</button>
+        <view v-if="validationMessage" class="validation-banner">
+          <text class="validation-banner__text">{{ validationMessage }}</text>
+        </view>
       </view>
 
       <view class="card feedback-card">
@@ -95,6 +98,9 @@ export default {
       evidenceStrength: 64,
       submitted: false,
       accent: '#007a66',
+      fieldErrors: {},
+      validationMessage: '',
+      scrollIntoView: '',
     }
   },
   computed: {
@@ -102,13 +108,16 @@ export default {
       return MAJOR_CHALLENGE_TASK_LABELS[this.task] || '专业挑战'
     },
     inputIndex() {
-      return Math.max(0, this.interaction.inputs.indexOf(this.selectedInput))
+      const index = this.interaction.inputs.indexOf(this.selectedInput)
+      return index >= 0 ? index : 0
     },
     actionIndex() {
-      return Math.max(0, this.interaction.actions.indexOf(this.selectedAction))
+      const index = this.interaction.actions.indexOf(this.selectedAction)
+      return index >= 0 ? index : 0
     },
     feedbackIndex() {
-      return Math.max(0, this.interaction.feedback.indexOf(this.selectedFeedback))
+      const index = this.interaction.feedback.indexOf(this.selectedFeedback)
+      return index >= 0 ? index : 0
     },
     inputOk() {
       return this.selectedInput === this.interaction.inputs[0]
@@ -158,27 +167,58 @@ export default {
       return
     }
     this.interaction = this.module.interaction || this.interaction
-    this.selectedInput = this.interaction.inputs[0] || ''
-    this.selectedAction = this.interaction.actions[0] || ''
-    this.selectedFeedback = this.interaction.feedback[0] || ''
+    this.selectedInput = ''
+    this.selectedAction = ''
+    this.selectedFeedback = ''
     this.evidenceStrength = this.task === 'report' ? 74 : 64
     uni.setNavigationBarTitle({ title: this.taskLabel })
   },
   methods: {
+    clearFieldError(fieldKey) {
+      if (!this.fieldErrors[fieldKey]) return
+      const next = { ...this.fieldErrors }
+      delete next[fieldKey]
+      this.fieldErrors = next
+      if (!Object.keys(next).length) this.validationMessage = ''
+    },
+    scrollToAnchor(anchorId) {
+      this.scrollIntoView = ''
+      this.$nextTick(() => {
+        this.scrollIntoView = anchorId
+      })
+    },
+    validateBeforeSubmit() {
+      const nextErrors = {}
+      if (!this.selectedInput) nextErrors.input = true
+      if (!this.selectedAction) nextErrors.action = true
+      if (!this.selectedFeedback) nextErrors.feedback = true
+      this.fieldErrors = nextErrors
+      if (!Object.keys(nextErrors).length) {
+        this.validationMessage = ''
+        return true
+      }
+      this.validationMessage = '请先完成标红题目。'
+      const firstErrorKey = ['input', 'action', 'feedback'].find((key) => nextErrors[key])
+      if (firstErrorKey) this.scrollToAnchor(`anchor-${firstErrorKey}`)
+      return false
+    },
     onInputChange(e) {
       const idx = Number(e.detail.value)
       this.selectedInput = this.interaction.inputs[idx] || ''
       this.submitted = false
+      this.clearFieldError('input')
     },
     onActionChange(e) {
       const idx = Number(e.detail.value)
       this.selectedAction = this.interaction.actions[idx] || ''
       this.submitted = false
+      this.clearFieldError('action')
     },
     onFeedbackChange(e) {
       const idx = Number(e.detail.value)
       this.selectedFeedback = this.interaction.feedback[idx] || ''
       this.submitted = false
+      this.clearFieldError('feedback')
     },
     onEvidenceChanging(e) {
       this.evidenceStrength = Number(e.detail.value)
@@ -189,6 +229,7 @@ export default {
       this.submitted = false
     },
     submit() {
+      if (!this.validateBeforeSubmit()) return
       this.submitted = true
       markMajorChallengeCompleted(this.majorId, this.module.id, this.task, this.stars, this.progress)
     },
@@ -218,9 +259,12 @@ export default {
 .field { margin-top: 24rpx; }
 .field-label { display: block; font-size: 24rpx; font-weight: 700; color: #162033; }
 .picker-value { margin-top: 12rpx; padding: 20rpx 24rpx; border-radius: 16rpx; border: 2rpx solid #e3ebf3; background: #fbfdff; font-size: 24rpx; color: #334155; }
+.picker-value--err { border-color: #ff4d4f; background: #fff5f5; }
 .slider-head { display: flex; justify-content: space-between; align-items: center; }
 .slider-value { font-size: 24rpx; font-weight: 700; color: var(--accent); }
 .btn-submit { margin-top: 28rpx; background: var(--accent); color: #fff; border: none; border-radius: 999rpx; height: 84rpx; line-height: 84rpx; font-size: 28rpx; font-weight: 700; }
+.validation-banner { margin-top: 20rpx; padding: 18rpx 20rpx; border-radius: 16rpx; background: #fff5f5; border: 2rpx solid #ff4d4f; }
+.validation-banner__text { font-size: 24rpx; line-height: 1.6; color: #ff4d4f; font-weight: 700; }
 .feedback-card { margin-bottom: 40rpx; }
 .score { display: block; margin-top: 12rpx; font-size: 56rpx; font-weight: 700; color: var(--accent); }
 .score-row { display: flex; align-items: center; gap: 12rpx; margin-top: 14rpx; }

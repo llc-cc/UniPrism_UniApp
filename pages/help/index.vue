@@ -17,7 +17,7 @@
 
     <view class="contact">
       <text class="contact-title">还有问题？</text>
-      <text class="contact-desc">你可以在生涯规划中重新开始兴趣探索，或稍后联系我们获取帮助。</text>
+      <text class="contact-desc">你可以在生涯规划中重新开始四步测评流程，或稍后联系我们获取帮助。</text>
       <button class="btn-primary" @tap="goPlan">去生涯规划</button>
     </view>
   </view>
@@ -25,13 +25,19 @@
 
 <script setup>
 import { ref } from 'vue'
+import { onLoad } from '@dcloudio/uni-app'
+import { blockDisabledMiniAppPageEntry } from '../../business/disabled-miniapp-routes'
 
 const openIndex = ref(0)
 
+onLoad(() => {
+  blockDisabledMiniAppPageEntry()
+})
+
 const faqs = ref([
-  { q: '生涯规划怎么开始？', a: '点击底部「生涯规划」进入兴趣探索，完成问卷后即可生成你的兴趣画像与推荐专业。' },
-  { q: '如何体验推荐专业？', a: '在「我的报告」里点击任意推荐专业，即可直接进入该专业的专业体验流程。' },
-  { q: '可以重新测试吗？', a: '可以。在报告页面点击「重新测试」即可清空当前结果并重新开始兴趣探索。' },
+  { q: '生涯规划怎么开始？', a: '点击底部「生涯规划」后，按顺序完成性格测试、职业测评、深度测评，最后即可生成报告。' },
+  { q: '报告里会显示什么？', a: '报告会汇总你的测评结果，展示画像分析、推荐专业和发展建议。' },
+  { q: '可以重新测试吗？', a: '可以。在报告页面点击「重新测试」即可清空当前结果并重新开始四步测评流程。' },
   { q: '成就有什么用？', a: '成就用于记录你完成的探索环节，例如已体验的专业数量，后续会逐步开放更多徽章。' },
 ])
 
@@ -40,7 +46,7 @@ function toggle(idx) {
 }
 
 function goPlan() {
-  uni.switchTab({ url: '/pages/discover/index' })
+  uni.reLaunch({ url: '/pages/discover/index' })
 }
 </script>
 

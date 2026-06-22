@@ -17,7 +17,7 @@ import {
 
 const MATH_WELCOME_PARAGRAPHS = [
   '从小学开始，一直到初中、高中你都一直在学习数学。也在课本上了解到许多大数学家的光辉事迹，但你有没有好奇过：你在课本上学习的知识和现代最前沿的数学有多少差距呢？如今最顶级的数学家每天都在研究什么？',
-  '此外，选择数学专业一定就要成为数学家吗？那些数学专业的师兄、师姐们毕业后都去了那里？其实，数学专业能胜任的社会岗位可谓是包罗万象，在本次专业模拟体验中；你会了解到数学专业的主要学习内容、不同的专业路径选择和职业发展道路。',
+  '此外，选择数学专业一定就要成为数学家吗？那些数学专业的师兄、师姐们毕业后都去了哪里？其实，数学专业能胜任的社会岗位可谓是包罗万象。在本次专业模拟体验中，你会看到数学专业的真实任务样本、不同路径选择和职业发展道路。',
   '希望在本次体验过后，你能对数学专业有一个更加全面和清晰的认知。',
 ]
 
@@ -190,123 +190,48 @@ function articleSectionsToPages({ sectionPrefix, stageIndex, courseTitle, sectio
   }))
 }
 
-const BRANCH_TOPIC_SECTION_TITLES = {
-  '交换代数': [
-    '方程为什么需要理想',
-    '在一点附近重新算',
-    '无限后果怎样收进有限清单',
-    '看得见的分量与藏起来的厚度',
-    '形状的尺寸从哪里来',
-  ],
-  '代数拓扑': [
-    '橡皮泥形状为什么还能算数',
-    '一根橡皮筋怎样记住绕了几圈',
-    '把圆展开，路线就不再打结',
-    '洞能不能被边界填掉',
-    '比较不变量：何时用 π1，何时用 H*',
-  ],
-  '博弈论': [
-    '从互相猜测到策略式表示',
-    '最优反应与纳什均衡',
-    '博弈树、向后归纳与子博弈精炼',
-    '重复与不完全信息',
-  ],
-  '组合数学': [
-    '把离散对象说清楚',
-    '递推、容斥与生成函数',
-    '图、匹配与极值',
-  ],
-  '计算机图形学': [
-    '从三维场景到相机画面',
-    '光栅化管线：三角形怎样落到像素上',
-    '光、材质与阴影：像素为什么有明暗',
-    '动画、几何与实时权衡',
-  ],
-  'PDE 数值解': [
-    '从连续场到网格未知数',
-    '有限差分与稳定性',
-    '有限体积与有限元：守恒和弱形式',
-    '误差、线性求解器与复杂波前',
-  ],
-  '统计推断': [
-    '从样本到总体：数据为什么还不等于答案',
-    '似然与估计：哪个参数最能解释数据',
-    '区间与检验：不确定性怎样写进结论',
-    '贝叶斯更新、重抽样与模型边界',
-  ],
-  '随机过程': [
-    '从随机变量到随机路径',
-    'Markov 链与长期行为',
-    'Poisson 过程与队列：随机等待怎样建模',
-    '鞅、分支与连续过程边界',
-  ],
-  '期权定价': [
-    '从保险式合约到 payoff 图',
-    '一步二叉树与无套利复制',
-    'Black-Scholes：连续时间下的动态对冲',
-    '美式期权、波动率微笑与模型风险',
-  ],
-  '风险管理': [
-    '从价格波动到损益分布',
-    'VaR 与 Expected Shortfall：尾部损失怎样量化',
-    '压力测试、信用风险与流动性风险',
-    '对冲、限额与模型风险治理',
-  ],
-}
-
 function buildBranchTopicSections(topic, branch) {
-  if (Array.isArray(topic.sections) && topic.sections.length) {
-    return topic.sections
-  }
-
-  const titles = BRANCH_TOPIC_SECTION_TITLES[topic.title] || ['专题入口', '核心判断', '适配判断']
-  return titles.map((title, index) => {
-    if (index === 0) {
-      return {
-        title,
-        paragraphs: [
-          topic.summary,
-          `${topic.subtitle}。这一专题会把 ${branch.title} 方向常见的问题对象、分析视角和训练方式串起来。`,
-        ],
-      }
-    }
-
-    if (index === titles.length - 1) {
-      return {
-        title,
-        paragraphs: [
-          topic.interaction.goal,
-          `完成专题后，至少要能输出：${topic.interaction.output}。这对应的是该方向真实学习节奏里的最小交付物。`,
-        ],
-      }
-    }
-
-    return {
-      title,
+  return [
+    {
+      title: '专题入口',
       paragraphs: [
-        `方向关键词包括：${branch.modules.join('、')}。进入 ${topic.title} 时，需要逐步理解“${title}”这类问题在该方向中的位置。`,
+        topic.summary,
+        `${topic.subtitle}。这一专题会把 ${branch.title} 方向常见的问题对象、分析视角和训练方式串起来。`,
+      ],
+    },
+    {
+      title: '核心判断',
+      paragraphs: [
+        `方向关键词包括：${branch.modules.join('、')}。进入专题时，需要先判断自己是否愿意长期处理这类对象、证据和推理链。`,
         `如果继续深入 ${branch.title}，你会不断在定义、模型、证明、计算或实验之间来回切换，而不是只记住几个结果。`,
       ],
-    }
-  })
+    },
+    {
+      title: '适配判断',
+      paragraphs: [
+        topic.interaction.goal,
+        `完成专题后，至少要能输出：${topic.interaction.output}。这对应的是该方向真实学习节奏里的最小交付物。`,
+      ],
+    },
+  ]
 }
 
 /** 与 Web MathSliceExperienceCopy stageTitle 对齐 */
 const STAGE_TITLES = {
   intro: 'Part 1：数学专业介绍',
-  foundation: 'Part 2：三门基础课程',
-  advanced: 'Part 3：三门进阶课程',
+  foundation: 'Part 2：基础真实样本',
+  advanced: 'Part 3：可选深度样本',
   branch: 'Part 4：数学专业分流',
   complete: 'Part 5：体验完成',
 }
 
-/** 与 Web MathSpeedExperience stages 标题对齐 */
+/** 路线图标签（Figma）与体验壳标签（Web） */
 export const MATH_STAGE_META = [
-  { key: 'intro', label: '数学专业介绍', shortLabel: '介绍' },
-  { key: 'foundation', label: '三门基础课程', shortLabel: '基础' },
-  { key: 'advanced', label: '三门进阶课程', shortLabel: '进阶' },
-  { key: 'stream', label: '数学专业分流', shortLabel: '分流' },
-  { key: 'complete', label: '体验完成', shortLabel: '完成' },
+  { key: 'intro', label: '数学专业介绍', shortLabel: '介绍', phase: '阶段一', experienceLabel: '数学专业介绍' },
+  { key: 'foundation', label: '三门基础课程', shortLabel: '基础', phase: '阶段二', experienceLabel: '基础真实样本' },
+  { key: 'advanced', label: '三门进阶课程', shortLabel: '进阶', phase: '阶段三', experienceLabel: '可选深度样本' },
+  { key: 'stream', label: '数学专业分流', shortLabel: '分流', phase: '阶段四', experienceLabel: '数学方向选择' },
+  { key: 'complete', label: '体验完成', shortLabel: '完成', phase: '阶段五', experienceLabel: '体验完成' },
 ]
 
 function coursePreview(courseId) {
@@ -382,8 +307,8 @@ export function buildMathSpeedPages(selectedBranchId) {
     title: 'Part 1 结束',
     completionTitle: '数学专业介绍完成',
     completionDescription:
-      '你已经完整看过数学专业的欢迎页、专业介绍和总览视频。接下来会进入数学分析、线性代数和数理逻辑基础三门课程，判断自己是否适应本科数学的学习方式。',
-    nextStageTitle: '三门基础课程',
+      '你已经完整看过数学专业的欢迎页、专业介绍和总览视频。接下来会进入数学分析、线性代数和数理逻辑基础三个真实样本，判断自己是否适应本科数学的思维方式。',
+    nextStageTitle: '基础真实样本',
     nextStageDescription:
       '数学分析关注连续与极限，线性代数关注空间和矩阵，数理逻辑基础关注命题、量词和证明结构。',
   })
@@ -393,10 +318,11 @@ export function buildMathSpeedPages(selectedBranchId) {
     type: 'stage-intro',
     stageIndex: 1,
     stageTitle: STAGE_TITLES.foundation,
-    navTitle: '课程概览',
-    title: 'Part 2：三门基础课程',
+    navTitle: '样本概览',
+    title: '基础真实样本',
+    subtitle: '数学分析、线性代数、数理逻辑基础',
     intro:
-      '这一部分会进入本科数学专业最典型的三门基础课程。每门课都会给你一个快速入口，帮助你先建立直觉，再进入具体课程与挑战。',
+      '这一部分会进入本科数学专业最典型的三个入口样本。你可以先看 Overview 视频和主线正文，也可以把习题体验当作可选 taste test，用来判断自己是否愿意继续深入。',
     heroImage: '/design/math-speed/generated/math-major-intro-complete-v1.png',
     courses: foundationCourses,
   })
@@ -450,10 +376,10 @@ export function buildMathSpeedPages(selectedBranchId) {
     stageTitle: STAGE_TITLES.foundation,
     navTitle: 'Part 2 结束',
     title: 'Part 2 结束',
-    completionTitle: '三门基础课程完成',
+    completionTitle: '基础真实样本完成',
     completionDescription:
       '你已经进入数学分析、线性代数和数理逻辑基础三个入口学科。到这里，数学会从零散题型组织成一套由变化、空间关系和严密推理共同支撑的训练体系。',
-    nextStageTitle: '三门进阶课程',
+    nextStageTitle: '可选深度样本',
     nextStageDescription:
       '接下来会进入概率论、抽象代数和拓扑学，进一步体验数学如何处理不确定性、结构和连续变形。',
   })
@@ -463,10 +389,11 @@ export function buildMathSpeedPages(selectedBranchId) {
     type: 'stage-intro',
     stageIndex: 2,
     stageTitle: STAGE_TITLES.advanced,
-    navTitle: '课程概览',
-    title: 'Part 3：三门进阶课程',
+    navTitle: '样本概览',
+    title: '可选深度样本',
+    subtitle: '概率论、抽象代数、拓扑学',
     intro:
-      '这一阶段会进入概率论、抽象代数、拓扑学等更接近本科核心课的内容。你可以继续按“先建立整体印象，再进入正文与任务”的节奏，判断自己是否适合更抽象的数学训练。',
+      '这一阶段会进入概率论、抽象代数、拓扑学等更接近本科核心课的深度样本。你可以继续按“先建立整体印象，再进入正文与任务”的节奏，判断自己是否适合更抽象的数学训练。',
     courses: deepCourses,
     heroImage: '/design/math-speed/generated/math-deep-dive-complete-v1.png',
   })
@@ -516,7 +443,7 @@ export function buildMathSpeedPages(selectedBranchId) {
     stageTitle: STAGE_TITLES.advanced,
     navTitle: 'Part 3 结束',
     title: 'Part 3 结束',
-    completionTitle: '三门进阶课程完成',
+    completionTitle: '可选深度样本完成',
     completionDescription:
       '你已经体验了概率论、抽象代数和拓扑学三种更高阶的数学视角：用测度组织随机现象，用代数结构组织运算规则，用拓扑结构组织空间关系。它们会把数学从“解题工具”推进到“建立语言”。',
     nextStageTitle: '数学专业分流',
@@ -566,10 +493,6 @@ export function buildMathSpeedPages(selectedBranchId) {
         navTitle: topic.title,
         flowId,
         branchId: branch.id,
-        heroImage: topic.imageSrc || branch.imageSrc || '',
-        heroImageAlt: topic.imageAlt || branch.imageAlt || '',
-        videoSrc: topic.videoSrc || branch.videoSrc || '',
-        videoTitle: topic.videoTitle || branch.videoTitle || '',
         topic,
       })
       sections.forEach((section, sectionIndex) => {
@@ -579,13 +502,9 @@ export function buildMathSpeedPages(selectedBranchId) {
           stageIndex: 4,
           title: section.title,
           subtitle: topic.title,
-          navTitle: section.title,
+          navTitle: `正文 ${sectionIndex + 1}`,
           flowId,
           branchId: branch.id,
-          heroImage: section.imageSrc || topic.imageSrc || branch.imageSrc || '',
-          heroImageAlt: section.imageAlt || topic.imageAlt || branch.imageAlt || '',
-          videoSrc: section.videoSrc || topic.videoSrc || '',
-          videoTitle: section.videoTitle || topic.videoTitle || '',
           topic,
           section,
         })
@@ -594,14 +513,10 @@ export function buildMathSpeedPages(selectedBranchId) {
         id: `${flowId}-challenge`,
         type: 'branch-topic-challenge',
         stageIndex: 4,
-        title: `${topic.title}习题体验`,
-        navTitle: '习题体验',
+        title: `${topic.title}：专题任务`,
+        navTitle: '专题任务',
         flowId,
         branchId: branch.id,
-        heroImage: topic.imageSrc || branch.imageSrc || '',
-        heroImageAlt: topic.imageAlt || branch.imageAlt || '',
-        videoSrc: topic.videoSrc || branch.videoSrc || '',
-        videoTitle: topic.videoTitle || branch.videoTitle || '',
         topic,
       })
     })

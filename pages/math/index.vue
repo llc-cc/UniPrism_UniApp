@@ -1,106 +1,74 @@
 <template>
   <view class="page">
     <view class="top-sticky-shell">
-      <view class="top-progress">
-        <view class="stage-track">
-          <view class="stage-track-bg" />
-          <view class="stage-fill" :style="{ width: stageFillWidth }" />
-          <view class="stage-dots">
+      <view class="shell-nav-toolbar">
+        <view class="major-dropdown-trigger" @tap="toggleMajorNav">
+          <text class="major-dropdown-label">全部专业</text>
+          <text class="major-dropdown-caret" :class="{ 'major-dropdown-caret--open': majorNavOpen }">▼</text>
+        </view>
+      </view>
+
+      <view class="question-stage-progress" aria-label="体验进度">
+        <view
+          v-for="(stage, index) in progressStageNodes"
+          :key="stage.id || index"
+          class="question-stage-progress__item"
+          :class="[
+            `question-stage-progress__item--${stageProgressNodeState(index)}`,
+            { 'question-stage-progress__item--clickable': stageProgressClickable(index) },
+          ]"
+          @tap="handleStageProgressTap(index)"
+        >
+          <view class="question-stage-progress__dot">
+            <view class="question-stage-progress__dot-core" />
+          </view>
+          <view v-if="index < progressStageSegmentCount" class="question-stage-progress__bar">
             <view
-              v-for="(stage, idx) in stageMeta"
-              :key="`${stage.key}-dot`"
-              class="stage-dot-wrap"
-              :class="{ 'stage-dot-wrap-clickable': isStageUnlocked(idx) }"
-              @tap="jumpToStage(idx)"
+              class="question-stage-progress__bar-fill"
+              :style="{ width: stageProgressSegmentWidth(index) }"
+            />
+          </view>
+        </view>
+      </view>
+
+      <view v-if="majorNavOpen" class="major-nav-panel">
+        <view class="major-nav-panel-inner">
+          <view class="major-nav-stages">
+            <view
+              v-for="stage in dropdownStageList"
+              :key="stage.stageIndex"
+              class="major-nav-stage-btn"
+              :class="{
+                'major-nav-stage-btn--active': stage.stageIndex === dropdownStageIndex,
+                'major-nav-stage-btn--locked': !stage.unlocked,
+              }"
+              @tap="selectDropdownStage(stage.stageIndex)"
             >
-              <view
-                class="stage-dot"
-                :class="{
-                  'stage-dot-active': idx === activeStageIndex,
-                  'stage-dot-done': isStageCompleted(idx),
-                  'stage-dot-locked': !isStageUnlocked(idx),
-                }"
-              >
-                <image
-                  class="stage-diamond"
-                  :src="resolveAsset(idx <= activeStageIndex ? progressDiamondActive : progressDiamondInactive)"
-                  mode="aspectFit"
-                />
-              </view>
+              <text class="major-nav-stage-text">{{ stage.label }}</text>
+            </view>
+          </view>
+          <view class="major-nav-subpanel">
+            <view
+              v-for="item in dropdownNavItems"
+              :key="item.id"
+              class="major-nav-subitem"
+              :class="{
+                'major-nav-subitem--active': item.active,
+                'major-nav-subitem--locked': !item.unlocked,
+              }"
+              @tap="selectDropdownNavItem(item)"
+            >
+              <text class="major-nav-subitem-text">{{ item.label }}</text>
             </view>
           </view>
         </view>
-        <view class="stage-labels">
-          <text
-            v-for="(stage, idx) in stageMeta"
-            :key="`${stage.key}-label`"
-            class="stage-label"
-            :class="{
-              'stage-label-active': idx === activeStageIndex,
-              'stage-label-done': isStageCompleted(idx),
-              'stage-label-locked': !isStageUnlocked(idx),
-            }"
-            @tap="jumpToStage(idx)"
-          >
-            {{ idx + 1 }}.{{ stage.shortLabel || stage.label }}
-          </text>
-        </view>
       </view>
-
-      <view class="shell-header">
-        <view class="header-copy">
-          <text class="header-kicker">数学专业体验</text>
-          <text class="header-stage-mini">{{ currentStageLabel }}</text>
-        </view>
-      </view>
-
-      <scroll-view scroll-x class="progress-nav-scroll" :show-scrollbar="false" enable-flex>
-        <view class="progress-nav-row">
-          <view
-            v-for="item in topLevelNavItems"
-            :key="item.id"
-            class="progress-nav-pill"
-            :class="{
-              'progress-nav-pill-active': item.active,
-              'progress-nav-pill-locked': !item.unlocked,
-            }"
-            @tap="jumpToNavItem(item)"
-          >
-            <text class="progress-nav-pill-text">{{ item.label }}</text>
-          </view>
-        </view>
-      </scroll-view>
-
-      <scroll-view
-        v-if="tertiaryNavItems.length"
-        scroll-x
-        class="tertiary-nav-scroll"
-        :show-scrollbar="false"
-        enable-flex
-      >
-        <view class="tertiary-nav-row">
-          <view
-            v-for="item in tertiaryNavItems"
-            :key="item.id"
-            class="tertiary-nav-pill"
-            :class="{
-              'tertiary-nav-pill-active': item.active,
-              'tertiary-nav-pill-locked': !item.unlocked,
-            }"
-            @tap="jumpToTertiaryItem(item)"
-          >
-            <text class="tertiary-nav-pill-text">{{ item.label }}</text>
-          </view>
-        </view>
-      </scroll-view>
     </view>
 
-    <scroll-view
+    <view v-if="majorNavOpen" class="major-nav-mask" @tap="closeMajorNav" />
+
+    <view
       class="body"
-      scroll-y
-      :enable-back-to-top="true"
-      :scroll-top="scrollTop"
-      :scroll-into-view="scrollIntoViewTarget"
       @touchstart="handleTouchStart"
       @touchend="handleTouchEnd"
     >
@@ -119,7 +87,7 @@
 
       <view v-if="showModuleCard" class="module-card">
         <view class="module-card-head">
-          <text class="module-card-chip">{{ stageMeta[activeStageIndex] ? stageMeta[activeStageIndex].label : '数学专业体验' }}</text>
+          <text class="module-card-chip">{{ stageMeta[activeStageIndex] ? (stageMeta[activeStageIndex].experienceLabel || stageMeta[activeStageIndex].label) : '数学专业体验' }}</text>
         </view>
         <text v-if="showModuleTitle" class="module-card-title">{{ currentDisplayTitle }}</text>
         <text v-if="currentPageSummary" class="module-card-desc">{{ currentPageSummary }}</text>
@@ -130,30 +98,31 @@
       </view>
 
       <!-- 欢迎页 -->
-      <view v-if="currentPage.type === 'welcome'" class="stage">
-        <view class="intro-copy-panel intro-copy-panel-tabbed">
+      <view v-if="pageType === 'welcome'" class="stage welcome-stage">
+        <text class="welcome-title">欢迎体验数学专业</text>
+        <view class="welcome-copy">
           <text
             v-for="(paragraph, idx) in currentPage.paragraphs"
             :key="`welcome-${idx}`"
             class="intro-paragraph"
+            :class="{ 'welcome-copy-strong': idx === currentPage.paragraphs.length - 1 }"
           >
             {{ paragraph }}
           </text>
         </view>
-        <view class="intro-card-grid intro-card-grid-compact">
-          <view v-for="card in currentPage.cards" :key="card.index" class="intro-card intro-card-compact">
-            <image class="intro-card-image" :src="resolveAsset(card.image)" mode="aspectFill" />
-            <view class="intro-card-copy">
-              <text class="intro-card-index">{{ card.index }}</text>
-              <text class="intro-card-title">{{ card.title }}</text>
-              <text class="intro-card-body">{{ card.body }}</text>
+        <view class="welcome-card-list">
+          <view v-for="card in welcomeCards" :key="card.title" class="welcome-card">
+            <image class="welcome-card-image" :src="resolveAsset(card.image || card.remoteImage)" mode="aspectFill" />
+            <view class="welcome-card-copy">
+              <text class="welcome-card-title">{{ card.title }}</text>
+              <text class="welcome-card-body">{{ card.body }}</text>
             </view>
           </view>
         </view>
       </view>
 
       <!-- 专业介绍 -->
-      <view v-else-if="currentPage.type === 'intro-text'" class="stage">
+      <view v-else-if="pageType === 'intro-text'" class="stage">
         <view class="intro-copy-panel intro-copy-panel-tabbed">
           <text
             v-for="(paragraph, idx) in currentPage.paragraphs"
@@ -176,7 +145,7 @@
       </view>
 
       <!-- 介绍视频 -->
-      <view v-else-if="currentPage.type === 'intro-video'" class="stage">
+      <view v-else-if="pageType === 'intro-video'" class="stage">
         <view class="intro-copy-panel intro-copy-panel-tabbed">
           <text class="stage-intro">{{ currentPage.summary }}</text>
         </view>
@@ -194,11 +163,12 @@
       </view>
 
       <!-- 阶段导语 -->
-      <view v-else-if="currentPage.type === 'stage-intro'" class="stage">
+      <view v-else-if="pageType === 'stage-intro'" class="stage">
         <image class="hero-image" :src="resolveAsset(currentPage.heroImage)" mode="widthFix" />
         <view class="spotlight-panel">
-          <text class="spotlight-badge">{{ currentPage.stageIndex === 1 ? '基础课入口' : '进阶课入口' }}</text>
+          <text class="spotlight-badge">{{ currentPage.stageIndex === 1 ? '基础真实样本' : '可选深度样本' }}</text>
           <text class="spotlight-title">{{ getStageIntroHeading(currentPage) }}</text>
+          <text v-if="currentPage.subtitle" class="spotlight-sub">{{ currentPage.subtitle }}</text>
           <text class="spotlight-body">{{ currentPage.intro }}</text>
         </view>
         <view class="course-list">
@@ -215,9 +185,9 @@
       </view>
 
       <!-- 概览卡片 -->
-      <view v-else-if="currentPage.type === 'catalog' || currentPage.type === 'intro-home'" class="stage">
+      <view v-else-if="pageType === 'catalog' || pageType === 'intro-home'" class="stage">
         <image class="hero-image" :src="resolveAsset(currentPage.heroImage)" mode="widthFix" />
-        <text class="stage-intro">{{ currentPage.type === 'catalog' ? '建立整体印象，了解数学专业能做什么。' : '了解课程体系、发展方向与案例体验。' }}</text>
+        <text class="stage-intro">{{ pageType === 'catalog' ? '建立整体印象，了解数学专业能做什么。' : '了解课程体系、发展方向与案例体验。' }}</text>
         <view v-for="card in currentPage.cards" :key="card.index" class="catalog-card">
           <image class="catalog-image" :src="resolveAsset(card.image)" mode="widthFix" />
           <view class="catalog-copy">
@@ -229,7 +199,7 @@
       </view>
 
       <!-- 阶段完成 -->
-      <view v-else-if="currentPage.type === 'stage-complete'" class="stage">
+      <view v-else-if="pageType === 'stage-complete'" class="stage">
         <view class="completion-card completion-card-tabbed">
           <text class="completion-badge">阶段完成</text>
           <text class="completion-desc">{{ currentPage.completionDescription }}</text>
@@ -242,7 +212,7 @@
       </view>
 
       <!-- 课程概览 / 课程介绍 -->
-      <view v-else-if="currentPage.type === 'course-overview'" class="stage">
+      <view v-else-if="pageType === 'course-overview'" class="stage">
         <view class="article-panel article-panel-tabbed">
           <view class="article-body-head">
             <text class="article-body-title">{{ currentPage.title }}</text>
@@ -277,7 +247,7 @@
       </view>
 
       <!-- 课程 section 正文 -->
-      <view v-else-if="currentPage.type === 'course-section'" class="stage">
+      <view v-else-if="pageType === 'course-section'" class="stage">
         <view class="article-panel article-panel-tabbed">
           <view class="article-body-head">
             <text class="article-body-title">{{ currentPage.title }}</text>
@@ -308,7 +278,7 @@
       </view>
 
       <!-- 习题体验入口 -->
-      <view v-else-if="currentPage.type === 'course-challenge'" class="stage">
+      <view v-else-if="pageType === 'course-challenge'" class="stage">
         <view class="article-panel article-panel-tabbed">
           <view class="article-body-head">
             <text class="article-body-title">{{ currentPage.title }}</text>
@@ -348,7 +318,7 @@
       </view>
 
       <!-- 数学分析：内联正文 + 底部挑战 -->
-      <view v-else-if="currentPage.type === 'math-analysis-inline'" class="stage">
+      <view v-else-if="pageType === 'math-analysis-inline'" class="stage">
         <view class="article-panel article-panel-flat">
           <text class="inline-course-title">数学分析</text>
           <text class="inline-course-sub">理解连续世界的基础语言</text>
@@ -405,7 +375,7 @@
       </view>
 
       <!-- 课程页（基础/深入） -->
-      <view v-else-if="currentPage.type === 'math-course'" class="stage">
+      <view v-else-if="pageType === 'math-course'" class="stage">
         <view class="course-panel">
           <image
             v-if="getCourseCover(currentPage.course)"
@@ -507,7 +477,7 @@
       </view>
 
       <!-- 深入开始 -->
-      <view v-else-if="currentPage.type === 'deep-start'" class="stage">
+      <view v-else-if="pageType === 'deep-start'" class="stage">
         <image class="hero-image" :src="resolveAsset(currentPage.heroImage)" mode="widthFix" />
         <text class="stage-intro">{{ currentPage.intro }}</text>
         <view v-for="course in currentPage.courses" :key="course.id" class="course-card">
@@ -518,7 +488,7 @@
       </view>
 
       <!-- 分流 -->
-      <view v-else-if="currentPage.type === 'branching'" class="stage">
+      <view v-else-if="pageType === 'branching'" class="stage">
         <image class="hero-image" :src="resolveAsset(currentPage.heroImage)" mode="widthFix" />
         <text class="stage-intro">探索不同方向，获得个性化建议。请选择一个你更想长期投入的训练方向。</text>
         <view
@@ -543,37 +513,26 @@
       </view>
 
       <!-- 方向概览 -->
-      <view v-else-if="currentPage.type === 'branch-overview'" class="stage">
+      <view v-else-if="pageType === 'branch-overview'" class="stage">
         <view class="article-panel">
           <text class="completion-badge">方向总览</text>
           <text class="article-title">{{ currentPage.branch.title }}</text>
           <text class="article-sub">{{ currentPage.subtitle || currentPage.branch.subtitle }}</text>
           <video
-            v-if="currentPage.videoSrc && !isCurrentVideoFailed()"
+            v-if="currentPage.videoSrc"
             class="intro-video"
             :src="resolveVideoAsset(currentPage.videoSrc)"
-            :poster="resolveAsset(currentPage.heroImage || currentPage.posterImage)"
             controls
             object-fit="contain"
             show-center-play-btn
-            @error="onCurrentVideoError"
           />
-          <view v-else-if="currentPage.videoSrc" class="media-fallback-card">
-            <text class="media-fallback-title">视频暂不可播放</text>
-            <text class="media-fallback-desc">当前已回退展示封面图，你仍可继续浏览本页文字内容。</text>
-          </view>
           <text v-if="currentPage.videoTitle" class="video-caption">{{ currentPage.videoTitle }}</text>
           <image
-            v-if="currentPage.heroImage && !isCurrentHeroFailed()"
+            v-if="currentPage.heroImage"
             class="hero-image"
             :src="resolveAsset(currentPage.heroImage)"
             mode="widthFix"
-            @error="onCurrentHeroError"
           />
-          <view v-else-if="currentPage.heroImage" class="media-fallback-card">
-            <text class="media-fallback-title">图片暂不可加载</text>
-            <text class="media-fallback-desc">当前素材地址不可用，已保留文字内容供继续体验。</text>
-          </view>
           <text class="article-paragraph">{{ currentPage.summary || currentPage.branch.body }}</text>
           <text
             v-for="(paragraph, idx) in currentPage.body || []"
@@ -593,37 +552,11 @@
       </view>
 
       <!-- 方向专题 -->
-      <view v-else-if="currentPage.type === 'branch-topic'" class="stage">
+      <view v-else-if="pageType === 'branch-topic'" class="stage">
         <view class="article-panel">
           <text class="completion-badge">专题体验</text>
           <text class="article-title">{{ currentPage.topic.title }}</text>
           <text class="article-sub">{{ currentPage.topic.subtitle }}</text>
-          <video
-            v-if="currentPage.videoSrc && !isCurrentVideoFailed()"
-            class="intro-video"
-            :src="resolveVideoAsset(currentPage.videoSrc)"
-            :poster="resolveAsset(currentPage.heroImage || currentPage.posterImage)"
-            controls
-            object-fit="contain"
-            show-center-play-btn
-            @error="onCurrentVideoError"
-          />
-          <view v-else-if="currentPage.videoSrc" class="media-fallback-card">
-            <text class="media-fallback-title">视频暂不可播放</text>
-            <text class="media-fallback-desc">当前已回退展示封面图，你仍可继续浏览本专题内容。</text>
-          </view>
-          <text v-if="currentPage.videoTitle" class="video-caption">{{ currentPage.videoTitle }}</text>
-          <image
-            v-if="currentPage.heroImage && !isCurrentHeroFailed()"
-            class="hero-image"
-            :src="resolveAsset(currentPage.heroImage)"
-            mode="widthFix"
-            @error="onCurrentHeroError"
-          />
-          <view v-else-if="currentPage.heroImage" class="media-fallback-card">
-            <text class="media-fallback-title">图片暂不可加载</text>
-            <text class="media-fallback-desc">当前素材地址不可用，已保留文字内容供继续体验。</text>
-          </view>
           <text class="article-paragraph">{{ currentPage.topic.summary }}</text>
           <view class="interaction-panel">
             <text class="interaction-title">{{ currentPage.topic.interaction.title }}</text>
@@ -633,37 +566,11 @@
         </view>
       </view>
 
-      <view v-else-if="currentPage.type === 'branch-topic-section'" class="stage">
+      <view v-else-if="pageType === 'branch-topic-section'" class="stage">
         <view class="article-panel">
           <text class="completion-badge">专题正文</text>
           <text class="article-title">{{ currentPage.title }}</text>
           <text class="article-sub">{{ currentPage.subtitle }}</text>
-          <video
-            v-if="currentPage.videoSrc && !isCurrentVideoFailed()"
-            class="intro-video"
-            :src="resolveVideoAsset(currentPage.videoSrc)"
-            :poster="resolveAsset(currentPage.heroImage || currentPage.posterImage)"
-            controls
-            object-fit="contain"
-            show-center-play-btn
-            @error="onCurrentVideoError"
-          />
-          <view v-else-if="currentPage.videoSrc" class="media-fallback-card">
-            <text class="media-fallback-title">视频暂不可播放</text>
-            <text class="media-fallback-desc">当前已回退展示封面图，你仍可继续浏览本节正文内容。</text>
-          </view>
-          <text v-if="currentPage.videoTitle" class="video-caption">{{ currentPage.videoTitle }}</text>
-          <image
-            v-if="currentPage.heroImage && !isCurrentHeroFailed()"
-            class="hero-image"
-            :src="resolveAsset(currentPage.heroImage)"
-            mode="widthFix"
-            @error="onCurrentHeroError"
-          />
-          <view v-else-if="currentPage.heroImage" class="media-fallback-card">
-            <text class="media-fallback-title">图片暂不可加载</text>
-            <text class="media-fallback-desc">当前素材地址不可用，已保留文字内容供继续体验。</text>
-          </view>
           <text
             v-for="(paragraph, idx) in currentPage.section.paragraphs"
             :key="`branch-topic-section-${idx}`"
@@ -674,37 +581,11 @@
         </view>
       </view>
 
-      <view v-else-if="currentPage.type === 'branch-topic-challenge'" class="stage">
+      <view v-else-if="pageType === 'branch-topic-challenge'" class="stage">
         <view class="article-panel">
           <text class="completion-badge">专题任务</text>
           <text class="article-title">{{ currentPage.topic.title }}</text>
           <text class="article-sub">{{ currentPage.topic.subtitle }}</text>
-          <video
-            v-if="currentPage.videoSrc && !isCurrentVideoFailed()"
-            class="intro-video"
-            :src="resolveVideoAsset(currentPage.videoSrc)"
-            :poster="resolveAsset(currentPage.heroImage || currentPage.posterImage)"
-            controls
-            object-fit="contain"
-            show-center-play-btn
-            @error="onCurrentVideoError"
-          />
-          <view v-else-if="currentPage.videoSrc" class="media-fallback-card">
-            <text class="media-fallback-title">视频暂不可播放</text>
-            <text class="media-fallback-desc">当前已回退展示封面图，你仍可继续完成专题任务判断。</text>
-          </view>
-          <text v-if="currentPage.videoTitle" class="video-caption">{{ currentPage.videoTitle }}</text>
-          <image
-            v-if="currentPage.heroImage && !isCurrentHeroFailed()"
-            class="hero-image"
-            :src="resolveAsset(currentPage.heroImage)"
-            mode="widthFix"
-            @error="onCurrentHeroError"
-          />
-          <view v-else-if="currentPage.heroImage" class="media-fallback-card">
-            <text class="media-fallback-title">图片暂不可加载</text>
-            <text class="media-fallback-desc">当前素材地址不可用，已保留文字内容供继续体验。</text>
-          </view>
           <text class="article-paragraph">{{ currentPage.topic.interaction.goal }}</text>
           <view class="interaction-panel">
             <text class="interaction-title">{{ currentPage.topic.interaction.title }}</text>
@@ -714,7 +595,7 @@
       </view>
 
       <!-- 职业路径 -->
-      <view v-else-if="currentPage.type === 'branch-rolemap'" class="stage">
+      <view v-else-if="pageType === 'branch-rolemap'" class="stage">
         <view class="article-panel">
           <text class="completion-badge">职业路径</text>
           <text class="article-title">{{ currentPage.branch.title }} · 职业路径</text>
@@ -729,7 +610,7 @@
       </view>
 
       <!-- 完成 -->
-      <view v-else-if="currentPage.type === 'done'" class="stage">
+      <view v-else-if="pageType === 'done'" class="stage">
         <view class="completion-card">
           <text class="completion-badge">体验完成</text>
           <text class="completion-title">{{ currentPage.completionTitle }}</text>
@@ -753,21 +634,46 @@
           </view>
         </view>
       </view>
-    </scroll-view>
+
+      <view v-else class="stage stage-fallback">
+        <text class="stage-fallback-title">{{ currentPage.title || '数学专业体验' }}</text>
+        <text class="stage-fallback-desc">当前页面类型：{{ currentPage.type || 'unknown' }}</text>
+      </view>
+    </view>
 
     <view class="footer">
-      <button v-if="pageIndex > 0" class="btn-ghost" @tap="prevPage">上一页</button>
-      <button
+      <view v-if="pageIndex > 0" class="btn-ghost" @tap="prevPage">
+        <text class="btn-label">上一步</text>
+      </view>
+      <view
         v-if="pageIndex < pages.length - 1"
         class="btn-primary"
-        :disabled="!canNext"
+        :class="{ 'btn-primary--disabled': !canNext }"
         @tap="nextPage"
       >
-        {{ nextLabel }}
-      </button>
-      <button v-else class="btn-primary" @tap="finishExperience">
-        {{ completed ? '完成并返回' : '完成体验' }}
-      </button>
+        <text class="btn-label">{{ nextLabel }}</text>
+      </view>
+      <view v-else class="btn-primary" @tap="finishExperience">
+        <text class="btn-label">{{ completed ? '完成并返回' : '完成体验' }}</text>
+      </view>
+    </view>
+
+    <view v-if="lockPromptVisible" class="lock-prompt-mask" @tap="closeLockPrompt">
+      <view class="lock-prompt" @tap.stop>
+        <text class="lock-prompt-title">请先完成前置阶段</text>
+        <view class="lock-prompt-card">
+          <view class="lock-prompt-icon-wrap">
+            <view class="lock-glyph lock-glyph--prompt" aria-hidden="true">
+              <image class="lock-glyph-top" src="/static/assets/discover/road-lock-top.svg" mode="aspectFit" />
+              <image class="lock-glyph-body" src="/static/assets/discover/road-lock-body.svg" mode="aspectFit" />
+            </view>
+          </view>
+          <view class="lock-prompt-copy">
+            <text class="lock-prompt-stage">{{ lockPromptStageLabel }}</text>
+            <text class="lock-prompt-hint">{{ lockPromptHint }}</text>
+          </view>
+        </view>
+      </view>
     </view>
   </view>
 </template>
@@ -781,7 +687,6 @@ import {
   findMathBranchOverviewPageIndex,
   MATH_STAGE_META,
 } from '../../business/math-speed-pages'
-import { analysisArticleSections } from '../../business/math-content.ts'
 import { challengeTaskCards } from '../../business/challenge-task-cards'
 import {
   readAnalysisChallengeProgress,
@@ -789,15 +694,18 @@ import {
   getAnalysisChallengeUnlockHint,
 } from '../../business/analysis-challenge-progress'
 import {
-  PROGRESS_DIAMOND_ACTIVE,
-  PROGRESS_DIAMOND_INACTIVE,
-} from '../../business/discover-chat-stages'
+  MATH_DROPDOWN_STAGE_LABELS,
+  MATH_WELCOME_CARDS,
+} from '../../business/math-experience-shell'
+import { MATH_ROADMAP_STAGES } from '../../business/math-roadmap-config'
 import { getAssetHost, resolveAsset } from '../../utils/asset-map'
 
 export default {
   data() {
     return {
       pageIndex: 0,
+      majorNavOpen: false,
+      dropdownStageIndex: 0,
       unlockedPageIndex: 0,
       scrollTop: 0,
       scrollIntoViewTarget: '',
@@ -807,26 +715,32 @@ export default {
       selectedBranchId: 'basic',
       selectedBranchTitle: '基础数学',
       fitChoice: '',
+      lockPromptVisible: false,
+      lockPromptStageLabel: '',
+      lockPromptHint: '',
       completed: false,
       visitedCourses: [],
       unlockedStageIndexes: [0],
       stageMeta: MATH_STAGE_META,
-      videoFailureState: {},
-      imageFailureState: {},
       fitOptions: [
         { value: 'fit', label: '我愿意长期处理抽象推理与证明问题' },
         { value: 'maybe', label: '有兴趣，但还想体验其他专业' },
         { value: 'unfit', label: '不太适合我，想换个方向' },
       ],
-      analysisSections: analysisArticleSections,
+      analysisSections: [],
       analysisChallengeProgress: readAnalysisChallengeProgress(),
-      progressDiamondActive: PROGRESS_DIAMOND_ACTIVE,
-      progressDiamondInactive: PROGRESS_DIAMOND_INACTIVE,
+      pagesLoadFailed: false,
     }
   },
   computed: {
     pages() {
-      return buildMathSpeedPages(this.selectedBranchId)
+      try {
+        const built = buildMathSpeedPages(this.selectedBranchId)
+        return Array.isArray(built) ? built : []
+      } catch (error) {
+        console.error('[math/index] buildMathSpeedPages failed', error)
+        return []
+      }
     },
     stageRanges() {
       const ranges = []
@@ -842,14 +756,35 @@ export default {
       return ranges
     },
     currentPage() {
-      return this.pages[this.pageIndex] || { type: 'catalog', title: '', stageIndex: 0 }
+      const list = Array.isArray(this.pages) ? this.pages : []
+      const index = Math.max(0, Math.min(this.pageIndex, Math.max(0, list.length - 1)))
+      const page = list[index]
+      if (page && page.type) return page
+      if (page) return page
+      if (list[0]) return list[0]
+      return {
+        id: 'catalog-overview',
+        type: 'welcome',
+        stageIndex: 0,
+        navTitle: '欢迎页',
+        title: '欢迎体验数学专业！',
+        paragraphs: [
+          '从小学开始，一直到初中、高中你都一直在学习数学。也在课本上了解到许多大数学家的光辉事迹，但你有没有好奇过：你在课本上学习的知识和现代最前沿的数学有多少差距呢？如今最顶级的数学家每天都在研究什么？',
+          '此外，选择数学专业一定就要成为数学家吗？那些数学专业的师兄、师姐们毕业后都去了哪里？其实，数学专业能胜任的社会岗位可谓是包罗万象。在本次专业模拟体验中，你会看到数学专业的真实任务样本、不同路径选择和职业发展道路。',
+          '希望在本次体验过后，你能对数学专业有一个更加全面和清晰的认知。',
+        ],
+      }
+    },
+    pageType() {
+      return this.currentPage?.type || ''
     },
     activeStageIndex() {
       return this.currentPage.stageIndex || 0
     },
     currentStageLabel() {
       const stage = this.stageMeta[this.activeStageIndex]
-      return stage ? `Part ${this.activeStageIndex + 1} · ${stage.label}` : '数学专业体验'
+      const label = stage?.experienceLabel || stage?.label || '数学专业体验'
+      return stage ? `Part ${this.activeStageIndex + 1} · ${label}` : '数学专业体验'
     },
     currentPageTitle() {
       const page = this.currentPage
@@ -866,9 +801,6 @@ export default {
     },
     currentSecondaryLabel() {
       const page = this.currentPage
-      if (page.type === 'branch-topic' || page.type === 'branch-topic-section' || page.type === 'branch-topic-challenge') {
-        return '专题学习'
-      }
       if (page.navTitle) return page.navTitle
       if (page.type === 'course-section') return page.title
       if (page.type === 'course-overview') return page.title
@@ -880,6 +812,7 @@ export default {
       if (page.type === 'stage-intro') return page.title
       if (page.type === 'branching') return '选择方向'
       if (page.type === 'branch-overview') return '方向概览'
+      if (page.type === 'branch-topic' || page.type === 'branch-topic-section' || page.type === 'branch-topic-challenge') return page.topic?.title || '专题学习'
       if (page.type === 'branch-rolemap') return '职业 Rolemap'
       if (page.type === 'done') return '体验完成'
       const tab = this.activeSecondaryTabs.find((item) => item.id === this.currentSecondaryId)
@@ -910,13 +843,13 @@ export default {
         'done',
         'math-analysis-inline',
       ])
-      return !hiddenTypes.has(this.currentPage.type)
+      return !hiddenTypes.has(this.pageType)
     },
     currentDisplayTitle() {
-      if (this.currentPage.type === 'stage-intro') {
+      if (this.pageType === 'stage-intro') {
         return this.getStageIntroHeading(this.currentPage)
       }
-      if (this.currentPage.type === 'done') return '完成方向体验与最终判断'
+      if (this.pageType === 'done') return '完成方向体验与最终判断'
       return this.currentSecondaryLabel || this.currentPage.title
     },
     showModuleTitle() {
@@ -950,6 +883,14 @@ export default {
       const offset = Math.max(0, this.pageIndex - range.startIndex)
       return Math.max(0, Math.min(1, offset / pageCount))
     },
+    stageNavProgressRatio() {
+      const hiddenIds = new Set(['part1-done', 'part2-done', 'part3-done', 'part2-start', 'part3-start'])
+      const items = (this.activeStageSection?.items || []).filter((item) => !hiddenIds.has(item.id))
+      if (!items.length) return this.currentStageProgressRatio
+      const currentIdx = items.findIndex((item) => this.isCurrentSecondary(item))
+      const idx = currentIdx >= 0 ? currentIdx : 0
+      return (idx + 1) / items.length
+    },
     stageSections() {
       return [
         {
@@ -966,9 +907,9 @@ export default {
         {
           id: 'part2',
           stageIndex: 1,
-          label: '三门基础课程',
+          label: '基础真实样本',
           items: [
-            { id: 'part2-start', label: '课程概览', pageId: 'foundation-courses-start' },
+            { id: 'part2-start', label: '样本概览', pageId: 'foundation-courses-start' },
             { id: 'analysis', label: '数学分析', matcher: (page) => page.id.startsWith('analysis-') },
             { id: 'linear', label: '线性代数', matcher: (page) => page.id.startsWith('linear-algebra-') },
             { id: 'logic', label: '数理逻辑基础', matcher: (page) => page.id.startsWith('logic-basics') },
@@ -978,9 +919,9 @@ export default {
         {
           id: 'part3',
           stageIndex: 2,
-          label: '三门进阶课程',
+          label: '可选深度样本',
           items: [
-            { id: 'part3-start', label: '课程概览', pageId: 'deep-dive-start' },
+            { id: 'part3-start', label: '样本概览', pageId: 'deep-dive-start' },
             { id: 'probability', label: '概率论', matcher: (page) => page.id.startsWith('probability-') },
             { id: 'abstract', label: '抽象代数', matcher: (page) => page.id.startsWith('abstract-algebra-') },
             { id: 'topology', label: '拓扑学', matcher: (page) => page.id.startsWith('topology-') },
@@ -1001,7 +942,11 @@ export default {
           label: '体验完成',
           items: [
             { id: 'branch-overview', label: '方向概览', matcher: (page) => /^branch-.+-overview$/.test(page.id) },
-            { id: 'branch-topic', label: '专题学习', matcher: (page) => /^branch-.+-topic-/.test(page.id) },
+            ...(MATH_BRANCH_TOPICS[this.selectedBranchId] || []).map((topic, index) => ({
+              id: `branch-topic-${index}`,
+              label: topic.title,
+              matcher: (page) => page.flowId === `branch-${this.selectedBranchId}-topic-${index}`,
+            })),
             { id: 'branch-rolemap', label: '职业 Rolemap', matcher: (page) => /^branch-.+-rolemap$/.test(page.id) },
             { id: 'complete', label: '体验完成', pageId: 'math-full-experience-complete' },
           ],
@@ -1036,20 +981,8 @@ export default {
         }
       })
     },
-    tertiaryNavItems() {
-      return this.buildTertiaryEntries().map((entry) => {
-        const pageIndex = this.resolveNavTargetIndex(entry)
-        return {
-          id: entry.id,
-          label: entry.label,
-          pageIndex,
-          active: this.isCurrentTertiary(entry),
-          unlocked: pageIndex >= 0 && pageIndex <= this.unlockedPageIndex,
-        }
-      })
-    },
     isCourseFlowPage() {
-      const type = this.currentPage.type
+      const type = this.pageType
       return type === 'course-overview' || type === 'course-section' || type === 'course-challenge'
     },
     courseSectionItems() {
@@ -1058,8 +991,18 @@ export default {
     },
     showTertiaryZone() {
       if (this.isCourseFlowPage) return false
-      const hidden = new Set(['branching', 'math-analysis-inline', 'catalog', 'intro-home', 'math-course', 'deep-start'])
-      return !hidden.has(this.currentPage.type)
+      const hidden = new Set([
+        'welcome',
+        'intro-text',
+        'intro-video',
+        'branching',
+        'math-analysis-inline',
+        'catalog',
+        'intro-home',
+        'math-course',
+        'deep-start',
+      ])
+      return !hidden.has(this.pageType)
     },
     tertiaryPageTitle() {
       const page = this.currentPage
@@ -1088,18 +1031,18 @@ export default {
       return Math.round(((this.activeStageIndex + this.currentStageProgressRatio) / (total - 1)) * 100)
     },
     stageFillWidth() {
-      return `calc((100% - 68rpx) * ${this.primaryProgressPercent / 100})`
+      return `${this.primaryProgressPercent}%`
     },
     canNext() {
-      if (this.currentPage.type === 'branching') return Boolean(this.selectedBranchId)
+      if (this.pageType === 'branching') return Boolean(this.selectedBranchId)
       return true
     },
     nextLabel() {
-      if (this.currentPage.type === 'branching') {
+      if (this.pageType === 'branching') {
         return this.selectedBranchId ? '进入所选方向' : '请先选择方向'
       }
-      if (this.currentPage.type === 'stage-complete') return '进入下一阶段'
-      return '下一页'
+      if (this.pageType === 'stage-complete') return '进入下一阶段'
+      return '下一步'
     },
     analysisChallengeCards() {
       const progress = this.analysisChallengeProgress
@@ -1110,46 +1053,159 @@ export default {
         unlockHint: getAnalysisChallengeUnlockHint(card.id),
       }))
     },
+    progressStageNodes() {
+      return this.stageMeta || []
+    },
+    progressStageSegmentCount() {
+      return Math.max(0, this.progressStageNodes.length - 1)
+    },
+    dropdownStageList() {
+      return MATH_DROPDOWN_STAGE_LABELS.map((stage) => ({
+        ...stage,
+        unlocked: this.isStageUnlocked(stage.stageIndex),
+      }))
+    },
+    dropdownStageSection() {
+      return this.stageSections.find((section) => section.stageIndex === this.dropdownStageIndex) || this.stageSections[0]
+    },
+    dropdownNavItems() {
+      const section = this.dropdownStageSection
+      if (!section) return []
+      const hiddenIds = new Set(['part1-done', 'part2-done', 'part3-done', 'part2-start', 'part3-start'])
+      return (section.items || [])
+        .filter((item) => !hiddenIds.has(item.id))
+        .map((item) => {
+          const pageIndex = this.resolveNavTargetIndex(item)
+          const active = this.dropdownStageIndex === this.activeStageIndex && this.isCurrentSecondary(item)
+          return {
+            ...item,
+            pageIndex,
+            active,
+            unlocked: pageIndex >= 0 && pageIndex <= this.unlockedPageIndex,
+          }
+        })
+    },
+    navBarStageTitle() {
+      const stage = MATH_ROADMAP_STAGES[this.activeStageIndex] || MATH_ROADMAP_STAGES[0]
+      return stage?.webTitle || stage?.label || '数学专业介绍'
+    },
+    welcomeCards() {
+      return MATH_WELCOME_CARDS
+    },
   },
   watch: {
     selectedBranchId() {
       this.saveSnapshot()
+    },
+    activeStageIndex() {
+      this.updateNavBarTitle()
+    },
+    pageIndex() {
+      this.updateNavBarTitle()
     },
   },
   onShow() {
     this.restoreSnapshot()
     this.analysisChallengeProgress = readAnalysisChallengeProgress()
   },
-  onLoad() {
-    uni.setNavigationBarTitle({ title: '数学专业体验' })
+  onLoad(options) {
+    this.updateNavBarTitle()
+    uni.setNavigationBarTitle({ title: this.navBarStageTitle })
     this.restoreSnapshot()
+    if (options && options.pageIndex !== undefined) {
+      const pageIndex = parseInt(options.pageIndex, 10)
+      if (!Number.isNaN(pageIndex) && pageIndex >= 0 && pageIndex <= this.unlockedPageIndex) {
+        this.pageIndex = pageIndex
+        this.scrollToTop()
+      }
+    } else if (options && options.stageIndex !== undefined) {
+      const idx = parseInt(options.stageIndex, 10)
+      const range = this.stageRanges.find((r) => r.stageIndex === idx)
+      if (range && range.startIndex <= this.unlockedPageIndex) {
+        this.pageIndex = range.startIndex
+        this.scrollToTop()
+      }
+    }
   },
   methods: {
     resolveAsset,
+    updateNavBarTitle() {
+      uni.setNavigationBarTitle({ title: this.navBarStageTitle })
+    },
+    getProgressSegmentFill(segmentIndex) {
+      if (segmentIndex < this.activeStageIndex) return '100%'
+      if (segmentIndex > this.activeStageIndex) return '0%'
+      const ratio = Math.max(0.18, this.currentStageProgressRatio)
+      return `${Math.round(ratio * 100)}%`
+    },
+    stageProgressNodeState(index) {
+      if (index < this.activeStageIndex || this.isStageCompleted(index)) return 'completed'
+      if (index === this.activeStageIndex) return 'active'
+      return 'pending'
+    },
+    stageProgressClickable(index) {
+      return this.isStageUnlocked(index)
+    },
+    stageProgressSegmentWidth(index) {
+      return this.getProgressSegmentFill(index)
+    },
+    handleStageProgressTap(index) {
+      this.jumpToStage(index)
+    },
+    toggleMajorNav() {
+      if (!this.majorNavOpen) {
+        this.dropdownStageIndex = this.activeStageIndex
+      }
+      this.majorNavOpen = !this.majorNavOpen
+    },
+    closeMajorNav() {
+      this.majorNavOpen = false
+    },
+    selectDropdownStage(stageIndex) {
+      if (!this.isStageUnlocked(stageIndex)) {
+        this.showLockedStagePrompt(stageIndex)
+        return
+      }
+      this.dropdownStageIndex = stageIndex
+    },
+    selectDropdownNavItem(item) {
+      if (!item || item.pageIndex < 0) return
+      if (!item.unlocked) {
+        this.showLockedStagePrompt(this.dropdownStageIndex)
+        return
+      }
+      this.pageIndex = item.pageIndex
+      this.dropdownStageIndex = this.pages[item.pageIndex]?.stageIndex ?? this.dropdownStageIndex
+      this.scrollToTop()
+      this.saveSnapshot()
+      this.closeMajorNav()
+    },
+    shortProgressLabel(label) {
+      return String(label || '').replace(/^\d+\./, '').trim()
+    },
+    goRoadmap() {
+      uni.navigateBack({
+        fail: () => {
+          uni.redirectTo({ url: '/pages/math/deep-explore' })
+        },
+      })
+    },
+    jumpToMobileTab(tab) {
+      if (!tab || tab.pageIndex < 0) return
+      if (!tab.unlocked) {
+        this.showLockedStagePrompt(tab.stageIndex)
+        return
+      }
+      this.pageIndex = tab.pageIndex
+      this.scrollToTop()
+      this.saveSnapshot()
+    },
     resolveVideoAsset(src) {
       if (!src) return ''
       if (/^https?:\/\//i.test(src)) return src
       const host = getAssetHost().replace(/\/$/, '')
       const path = src.startsWith('/') ? src : `/${src}`
       return `${host}${path}`
-    },
-    isCurrentVideoFailed() {
-      return Boolean(this.videoFailureState[this.currentPage.id])
-    },
-    isCurrentHeroFailed() {
-      return Boolean(this.imageFailureState[this.currentPage.id])
-    },
-    onCurrentVideoError() {
-      this.videoFailureState = {
-        ...this.videoFailureState,
-        [this.currentPage.id]: true,
-      }
-    },
-    onCurrentHeroError() {
-      this.imageFailureState = {
-        ...this.imageFailureState,
-        [this.currentPage.id]: true,
-      }
     },
     normalizeCourseContent(page) {
       if (!page) return []
@@ -1249,7 +1305,10 @@ export default {
     },
     getStageIntroHeading(page) {
       if (!page) return ''
-      return page.stageIndex === 1 ? '先看三门基础课会学什么' : '先看三门进阶课会学什么'
+      if (page.title) return page.title
+      if (page.stageIndex === 1) return '基础真实样本'
+      if (page.stageIndex === 2) return '可选深度样本'
+      return ''
     },
     restoreSnapshot() {
       const snapshot = loadMathProgress()
@@ -1260,9 +1319,16 @@ export default {
       this.visitedCourses = snapshot.visitedCourses || []
       this.unlockedStageIndexes = snapshot.unlockedStageIndexes || [0]
       this.unlockedPageIndex = typeof snapshot.unlockedPageIndex === 'number' ? snapshot.unlockedPageIndex : (snapshot.pageIndex || 0)
-      const maxIndex = Math.max(0, buildMathSpeedPages(this.selectedBranchId).length - 1)
+      let list = []
+      try {
+        list = buildMathSpeedPages(this.selectedBranchId)
+      } catch (error) {
+        console.error('[math/index] restoreSnapshot build failed', error)
+      }
+      const maxIndex = Math.max(0, (list.length || 1) - 1)
       this.pageIndex = Math.min(snapshot.pageIndex || 0, maxIndex)
       this.unlockedPageIndex = Math.min(Math.max(this.unlockedPageIndex, this.pageIndex), maxIndex)
+      this.pagesLoadFailed = !list.length
     },
     saveSnapshot() {
       saveMathProgress({
@@ -1339,16 +1405,38 @@ export default {
         this.unlockedStageIndexes = [...this.unlockedStageIndexes, stageIndex].sort((a, b) => a - b)
       }
     },
+    getLockedPrerequisiteStages(targetStageIndex) {
+      return this.stageMeta
+        .slice(0, Math.max(0, targetStageIndex))
+        .filter((stage, idx) => !this.isStageCompleted(idx))
+    },
+    showLockedStagePrompt(stageIndex) {
+      const blockedStages = this.getLockedPrerequisiteStages(stageIndex)
+      if (blockedStages.length > 0) {
+        this.lockPromptStageLabel = blockedStages.map((stage) => stage.label).join('、')
+        this.lockPromptHint = blockedStages.length > 1 ? '请先完成以上阶段，完成后即可进入当前阶段' : '请先完成该阶段，完成后即可进入当前阶段'
+      } else {
+        const stage = this.stageMeta[stageIndex]
+        this.lockPromptStageLabel = stage?.label || '当前阶段'
+        this.lockPromptHint = '请先按顺序完成当前阶段内容'
+      }
+      this.lockPromptVisible = true
+    },
+    closeLockPrompt() {
+      this.lockPromptVisible = false
+    },
     jumpToStage(stageIndex) {
       if (!this.isStageUnlocked(stageIndex)) {
-        uni.showToast({ title: '请先完成上一阶段', icon: 'none' })
+        this.showLockedStagePrompt(stageIndex)
         return
       }
       const target = this.stageRanges.find((range) => range.stageIndex === stageIndex)?.startIndex ?? -1
       if (target >= 0) {
         this.pageIndex = target
+        this.dropdownStageIndex = stageIndex
         this.scrollToTop()
         this.saveSnapshot()
+        this.closeMajorNav()
       }
     },
     jumpToSecondary(item) {
@@ -1359,57 +1447,13 @@ export default {
     jumpToNavItem(item) {
       if (!item || item.pageIndex < 0) return
       if (item.pageIndex > this.unlockedPageIndex) {
-        uni.showToast({ title: '请先按当前流程继续体验', icon: 'none' })
+        const targetStageIndex = this.pages[item.pageIndex]?.stageIndex ?? this.activeStageIndex
+        this.showLockedStagePrompt(targetStageIndex)
         return
       }
       this.pageIndex = item.pageIndex
       this.scrollToTop()
       this.saveSnapshot()
-    },
-    jumpToTertiaryItem(item) {
-      this.jumpToNavItem(item)
-    },
-    buildTertiaryEntries() {
-      const courseRootMap = {
-        analysis: 'analysis-video',
-        linear: 'linear-algebra-video',
-        logic: 'logic-basics',
-        probability: 'probability-overview',
-        abstract: 'abstract-algebra-overview',
-        topology: 'topology-overview',
-      }
-
-      const currentCourseRootId = courseRootMap[this.currentSecondaryId]
-      if (currentCourseRootId) {
-        return this.pages
-          .filter((page) => page.navParentId === currentCourseRootId)
-          .map((page) => ({
-            id: `tertiary-${page.id}`,
-            label: page.navTitle || page.title,
-            pageId: page.id,
-            matcher: (candidate) => candidate.id === page.id,
-          }))
-      }
-
-      if (this.currentSecondaryId === 'branch-topic') {
-        return (MATH_BRANCH_TOPICS[this.selectedBranchId] || []).map((topic, index) => {
-          const flowId = `branch-${this.selectedBranchId}-topic-${index}`
-          return {
-            id: `tertiary-${flowId}`,
-            label: topic.title,
-            pageId: `${flowId}-intro`,
-            matcher: (page) => page.flowId === flowId,
-          }
-        })
-      }
-
-      return []
-    },
-    isCurrentTertiary(item) {
-      if (!item) return false
-      if (typeof item.matcher === 'function') return item.matcher(this.currentPage)
-      if (item.pageId) return this.currentPage.id === item.pageId
-      return false
     },
     prevPage() {
       if (this.pageIndex > 0) {
@@ -1423,7 +1467,7 @@ export default {
         uni.showToast({ title: '请先选择一个方向', icon: 'none' })
         return
       }
-      if (this.currentPage.type === 'branching' && this.selectedBranchId) {
+      if (this.pageType === 'branching' && this.selectedBranchId) {
         const branchOverviewIndex = findMathBranchOverviewPageIndex(
           buildMathSpeedPages(this.selectedBranchId),
         )
@@ -1437,7 +1481,7 @@ export default {
         }
       }
       if (this.pageIndex < this.pages.length - 1) {
-        if (this.currentPage.type === 'math-analysis-inline') {
+        if (this.pageType === 'math-analysis-inline') {
           this.markAnalysisCourseVisited()
         }
         const nextPage = this.pages[this.pageIndex + 1]
@@ -1508,158 +1552,173 @@ export default {
 </script>
 
 <style scoped>
-.page { display: flex; flex-direction: column; height: 100vh; background: #f6f8fc; }
+.page { display: flex; flex-direction: column; height: 100vh; background: #f8fafc; }
 .top-sticky-shell {
   position: sticky;
   top: 0;
-  background: #ffffff;
-  border-bottom: 1rpx solid #e6edf5;
-  box-shadow: 0 10rpx 26rpx rgba(15, 23, 42, 0.05);
-  z-index: 10;
+  background: #f8fafc;
+  z-index: 20;
+  flex-shrink: 0;
 }
-.top-progress {
-  padding: 12rpx 24rpx 18rpx;
-  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+.shell-nav-toolbar {
+  padding: 16rpx 28rpx 8rpx;
 }
-.stage-track {
-  position: relative;
-  height: 68rpx;
-}
-.stage-track-bg,
-.stage-fill {
-  position: absolute;
-  left: 34rpx;
-  right: 34rpx;
-  top: 28rpx;
-  height: 24rpx;
-  border-radius: 999rpx;
-}
-.stage-track-bg { background: #ebe7ff; }
-.stage-fill {
-  right: auto;
-  max-width: calc(100% - 68rpx);
-  background: linear-gradient(90deg, #e7c2ff 0%, #9762ff 100%);
-  transition: width 0.25s ease;
-}
-.stage-dots {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  justify-content: space-between;
+.major-dropdown-trigger {
+  display: inline-flex;
   align-items: center;
-  padding: 0 17rpx;
+  gap: 10rpx;
+  padding: 4rpx 0;
 }
-.stage-dot-wrap {
-  width: 68rpx;
-  height: 68rpx;
+.major-dropdown-label {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #999999;
+  line-height: 1.4;
+}
+.major-dropdown-caret {
+  font-size: 18rpx;
+  color: #b8b8be;
+  line-height: 1;
+  transition: transform 0.2s ease;
+}
+.major-dropdown-caret--open {
+  transform: rotate(180deg);
+}
+.question-stage-progress {
   display: flex;
   align-items: center;
-  justify-content: center;
+  width: 100%;
+  padding: 8rpx 28rpx 20rpx;
+  box-sizing: border-box;
 }
-.stage-dot-wrap-clickable { cursor: pointer; }
-.stage-dot {
-  width: 56rpx;
-  height: 56rpx;
-  border-radius: 50%;
-  background: #d8d8d8;
+.question-stage-progress__item {
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 10rpx;
-}
-.stage-dot-wrap-clickable .stage-dot { box-shadow: 0 0 0 3rpx rgba(151, 98, 255, 0.22); }
-.stage-dot-active,
-.stage-dot-done { background: #9762ff; }
-.stage-dot-locked { opacity: 0.55; }
-.stage-diamond { width: 34rpx; height: 34rpx; }
-.stage-labels {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 8rpx;
-}
-.stage-label {
   flex: 1;
   min-width: 0;
-  text-align: center;
-  font-size: 20rpx;
-  line-height: 1.3;
-  color: #999999;
+}
+.question-stage-progress__item:last-child {
+  flex: 0 0 auto;
+}
+.question-stage-progress__item--clickable {
+  cursor: pointer;
+}
+.question-stage-progress__dot {
+  flex: 0 0 auto;
+  width: 44rpx;
+  height: 44rpx;
+  border-radius: 50%;
+  background: #d9d9d9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  transition: background 0.2s ease;
+}
+.question-stage-progress__dot-core {
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: 50%;
+  background: #ffffff;
+}
+.question-stage-progress__item--completed .question-stage-progress__dot,
+.question-stage-progress__item--active .question-stage-progress__dot {
+  background: #4ee33f;
+}
+.question-stage-progress__item--clickable .question-stage-progress__dot {
+  box-shadow: 0 0 0 5rpx rgba(78, 227, 63, 0.16);
+}
+.question-stage-progress__bar {
+  position: relative;
+  flex: 1;
+  height: 24rpx;
+  margin: 0 10rpx;
+  border-radius: 999rpx;
+  overflow: hidden;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      #dcdcdc 0,
+      #dcdcdc 4rpx,
+      #f2f2f2 4rpx,
+      #f2f2f2 8rpx
+    );
+}
+.question-stage-progress__bar-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: #4ee33f;
+  transition: width 0.25s ease;
+}
+.major-nav-mask {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 15;
+  background: rgba(15, 23, 42, 0.08);
+}
+.major-nav-panel {
+  position: relative;
+  z-index: 21;
+  padding: 0 20rpx 20rpx;
+}
+.major-nav-panel-inner {
+  display: flex;
+  gap: 16rpx;
+  align-items: stretch;
+}
+.major-nav-stages {
+  width: 248rpx;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14rpx;
+}
+.major-nav-stage-btn {
+  min-height: 72rpx;
+  padding: 16rpx 18rpx;
+  border-radius: 16rpx;
+  background: #e5e5e5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.major-nav-stage-btn--active {
+  background: #4cc8c1;
+}
+.major-nav-stage-btn--locked {
+  opacity: 0.55;
+}
+.major-nav-stage-text {
+  font-size: 24rpx;
   font-weight: 700;
+  color: #ffffff;
+  line-height: 1.45;
+  text-align: center;
 }
-.stage-label-active,
-.stage-label-done { color: #283248; }
-.stage-label-locked { opacity: 0.55; }
-.primary-tabs-scroll,
-.primary-tabs,
-.primary-tab,
-.primary-tab-index,
-.primary-tab-label,
-.primary-tabs-top {
-  display: none;
+.major-nav-subpanel {
+  flex: 1;
+  min-width: 0;
+  border-radius: 20rpx;
+  background: #edfafa;
+  padding: 28rpx 24rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 22rpx;
 }
-.shell-header {
-  padding: 12rpx 24rpx 10rpx;
-  background: #ffffff;
-  border-top: 1rpx solid #f3f5fb;
+.major-nav-subitem--locked {
+  opacity: 0.5;
 }
-.header-copy { min-width: 0; }
-.header-kicker { display: block; font-size: 21rpx; font-weight: 700; color: #64748b; }
-.header-stage-mini { display: block; margin-top: 6rpx; font-size: 24rpx; line-height: 1.4; color: #6b23ff; font-weight: 700; }
-.progress-nav-scroll {
-  width: 100%;
-  white-space: nowrap;
-  border-top: 1rpx solid #f3f5fb;
-  background: #fff;
+.major-nav-subitem-text {
+  font-size: 28rpx;
+  font-weight: 600;
+  line-height: 1.6;
+  color: #b8b8be;
 }
-.progress-nav-row {
-  display: inline-flex;
-  gap: 12rpx;
-  padding: 12rpx 24rpx 14rpx;
-}
-.progress-nav-pill {
-  flex-shrink: 0;
-  padding: 10rpx 22rpx;
-  border-radius: 999rpx;
-  background: #f3f6fb;
-  border: 2rpx solid transparent;
-}
-.progress-nav-pill-active {
-  background: #eef4ff;
-  border-color: #2f6bff;
-}
-.progress-nav-pill-locked { opacity: 0.45; }
-.progress-nav-pill-text { font-size: 22rpx; color: #475569; white-space: nowrap; }
-.progress-nav-pill-active .progress-nav-pill-text { color: #2f6bff; font-weight: 700; }
-.tertiary-nav-scroll {
-  width: 100%;
-  white-space: nowrap;
-  border-top: 1rpx solid #f3f5fb;
-  background: #f8fbff;
-}
-.tertiary-nav-row {
-  display: inline-flex;
-  gap: 12rpx;
-  padding: 10rpx 24rpx 14rpx;
-}
-.tertiary-nav-pill {
-  flex-shrink: 0;
-  padding: 8rpx 20rpx;
-  border-radius: 999rpx;
-  background: #ffffff;
-  border: 2rpx solid #dbe5f0;
-}
-.tertiary-nav-pill-active {
-  background: #eef4ff;
-  border-color: #2f6bff;
-}
-.tertiary-nav-pill-locked { opacity: 0.45; }
-.tertiary-nav-pill-text {
-  font-size: 20rpx;
-  color: #64748b;
-  white-space: nowrap;
-}
-.tertiary-nav-pill-active .tertiary-nav-pill-text {
-  color: #2f6bff;
+.major-nav-subitem--active .major-nav-subitem-text {
+  color: #333333;
   font-weight: 700;
 }
 .tertiary-zone {
@@ -1743,7 +1802,32 @@ export default {
   border-color: #c9efd5;
   color: #0c8c4a;
 }
-.body { flex: 1; min-height: 0; padding: 16rpx 24rpx 24rpx; box-sizing: border-box; }
+.body {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  overflow-y: auto;
+  padding: 16rpx 24rpx 24rpx;
+  box-sizing: border-box;
+  -webkit-overflow-scrolling: touch;
+}
+.stage-fallback {
+  padding: 48rpx 28rpx;
+  background: #fafafa;
+  border-radius: 20rpx;
+}
+.stage-fallback-title {
+  display: block;
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #283248;
+}
+.stage-fallback-desc {
+  display: block;
+  margin-top: 12rpx;
+  font-size: 24rpx;
+  color: #94a3b8;
+}
 .page-top-anchor { width: 100%; height: 0; }
 .stage { padding-bottom: 24rpx; }
 .intro-copy-panel-tabbed { margin-top: 0; }
@@ -1765,7 +1849,62 @@ export default {
   padding: 28rpx;
   box-shadow: 0 14rpx 38rpx rgba(15,23,42,0.05);
 }
-.intro-title { display: block; text-align: center; font-size: 40rpx; font-weight: 700; line-height: 1.45; color: #102033; }
+.welcome-stage { padding-top: 8rpx; }
+.welcome-title {
+  display: block;
+  font-size: 44rpx;
+  font-weight: 700;
+  line-height: 1.45;
+  color: #283248;
+  text-align: center;
+}
+.welcome-copy {
+  margin-top: 20rpx;
+  padding: 24rpx;
+  border-radius: 20rpx;
+  background: #fafafa;
+}
+.welcome-copy-strong {
+  display: block;
+  margin-top: 18rpx;
+  font-size: 26rpx;
+  line-height: 1.75;
+  color: #283248;
+  font-weight: 700;
+}
+.welcome-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+  margin-top: 24rpx;
+}
+.welcome-card {
+  border-radius: 20rpx;
+  overflow: hidden;
+  background: #ffffff;
+  border: 2rpx solid #ececf0;
+  box-shadow: 0 12rpx 30rpx rgba(15, 23, 42, 0.05);
+}
+.welcome-card-image {
+  width: 100%;
+  height: 280rpx;
+  background: #f5f7fa;
+}
+.welcome-card-copy { padding: 22rpx 24rpx 26rpx; }
+.welcome-card-title {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #283248;
+  line-height: 1.45;
+}
+.welcome-card-body {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 24rpx;
+  line-height: 1.7;
+  color: #666666;
+}
 .intro-paragraph { display: block; margin-top: 18rpx; font-size: 25rpx; line-height: 1.82; color: #394657; }
 .intro-card-grid { display: flex; flex-direction: column; gap: 18rpx; margin-top: 24rpx; }
 .intro-card-grid-compact { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18rpx; }
@@ -1822,6 +1961,7 @@ export default {
   font-weight: 700;
 }
 .spotlight-title { display: block; margin-top: 16rpx; font-size: 34rpx; font-weight: 700; color: #102033; }
+.spotlight-sub { display: block; margin-top: 8rpx; font-size: 24rpx; font-weight: 600; color: #4cc8c1; }
 .spotlight-body,
 .stage-intro { display: block; margin-top: 14rpx; font-size: 24rpx; line-height: 1.75; color: #52657a; }
 .course-list { display: flex; flex-direction: column; gap: 18rpx; margin-top: 22rpx; }
@@ -1923,26 +2063,6 @@ export default {
 .course-preview-figure-card { margin-top: 16rpx; padding: 16rpx; border-radius: 18rpx; background: #f8fafc; }
 .course-preview-figure { width: 100%; border-radius: 14rpx; }
 .course-preview-figure-note { display: block; margin-top: 10rpx; font-size: 20rpx; line-height: 1.6; color: #64748b; }
-.media-fallback-card {
-  margin-top: 18rpx;
-  padding: 20rpx 22rpx;
-  border-radius: 18rpx;
-  background: #f8fafc;
-  border: 2rpx dashed #cbd5e1;
-}
-.media-fallback-title {
-  display: block;
-  font-size: 24rpx;
-  font-weight: 700;
-  color: #334155;
-}
-.media-fallback-desc {
-  display: block;
-  margin-top: 10rpx;
-  font-size: 21rpx;
-  line-height: 1.7;
-  color: #64748b;
-}
 .course-path-list { margin-top: 16rpx; }
 .course-path-item { display: flex; gap: 16rpx; align-items: flex-start; }
 .course-path-item + .course-path-item { margin-top: 16rpx; }
@@ -2019,11 +2139,30 @@ export default {
 .fit-option { margin-top: 16rpx; padding: 20rpx; border-radius: 18rpx; background: #f5f8fc; border: 2rpx solid transparent; }
 .fit-option-active { border-color: #007a66; background: #ecfdf5; }
 .fit-option-text { font-size: 24rpx; color: #334155; font-weight: 600; line-height: 1.6; }
-.footer { display: flex; gap: 16rpx; padding: 18rpx 24rpx calc(18rpx + env(safe-area-inset-bottom)); background: #fff; box-shadow: 0 -8rpx 28rpx rgba(15,23,42,0.06); }
-.btn-ghost, .btn-primary { flex: 1; height: 84rpx; line-height: 84rpx; border-radius: 999rpx; border: none; font-size: 28rpx; font-weight: 700; }
-.btn-ghost { background: #e5e7eb; color: #6b7280; }
-.btn-primary { background: #2f6bff; color: #fff; box-shadow: 0 10rpx 0 #2248a4; }
-.btn-primary[disabled] { opacity: 0.45; box-shadow: none; }
+.footer { display: flex; gap: 16rpx; padding: 18rpx 24rpx calc(18rpx + env(safe-area-inset-bottom)); background: #f8fafc; box-shadow: 0 -8rpx 23rpx rgba(153, 153, 153, 0.07); flex-shrink: 0; }
+.btn-ghost, .btn-primary {
+  flex: 1;
+  height: 88rpx;
+  padding: 0 24rpx;
+  border-radius: 32rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+  line-height: 1.4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-ghost { background: #e5e5e5; color: #777777; }
+.btn-primary { background: #4cc8c1; color: #ffffff; box-shadow: 0 16rpx 0 #155753; }
+.btn-primary--disabled { opacity: 0.55; box-shadow: none; pointer-events: none; }
+.btn-label {
+  font-size: 28rpx;
+  font-weight: 600;
+  line-height: 1.4;
+  color: inherit;
+}
+.btn-primary .btn-label { color: #ffffff; }
+.btn-ghost .btn-label { color: #777777; }
 .article-panel-flat { box-shadow: none; padding: 0; }
 .article-panel-tabbed {
   background: #ffffff;
@@ -2067,4 +2206,107 @@ export default {
 .challenge-entry-body { display: block; margin-top: 10rpx; font-size: 23rpx; line-height: 1.65; color: #64748b; }
 .challenge-entry-hint { display: block; margin-top: 12rpx; font-size: 22rpx; color: #ef4444; }
 .challenge-entry-action { display: block; margin-top: 14rpx; font-size: 22rpx; font-weight: 700; color: #007a66; }
+.lock-prompt-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgba(15, 23, 42, 0.28);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: calc(130rpx + env(safe-area-inset-top)) 24rpx 48rpx;
+  box-sizing: border-box;
+}
+.lock-prompt {
+  width: 100%;
+  max-width: 680rpx;
+  padding: 36rpx 32rpx 32rpx;
+  border-radius: 28rpx;
+  background: #ffffff;
+  box-shadow: 0 24rpx 64rpx rgba(15, 23, 42, 0.14);
+}
+.lock-prompt-title {
+  display: block;
+  font-size: 34rpx;
+  line-height: 1.5;
+  color: #1c1c3a;
+  font-weight: 700;
+}
+.lock-prompt-card {
+  margin-top: 28rpx;
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+  padding: 28rpx 24rpx;
+  border-radius: 20rpx;
+  background: #f3f4f6;
+}
+.lock-prompt-icon-wrap {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 50%;
+  background: #d8dbe3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.lock-glyph {
+  position: relative;
+  width: 34rpx;
+  height: 34rpx;
+}
+.lock-glyph-top,
+.lock-glyph-body {
+  position: absolute;
+  display: block;
+}
+.lock-glyph-top {
+  position: absolute;
+  left: 10rpx;
+  top: 0;
+  width: 14rpx;
+  height: 12rpx;
+  transform-origin: 2rpx 100%;
+}
+.lock-glyph-body {
+  left: 3rpx;
+  top: 9rpx;
+  width: 28rpx;
+  height: 24rpx;
+}
+.lock-glyph--prompt {
+  width: 44rpx;
+  height: 44rpx;
+}
+.lock-glyph--prompt .lock-glyph-top {
+  left: 13rpx;
+  top: 2rpx;
+  width: 18rpx;
+  height: 16rpx;
+}
+.lock-glyph--prompt .lock-glyph-body {
+  left: 4rpx;
+  top: 12rpx;
+  width: 36rpx;
+  height: 30rpx;
+}
+.lock-prompt-copy {
+  flex: 1;
+  min-width: 0;
+}
+.lock-prompt-stage {
+  display: block;
+  font-size: 32rpx;
+  line-height: 1.45;
+  color: #4b5565;
+  font-weight: 700;
+}
+.lock-prompt-hint {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  line-height: 1.6;
+  color: #8b93a3;
+}
 </style>

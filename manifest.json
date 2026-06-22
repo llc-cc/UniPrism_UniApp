@@ -6,8 +6,12 @@
   "transformPx": false,
   "vueVersion": "3",
   "mp-weixin": {
-    "appid": "wx96471f45f46073d3",
-    "setting": { "urlCheck": false },
+    "appid": "wx531ddd1f08193819",
+    "setting": {
+      "urlCheck": false,
+      "ignoreDevUnusedFiles": true,
+      "ignoreUploadUnusedFiles": true
+    },
     "usingComponents": true,
     "networkTimeout": {
       "request": 60000,
