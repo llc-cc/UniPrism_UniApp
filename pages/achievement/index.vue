@@ -27,12 +27,17 @@
 
 <script setup>
 import { ref } from 'vue'
-import { onShow } from '@dcloudio/uni-app'
+import { onLoad, onShow } from '@dcloudio/uni-app'
+import { blockDisabledMiniAppPageEntry } from '../../business/disabled-miniapp-routes'
 import { loadDiscoverSession } from '../../business/discover-session'
 import { loadExploreProgress } from '../../business/explore-progress'
 
 const majorsExplored = ref(0)
 const hasProfile = ref(false)
+
+onLoad(() => {
+  blockDisabledMiniAppPageEntry()
+})
 
 onShow(() => {
   const session = loadDiscoverSession()
@@ -42,7 +47,7 @@ onShow(() => {
 })
 
 function goPlan() {
-  uni.switchTab({ url: '/pages/discover/index' })
+  uni.reLaunch({ url: '/pages/discover/index' })
 }
 </script>
 

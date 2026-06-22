@@ -63,7 +63,7 @@
               class="career-role-dim"
             >{{ dimensionLabel(dim) }}</text>
           </view>
-          <text class="career-role-summary">{{ career.summary }}</text>
+          <text class="career-role-summary">{{ career.recommendationText || career.summary }}</text>
           <view class="career-role-foot">
             <text v-if="getExperienceKind(career.id) === 'live'" class="career-role-flag career-role-flag-live">完整模拟</text>
             <text v-else-if="getExperienceKind(career.id) === 'preview'" class="career-role-flag career-role-flag-preview">预览占位</text>
@@ -92,7 +92,6 @@
 </template>
 
 <script>
-import { getRecommendedCareers } from '../../business/explore-data'
 import { loadDiscoverSession } from '../../business/discover-session'
 import { loadExploreProgress, setCareerWorkspaceSelection } from '../../business/explore-progress'
 import {
@@ -107,6 +106,7 @@ import {
   CAREER_DIMENSION_LABELS,
 } from '../../business/career-stage-majors'
 import { navigateToMajor } from '../../business/major-routes'
+import { buildCareerWorkspaceRecommendations, getPreferredMajorIds } from '../../business/report-recommendations'
 import { resolveAsset } from '../../utils/asset-map'
 
 export default {
@@ -139,9 +139,15 @@ export default {
     const progress = loadExploreProgress()
     const profile = session.profile
     const recommendedMajors = session.recommendedMajors || []
-    this.recommendedMajorIds = recommendedMajors.map((item) => item.majorId)
+    this.recommendedMajorIds = getPreferredMajorIds(
+      session,
+      recommendedMajors.map((item) => item && item.majorId),
+    )
     this.topDimensions = profile ? profile.topDimensions : []
-    this.rankedCareers = getRecommendedCareers(this.topDimensions, this.recommendedMajorIds)
+    this.rankedCareers = buildCareerWorkspaceRecommendations({
+      ...session,
+      recommendedMajors: this.recommendedMajorIds.map((majorId) => ({ majorId })),
+    })
     this.exploredCareers = progress.careersExplored || []
 
     this.majorEntries = buildCareerStageMajorEntries({

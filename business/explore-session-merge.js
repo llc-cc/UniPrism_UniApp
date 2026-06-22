@@ -37,9 +37,12 @@ export async function mergeExploreSession() {
 export function buildAuthUserPayload(user, fallbackName) {
   const name = (user && (user.name || user.email || user.phone)) || fallbackName || '同学'
   return {
+    id: (user && user.id) || '',
     name,
     email: (user && user.email) || '',
     phone: (user && user.phone) || '',
+    wechatNickname: (user && user.wechatNickname) || '',
+    avatarUrl: (user && (user.avatarUrl || user.image)) || '',
     loginAt: Date.now(),
   }
 }

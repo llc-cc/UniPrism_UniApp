@@ -1,0 +1,43 @@
+<svg width="880" height="720" viewBox="0 0 880 720" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="880" height="720" rx="44" fill="#FFF9F0"/>
+  <rect x="48" y="48" width="784" height="624" rx="36" fill="white" stroke="#F0DFC3" stroke-width="3"/>
+  <circle cx="440" cy="358" r="104" fill="#FFF4E2" stroke="#F0DFC3" stroke-width="3"/>
+  <circle cx="440" cy="358" r="66" fill="white" stroke="#F3A23B" stroke-width="5"/>
+  <text x="440" y="344" text-anchor="middle" fill="#102033" font-size="30" font-weight="800" font-family="Arial, 'Noto Sans SC', sans-serif">数学模型</text>
+  <text x="440" y="386" text-anchor="middle" fill="#B66A12" font-size="40" font-weight="700" font-family="'Times New Roman', serif">f(x, t)</text>
+  <path d="M358 296L242 204" stroke="#D8E7F8" stroke-width="7" stroke-linecap="round"/>
+  <path d="M522 296L638 204" stroke="#D8E7F8" stroke-width="7" stroke-linecap="round"/>
+  <path d="M356 420L240 510" stroke="#D8E7F8" stroke-width="7" stroke-linecap="round"/>
+  <path d="M524 420L640 510" stroke="#D8E7F8" stroke-width="7" stroke-linecap="round"/>
+  <g filter="url(#shadow)">
+    <rect x="92" y="112" width="232" height="160" rx="28" fill="#F8FBFF" stroke="#D9E8FA" stroke-width="2"/>
+    <rect x="556" y="112" width="232" height="160" rx="28" fill="#F7FFFC" stroke="#D8F0E9" stroke-width="2"/>
+    <rect x="92" y="448" width="232" height="160" rx="28" fill="#F7F4FF" stroke="#E2DCFF" stroke-width="2"/>
+    <rect x="556" y="448" width="232" height="160" rx="28" fill="#FFF7EB" stroke="#F0DFC3" stroke-width="2"/>
+  </g>
+  <g font-family="Arial, 'Noto Sans SC', sans-serif">
+    <text x="132" y="158" fill="#2F6BFF" font-size="24" font-weight="800">AI 推荐</text>
+    <text x="132" y="198" fill="#617796" font-size="18">概率 · 优化 · 向量</text>
+    <path d="M132 230C160 210 190 210 220 230S280 250 304 224" stroke="#2F6BFF" stroke-width="5" stroke-linecap="round"/>
+    <text x="596" y="158" fill="#087A64" font-size="24" font-weight="800">工程仿真</text>
+    <text x="596" y="198" fill="#617796" font-size="18">方程 · 数值计算</text>
+    <path d="M596 236H742M596 216H742M596 196H742" stroke="#BEEBE1" stroke-width="4" stroke-linecap="round"/>
+    <path d="M628 244L694 184L762 244" stroke="#18B083" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="132" y="494" fill="#6D55D8" font-size="24" font-weight="800">医学统计</text>
+    <text x="132" y="534" fill="#617796" font-size="18">实验 · 推断 · 风险</text>
+    <path d="M190 562C190 536 226 536 226 562C226 588 190 588 190 562Z" fill="#6D55D8" opacity="0.86"/>
+    <path d="M172 562H244M208 526V598" stroke="white" stroke-width="8" stroke-linecap="round"/>
+    <text x="596" y="494" fill="#B66A12" font-size="24" font-weight="800">金融风控</text>
+    <text x="596" y="534" fill="#617796" font-size="18">随机 · 定价 · 约束</text>
+    <path d="M610 570C640 534 676 588 706 552C728 526 748 542 768 516" stroke="#F3A23B" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="610" cy="570" r="7" fill="#F3A23B"/>
+    <circle cx="706" cy="552" r="7" fill="#F3A23B"/>
+    <circle cx="768" cy="516" r="7" fill="#F3A23B"/>
+  </g>
+  <text x="110" y="96" fill="#102033" font-size="31" font-weight="800" font-family="Arial, 'Noto Sans SC', sans-serif">把真实问题变成可验证的模型</text>
+  <defs>
+    <filter id="shadow" x="70" y="96" width="740" height="536" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="16" stdDeviation="16" flood-color="#8C5A16" flood-opacity="0.11"/>
+    </filter>
+  </defs>
+</svg>

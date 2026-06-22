@@ -4,26 +4,26 @@ export const MATH_CATALOG_OVERVIEW_CARDS = [
   {
     index: '01',
     title: '了解数学专业',
-    body: '了解数学专业的大概介绍和基础课程内容，包括数学分析、线性代数等。对数学专业的学习内容、专业分流、毕业去向有大体了解。同时由练习判断是否对数学感兴趣。',
-    image: '/design/math-speed/generated/math-intro-card-major-v3.png',
+    body: '先看数学在观察什么对象，再判断自己是否愿意长期处理抽象问题。',
+    image: '/images/explore/discover/figma/math-welcome-card-understand-328-30291.png',
   },
   {
     index: '02',
-    title: '深入体验学习内容',
-    body: '深入体验代表本科数学专业的核心课程: 抽象代数、概率论、拓扑学，进一步判断自己是否适应数学专业的抽象思维。',
-    image: '/design/math-speed/generated/math-intro-card-problem-v3.png',
+    title: '尝试真实任务样本',
+    body: '用短样本感受证明、建模和判断边界，而不是先学完课程。',
+    image: '/images/explore/discover/figma/math-welcome-card-courses-328-30291.png',
   },
   {
     index: '03',
     title: '了解就业去向与选择',
-    body: '结合自身兴趣和日后发展的期望，在学习本科数学知识的基础上选择自己未来深耕的职业道路。体验专业细分课程和职业任务是否符合自己预期。',
-    image: '/design/math-speed/generated/math-intro-card-career-v3.png',
+    body: '比较数学能力如何迁移到算法、金融、工程、教育等现实任务。',
+    image: '/images/explore/discover/figma/math-welcome-card-career-328-30291.png',
   },
   {
     index: '04',
     title: '完成专业分流',
-    body: '完成专业体验！可以根据自己的兴趣继续体验相关职业模拟流程。',
-    image: '/design/math-speed/generated/math-intro-card-branch-v3.png',
+    body: '根据兴趣点和消耗点选择方向，再决定下一步怎样验证。',
+    image: '/images/explore/discover/figma/math-welcome-card-stream-328-30291.png',
   },
 ]
 
@@ -36,6 +36,9 @@ export const MATH_BRANCH_DIRECTIONS = [
     modules: ['交换代数', '代数拓扑'],
     fit: '偏研究型、证明型',
     imageSrc: '/design/math-speed/generated/math-branch-basic-card-v3.png',
+    imageAlt: '基础数学方向的证明链、几何结构、拓扑结和代数积木插图',
+    videoSrc: '/videos/math-major/pure-math.mp4',
+    videoTitle: '基础数学方向介绍',
   },
   {
     id: 'applied',
@@ -45,6 +48,9 @@ export const MATH_BRANCH_DIRECTIONS = [
     modules: ['博弈论', '组合数学'],
     fit: '偏建模型、跨学科',
     imageSrc: '/design/math-speed/generated/math-branch-applied-card-v3.png',
+    imageAlt: '应用数学方向把交通、热流和现实系统转成模型的插图',
+    videoSrc: '/videos/math-major/applied-math.mp4',
+    videoTitle: '应用数学方向介绍',
   },
   {
     id: 'computational',
@@ -54,6 +60,9 @@ export const MATH_BRANCH_DIRECTIONS = [
     modules: ['计算机图形学', 'PDE 数值解'],
     fit: '偏算法型、工程型',
     imageSrc: '/design/math-speed/generated/math-branch-computational-card-v3.png',
+    imageAlt: '计算数学方向的网格剖分、矩阵计算、迭代收敛和数值曲面插图',
+    videoSrc: '/videos/math-major/computational-math.mp4',
+    videoTitle: '计算数学方向介绍',
   },
   {
     id: 'statistics',
@@ -63,6 +72,9 @@ export const MATH_BRANCH_DIRECTIONS = [
     modules: ['统计推断', '随机过程'],
     fit: '偏数据型、决策型',
     imageSrc: '/design/math-speed/generated/math-branch-statistics-card-v3.png',
+    imageAlt: '统计方向从样本、散点、回归、直方图和置信区间判断证据的插图',
+    videoSrc: '/videos/math-major/statistics.mp4',
+    videoTitle: '统计方向介绍',
   },
   {
     id: 'financial',
@@ -72,6 +84,9 @@ export const MATH_BRANCH_DIRECTIONS = [
     modules: ['期权定价', '风险管理'],
     fit: '偏量化型、市场型',
     imageSrc: '/design/math-speed/generated/math-branch-financial-card-v3.png',
+    imageAlt: '金融数学方向用价格路径、期权收益、组合配置和风险盾牌建模市场的插图',
+    videoSrc: '/videos/math-major/financial-math.mp4',
+    videoTitle: '金融数学方向介绍',
   },
 ]
 

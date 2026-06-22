@@ -1,0 +1,16 @@
+<svg preserveAspectRatio="none" width="100%" height="100%" overflow="visible" style="display: block;" viewBox="0 0 172.333 88.9902" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g filter="url(#filter0_d_math_locked)">
+<path d="M169.707 36.5628C170.482 37.5667 170.543 38.9495 169.858 40.0169L142.525 82.6051C140.907 85.1259 137 83.9801 137 80.9847V68.2134C137 66.5566 135.657 65.2134 134 65.2134H3C1.34314 65.2134 0 63.8703 0 62.2134V16.2134C0 14.5566 1.34315 13.2134 3 13.2134H134C135.657 13.2134 137 11.8703 137 10.2134V3.00587C137 0.144252 140.625 -1.09267 142.374 1.17214L169.707 36.5628Z" fill="#CFCFD1"/>
+</g>
+<defs>
+<filter id="filter0_d_math_locked" x="0" y="0" width="172.333" height="88.9902" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dx="2" dy="5"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0.52549 0 0 0 0 0.521569 0 0 0 0 0.545098 0 0 0 1 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_math_locked"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_math_locked" result="shape"/>
+</filter>
+</defs>
+</svg>

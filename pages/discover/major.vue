@@ -1,241 +1,642 @@
 <template>
   <scroll-view class="page" scroll-y>
-    <!-- 阶段 Hero -->
-    <view class="hero">
-      <image class="hero-image" :src="resolveAsset('/images/explore/discover/generated/stage-major-experience-crop.png')" mode="aspectFit" />
-      <view class="hero-copy">
-        <view class="hero-head">
-          <text class="hero-title">第二阶段 专业体验</text>
-          <text class="hero-badge">Web 端同步版</text>
+    <view class="page-shell">
+      <view class="college-grid">
+        <view
+          v-for="college in collegeCards"
+          :key="college.id"
+          class="college-card"
+          :class="{ 'college-card--last-odd': college.isLastOdd }"
+          @tap="openCollege(college)"
+        >
+          <view v-if="!bgReady[college.id]" class="college-card-fallback" :style="{ background: college.gradient }" />
+          <image
+            class="college-card-bg"
+            :class="{ 'college-card-bg--loaded': bgReady[college.id] }"
+            :src="resolveAsset(college.bg)"
+            mode="aspectFill"
+            @load="markBgReady(college.id)"
+            @error="markBgFailed(college.id)"
+          />
+          <view class="college-card-texture" />
+          <text class="college-card-en">{{ college.enLabel }}</text>
+
+          <view v-if="college.iconKind === 'science'" class="college-icon college-icon--science">
+            <image class="sci-base" :src="assets.iconScienceBase" mode="aspectFit" />
+            <image class="sci-book" :src="resolveAsset(assets.iconScienceBook)" mode="aspectFit" />
+            <image class="sci-paper" :src="assets.iconSciencePaper" mode="aspectFit" />
+            <image class="sci-flask" :src="assets.iconScienceFlask" mode="aspectFit" />
+          </view>
+
+          <view v-else-if="college.iconKind === 'business'" class="college-icon college-icon--business">
+            <view class="biz-device">
+              <view class="biz-speaker" />
+              <view class="biz-bar biz-bar--short" />
+              <view class="biz-bar biz-bar--mid" />
+              <view class="biz-bar biz-bar--tall" />
+              <view class="biz-line" />
+            </view>
+            <text class="biz-coin biz-coin--primary">¥</text>
+            <text class="biz-coin biz-coin--secondary">¥</text>
+          </view>
+
+          <view v-else class="college-icon" :class="`college-icon--${college.iconKind}`">
+            <image class="college-icon-img" :src="college.icon" mode="aspectFit" />
+          </view>
+
+          <text class="college-card-cn">{{ college.label }}</text>
         </view>
-        <text class="hero-line">进入专业任务场景</text>
-        <text class="hero-line">了解真实学习内容</text>
-        <button class="hero-start" @tap="startExperience">开始体验</button>
       </view>
     </view>
 
-    <!-- 任务说明 -->
-    <view class="task">
-      <view class="task-head">
-        <text class="task-title">专业体验任务（至少体验三个专业内容）</text>
-        <text class="task-badge">当前阶段</text>
+    <view class="home-tabbar">
+      <view class="tab-item" @tap="switchHomeTab('/pages/discover/index')">
+        <view class="tab-icon tab-icon--prism">
+          <image class="tab-icon-img" :src="assetPaths.tabInterest" mode="aspectFit" />
+        </view>
+        <text class="tab-text">兴趣探索</text>
       </view>
-      <text class="task-desc">从问题、任务与能力线索出发，至少完成三个专业内容体验，找到更适合你的专业方向。</text>
-      <text v-if="exploredMajors.length" class="task-progress">已完成 {{ exploredMajors.length }} / 3 个专业体验</text>
-      <view class="task-cta" @tap="openMajor('math-u')">
-        <text class="task-cta-text">数学 模拟测试</text>
-        <text class="task-cta-arrow">→</text>
+      <view class="tab-item tab-item--active" @tap="switchHomeTab('/pages/discover/major')">
+        <view class="tab-icon">
+          <image class="tab-icon-img" :src="assetPaths.tabMajor" mode="aspectFit" />
+        </view>
+        <text class="tab-text">专业体验</text>
       </view>
-    </view>
-
-    <!-- 学院地图 -->
-    <view class="atlas">
-      <!-- 学院模式 -->
-      <block v-if="atlasMode === 'colleges'">
-        <view class="atlas-center">
-          <image class="uni-icon" :src="resolveAsset('/images/explore/discover/icons/atlas/university.png')" mode="aspectFit" />
-          <text class="atlas-center-label">大学</text>
+      <view class="tab-item" @tap="showDisabledTabTip('成就')">
+        <view class="tab-icon tab-icon--locked">
+          <image class="tab-icon-img" :src="assetPaths.tabAchievement" mode="aspectFit" />
+          <image class="tab-lock-badge" :src="assetPaths.tabLock" mode="aspectFit" />
         </view>
-        <view class="atlas-branch">
-          <text class="atlas-branch-tip">选择一个学院深入探索</text>
-        </view>
-        <view class="college-grid">
-          <view
-            v-for="college in colleges"
-            :key="college.id"
-            class="college-node"
-            :class="{ 'college-node-disabled': !college.majorIds.length, 'college-node-active': college.id === selectedCollegeId }"
-            @tap="selectCollege(college)"
-          >
-            <image
-              v-if="!collegeIconFailed[college.id]"
-              class="college-icon"
-              :src="resolveAsset(college.iconPath)"
-              mode="aspectFit"
-              @error="onCollegeIconError(college.id)"
-            />
-            <view v-else class="college-icon-fallback" :style="{ background: college.accent }">
-              <text class="college-icon-fallback-text">{{ college.label.slice(0, 1) }}</text>
-            </view>
-            <text class="college-label">{{ college.label }}</text>
-            <view class="college-btn" :class="{ 'college-btn-disabled': !college.majorIds.length }">
-              {{ college.majorIds.length ? '深入探索' : '筹备中' }}
-            </view>
+        <text class="tab-text">成就</text>
+      </view>
+      <view class="tab-item" @tap="showDisabledTabTip('更多')">
+        <view class="tab-icon tab-icon--locked">
+          <view class="tab-more-icon">
+            <view class="tab-more-tile tab-more-tile--top-left" />
+            <view class="tab-more-tile tab-more-tile--bottom-left" />
+            <view class="tab-more-tile tab-more-tile--top-right" />
+            <image class="tab-more-line tab-more-line--middle" :src="assetPaths.tabMoreLineLong" mode="scaleToFill" />
+            <image class="tab-more-line tab-more-line--short" :src="assetPaths.tabMoreLineShort" mode="scaleToFill" />
+            <image class="tab-more-line tab-more-line--bottom" :src="assetPaths.tabMoreLineLong" mode="scaleToFill" />
           </view>
+          <image class="tab-lock-badge" :src="assetPaths.tabLock" mode="aspectFit" />
         </view>
-      </block>
-
-      <!-- 专业模式 -->
-      <block v-else>
-        <view class="atlas-center">
-          <image class="uni-icon" :src="resolveAsset(activeCollege.iconPath)" mode="aspectFit" />
-          <text class="atlas-center-label">{{ activeCollege.label }}</text>
-          <view class="atlas-back" @tap="backToColleges">返回学院地图</view>
+        <text class="tab-text">更多</text>
+      </view>
+      <view class="tab-item" @tap="switchHomeTab('/pages/profile/index')">
+        <view class="tab-icon">
+          <image class="tab-icon-img" :src="assetPaths.tabProfile" mode="aspectFit" />
         </view>
-        <view class="major-grid">
-          <view
-            v-for="major in activeMajors"
-            :key="major.id"
-            class="major-node"
-            @tap="openMajor(major.id)"
-          >
-            <image class="major-node-icon" :src="resolveAsset(major.icon)" mode="aspectFit" />
-            <text class="major-node-name">{{ major.name }}</text>
-            <text class="major-node-cat" :style="{ color: activeCollege.accent }">{{ activeCollege.cat }}</text>
-            <view class="major-node-foot">
-              <text v-if="major.explored" class="major-node-done">已体验</text>
-              <view class="major-node-btn">体验专业</view>
-            </view>
-          </view>
-        </view>
-      </block>
+        <text class="tab-text">个人中心</text>
+      </view>
     </view>
   </scroll-view>
 </template>
 
 <script>
-import { MAJOR_EXPERIENCES, getMajorById } from '../../business/explore-data'
-import { loadDiscoverSession } from '../../business/discover-session'
-import { loadExploreProgress } from '../../business/explore-progress'
-import { navigateToMajor } from '../../business/major-routes'
 import { resolveAsset } from '../../utils/asset-map'
+import { navigateHomeTab, showDisabledMiniAppRouteTip } from '../../business/disabled-miniapp-routes'
 
-const atlasPath = (name) => `/images/explore/discover/icons/atlas/${name}`
+const ICON_BASE = '/static/assets/home-professional'
+const BG_BASE = '/images/explore/discover/figma/home-professional-assets'
+
+const ASSETS = {
+  bgScience: `${BG_BASE}/card-bg-science-494-3607.png`,
+  bgEngineering: `${BG_BASE}/card-bg-engineering-494-3607.png`,
+  bgComputer: `${BG_BASE}/card-bg-computer-494-3607.png`,
+  bgBusiness: `${BG_BASE}/card-bg-business-494-3607.png`,
+  bgLaw: `${BG_BASE}/card-bg-law-494-3607.png`,
+  bgMedical: `${BG_BASE}/card-bg-medical-494-3607.png`,
+  bgLiterature: `${BG_BASE}/card-bg-literature-494-3607.png`,
+  iconEngineering: `${ICON_BASE}/icon-engineering-494-3715.svg`,
+  iconComputer: `${ICON_BASE}/icon-computer-494-3820.svg`,
+  iconLaw: `${ICON_BASE}/icon-law-494-3935.svg`,
+  iconMedical: `${ICON_BASE}/icon-medical-494-3924.svg`,
+  iconLiterature: `${ICON_BASE}/icon-literature-494-3911.svg`,
+  iconScienceBase: `${ICON_BASE}/icon-science-base-494-3752.svg`,
+  iconScienceBook: `${BG_BASE}/icon-science-book-494-3795.png`,
+  iconSciencePaper: `${ICON_BASE}/icon-science-paper-494-3796.svg`,
+  iconScienceFlask: `${ICON_BASE}/icon-science-flask-494-3817.svg`,
+}
+
+const ASSET_PATHS = {
+  tabInterest: '/static/assets/discover/tabbar/icon-interest.svg',
+  tabMajor: '/static/assets/discover/tabbar/icon-major.svg',
+  tabAchievement: '/static/assets/discover/tabbar/icon-achievement.svg',
+  tabProfile: '/static/assets/discover/tabbar/icon-profile.svg',
+  tabMoreLineLong: '/static/assets/discover/tabbar/system-line-long.svg',
+  tabMoreLineShort: '/static/assets/discover/tabbar/system-line-short.svg',
+  tabLock: '/static/assets/discover/tabbar/icon-lock.svg',
+}
 
 const COLLEGES = [
-  { id: 'science', label: '理学院', cat: '理学', accent: '#2BA8BC', iconPath: atlasPath('college-science-alpha-v2.png'), majorIds: ['math-u', 'physics-u', 'chem-u'] },
-  { id: 'engineering', label: '工程学院', cat: '工学', accent: '#4F7DF3', iconPath: atlasPath('college-engineering.png'), majorIds: ['mech-u', 'ee-u', 'ic-u'] },
-  { id: 'computer', label: '计算机学院', cat: '计算机', accent: '#5B6CFF', iconPath: atlasPath('college-computer-alpha-v2.png'), majorIds: ['cs-u', 'ai-u'] },
-  { id: 'literature', label: '文学院', cat: '人文', accent: '#E8A24A', iconPath: atlasPath('college-literature.png'), majorIds: [] },
-  { id: 'business', label: '商学院', cat: '商科', accent: '#00A889', iconPath: atlasPath('college-business.png'), majorIds: ['finance-u', 'econ-u', 'actuarial-u'] },
-  { id: 'arts', label: '艺术学院', cat: '艺术', accent: '#A06BE8', iconPath: atlasPath('college-arts.png'), majorIds: [] },
+  {
+    id: 'science',
+    label: '理学院',
+    enLabel: 'College of Science',
+    bg: ASSETS.bgScience,
+    iconKind: 'science',
+    gradient: 'linear-gradient(155deg, #d2f3ef 0%, #b8e8e4 40%, #b0ddf0 100%)',
+  },
+  {
+    id: 'engineering',
+    label: '工程学院',
+    enLabel: 'College of Engineering',
+    bg: ASSETS.bgEngineering,
+    iconKind: 'engineering',
+    icon: ASSETS.iconEngineering,
+    gradient: 'linear-gradient(155deg, #c8dcfa 0%, #d0cef8 55%, #ddd0fa 100%)',
+  },
+  {
+    id: 'computer',
+    label: '计算机学院',
+    enLabel: 'College of Computer Science',
+    bg: ASSETS.bgComputer,
+    iconKind: 'computer',
+    icon: ASSETS.iconComputer,
+    gradient: 'linear-gradient(155deg, #c0daf8 0%, #d0e8fa 100%)',
+  },
+  {
+    id: 'business',
+    label: '商学院',
+    enLabel: 'Business School',
+    bg: ASSETS.bgBusiness,
+    iconKind: 'business',
+    gradient: 'linear-gradient(155deg, #f8f2c8 0%, #e4f0cc 55%, #d8ecc0 100%)',
+  },
+  {
+    id: 'law',
+    label: '法学院',
+    enLabel: 'Law School',
+    bg: ASSETS.bgLaw,
+    iconKind: 'law',
+    icon: ASSETS.iconLaw,
+    gradient: 'linear-gradient(155deg, #f8d8ea 0%, #e8d4f4 100%)',
+  },
+  {
+    id: 'medical',
+    label: '医学院',
+    enLabel: 'Medical School',
+    bg: ASSETS.bgMedical,
+    iconKind: 'medical',
+    icon: ASSETS.iconMedical,
+    gradient: 'linear-gradient(155deg, #c0e8f2 0%, #b0dce8 50%, #c8e4f6 100%)',
+  },
+  {
+    id: 'literature',
+    label: '文学院',
+    enLabel: 'College of Literature',
+    bg: ASSETS.bgLiterature,
+    iconKind: 'literature',
+    icon: ASSETS.iconLiterature,
+    gradient: 'linear-gradient(155deg, #f4d0e0 0%, #e4ccea 100%)',
+  },
 ]
 
 export default {
   data() {
     return {
+      assets: ASSETS,
+      assetPaths: ASSET_PATHS,
       colleges: COLLEGES,
-      atlasMode: 'colleges',
-      selectedCollegeId: 'science',
-      exploredMajors: [],
-      recommendedIds: [],
-      collegeIconFailed: {},
+      bgReady: {},
     }
   },
   computed: {
-    activeCollege() {
-      return this.colleges.find((item) => item.id === this.selectedCollegeId) || this.colleges[0]
+    collegeCards() {
+      const total = this.colleges.length
+      return this.colleges.map((college, index) => ({
+        ...college,
+        isLastOdd: total % 2 === 1 && index === total - 1,
+      }))
     },
-    activeMajors() {
-      return this.activeCollege.majorIds
-        .map((id) => {
-          const mj = getMajorById(id)
-          if (!mj) return null
-          return {
-            id,
-            name: mj.shortTitle || mj.title || id,
-            icon: mj.icon,
-            explored: this.exploredMajors.includes(id),
-          }
-        })
-        .filter(Boolean)
-    },
-  },
-  onShow() {
-    const session = loadDiscoverSession()
-    const progress = loadExploreProgress()
-    this.recommendedIds = (session.recommendedMajors || []).map((item) => item.majorId)
-    this.exploredMajors = progress.majorsExplored || []
-    // 优先把推荐专业所属学院作为默认展开学院
-    const recCollege = this.colleges.find((c) => c.majorIds.some((id) => this.recommendedIds.includes(id)))
-    if (recCollege && this.atlasMode === 'colleges') {
-      this.selectedCollegeId = recCollege.id
-    }
   },
   methods: {
     resolveAsset,
-    onCollegeIconError(collegeId) {
-      this.collegeIconFailed = { ...this.collegeIconFailed, [collegeId]: true }
+    markBgReady(id) {
+      this.bgReady = { ...this.bgReady, [id]: true }
     },
-    startExperience() {
-      // 默认进入推荐/首个可用学院的第一个专业
-      const target = this.recommendedIds.find((id) => MAJOR_EXPERIENCES.some((m) => m.id === id))
-      if (target) {
-        this.openMajor(target)
-        return
-      }
-      const college = this.colleges.find((c) => c.majorIds.length)
-      this.selectCollege(college)
+    markBgFailed(id) {
+      this.bgReady = { ...this.bgReady, [id]: false }
     },
-    selectCollege(college) {
-      if (!college || !college.majorIds.length) {
-        uni.showToast({ title: '该学院内容筹备中', icon: 'none' })
-        return
-      }
-      this.selectedCollegeId = college.id
-      this.atlasMode = 'majors'
+    openCollege(college) {
+      if (!college) return
+      uni.navigateTo({ url: `/pages/discover/college-subjects?id=${college.id}&label=${encodeURIComponent(college.label)}` })
     },
-    backToColleges() {
-      this.atlasMode = 'colleges'
+    switchHomeTab(url) {
+      navigateHomeTab(url)
     },
-    openMajor(majorId) {
-      navigateToMajor(majorId)
+    showDisabledTabTip(label) {
+      showDisabledMiniAppRouteTip(label)
     },
   },
 }
 </script>
 
 <style scoped>
-.page { background: #f4f7fb; padding-bottom: 48rpx; }
+.page {
+  min-height: 100vh;
+  background: #f2f2f7;
+}
 
-/* Hero */
-.hero { margin: 24rpx; border-radius: 32rpx; overflow: hidden; background: linear-gradient(135deg, #e8f7ff, #f7fcff); box-shadow: 0 18rpx 52rpx rgba(15,23,42,0.08); }
-.hero-image { width: 100%; height: 260rpx; }
-.hero-copy { padding: 26rpx 28rpx 30rpx; }
-.hero-head { display: flex; align-items: center; justify-content: space-between; gap: 16rpx; }
-.hero-title { font-size: 40rpx; font-weight: 700; color: #0f172a; }
-.hero-badge { padding: 8rpx 18rpx; border-radius: 999rpx; background: rgba(37,99,235,0.1); font-size: 20rpx; font-weight: 700; color: #1d4ed8; }
-.hero-line { display: block; margin-top: 8rpx; font-size: 26rpx; font-weight: 600; color: #2563eb; }
-.hero-start { margin-top: 22rpx; background: linear-gradient(90deg, #2BA8BC, #4F7DF3); color: #fff; border: none; border-radius: 999rpx; height: 80rpx; line-height: 80rpx; font-size: 28rpx; font-weight: 700; }
+.page-shell {
+  padding: 16rpx 28rpx 160rpx;
+  box-sizing: border-box;
+}
 
-/* 任务说明 */
-.task { margin: 0 24rpx; padding: 8rpx 4rpx 0; text-align: center; }
-.task-head { display: flex; align-items: center; justify-content: center; gap: 14rpx; flex-wrap: wrap; }
-.task-title { font-size: 34rpx; font-weight: 800; color: #0f172a; }
-.task-badge { padding: 6rpx 16rpx; border-radius: 999rpx; background: #ebf3ff; font-size: 20rpx; font-weight: 700; color: #4b81eb; }
-.task-desc { display: block; margin-top: 14rpx; font-size: 24rpx; line-height: 1.7; color: #64748b; }
-.task-progress { display: block; margin-top: 10rpx; font-size: 22rpx; font-weight: 700; color: #16859A; }
-.task-cta { display: inline-flex; align-items: center; gap: 10rpx; margin-top: 22rpx; padding: 0 32rpx; height: 76rpx; border-radius: 999rpx; border: 2rpx solid #b7dcf6; background: #f2f9ff; }
-.task-cta-text { font-size: 26rpx; font-weight: 700; color: #1769E0; }
-.task-cta-arrow { font-size: 28rpx; font-weight: 700; color: #1769E0; }
+.college-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24rpx;
+}
 
-/* 学院地图 */
-.atlas { margin: 28rpx 24rpx 0; padding: 36rpx 24rpx 40rpx; background: #fff; border-radius: 32rpx; box-shadow: 0 16rpx 48rpx rgba(15,23,42,0.06); }
-.atlas-center { display: flex; flex-direction: column; align-items: center; }
-.uni-icon { width: 220rpx; height: 220rpx; }
-.atlas-center-label { margin-top: 8rpx; font-size: 40rpx; font-weight: 800; letter-spacing: -2rpx; color: #0f172a; }
-.atlas-branch { display: flex; flex-direction: column; align-items: center; margin: 16rpx 0 24rpx; }
-.atlas-branch-tip { font-size: 22rpx; color: #94a3b8; }
+.college-card {
+  position: relative;
+  height: 245rpx;
+  border-radius: 39rpx;
+  overflow: hidden;
+  background: #ffffff;
+  box-shadow: 0 2rpx 2rpx rgba(0, 0, 0, 0.16);
+}
 
-.college-grid { display: flex; flex-wrap: wrap; gap: 20rpx; }
-.college-node { width: calc(50% - 10rpx); box-sizing: border-box; display: flex; flex-direction: column; align-items: center; padding: 24rpx 16rpx; border-radius: 24rpx; background: #f8fbff; border: 2rpx solid transparent; }
-.college-node-active { border-color: #2BA8BC; background: #f0fcff; }
-.college-node-disabled { opacity: 0.62; }
-.college-icon { width: 150rpx; height: 150rpx; }
-.college-icon-fallback { width: 150rpx; height: 150rpx; border-radius: 28rpx; display: flex; align-items: center; justify-content: center; }
-.college-icon-fallback-text { font-size: 52rpx; font-weight: 800; color: #fff; }
-.college-label { margin-top: 10rpx; font-size: 30rpx; font-weight: 800; letter-spacing: -1rpx; color: #26364d; }
-.college-btn { margin-top: 16rpx; min-width: 168rpx; height: 60rpx; line-height: 60rpx; text-align: center; border-radius: 999rpx; border: 2rpx solid #2BA8BC; background: #fff; color: #16859A; font-size: 24rpx; font-weight: 700; }
-.college-btn-disabled { border-color: #d8e2eb; color: #a4b2c1; }
+.college-card--last-odd {
+  grid-column: 1 / -1;
+  max-width: calc(50% - 12rpx);
+}
 
-/* 专业模式 */
-.atlas-back { margin-top: 16rpx; padding: 0 28rpx; height: 62rpx; line-height: 62rpx; border-radius: 999rpx; border: 2rpx solid #d8e2eb; background: #fff; color: #64748b; font-size: 24rpx; font-weight: 700; }
-.major-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 28rpx 20rpx; margin-top: 40rpx; }
-.major-node { width: calc(50% - 10rpx); box-sizing: border-box; display: flex; flex-direction: column; align-items: center; padding: 24rpx 16rpx; border-radius: 24rpx; background: #f8fbff; }
-.major-node-icon { width: 150rpx; height: 150rpx; }
-.major-node-name { margin-top: 12rpx; font-size: 30rpx; font-weight: 800; letter-spacing: -1rpx; color: #0b1220; text-align: center; }
-.major-node-cat { margin-top: 6rpx; font-size: 20rpx; font-weight: 700; letter-spacing: 3rpx; }
-.major-node-foot { display: flex; align-items: center; gap: 12rpx; margin-top: 16rpx; }
-.major-node-done { font-size: 20rpx; font-weight: 700; color: #16859A; }
-.major-node-btn { min-width: 160rpx; height: 60rpx; line-height: 60rpx; text-align: center; border-radius: 999rpx; border: 2rpx solid #2BA8BC; background: #fff; color: #16859A; font-size: 24rpx; font-weight: 700; }
+.college-card-fallback {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.college-card-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  z-index: 1;
+}
+
+.college-card-bg--loaded {
+  opacity: 0.47;
+}
+
+.college-card-texture {
+  position: absolute;
+  inset: 0;
+  border-radius: 39rpx;
+  z-index: 1;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    77deg,
+    rgba(255, 255, 255, 0.13) 0,
+    rgba(255, 255, 255, 0.13) 36rpx,
+    rgba(255, 255, 255, 0.04) 36rpx,
+    rgba(255, 255, 255, 0.04) 74rpx
+  );
+  mix-blend-mode: screen;
+}
+
+.college-card-en {
+  position: absolute;
+  left: 20rpx;
+  top: 18rpx;
+  max-width: calc(100% - 40rpx);
+  height: 37rpx;
+  line-height: 37rpx;
+  padding: 0 18rpx;
+  border-radius: 40rpx;
+  border: 1.2rpx solid #333333;
+  background: rgba(255, 255, 255, 0.4);
+  color: #000000;
+  font-size: 20rpx;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  z-index: 2;
+  box-sizing: border-box;
+}
+
+.college-card-cn {
+  position: absolute;
+  left: 20rpx;
+  bottom: 18rpx;
+  height: 46rpx;
+  line-height: 46rpx;
+  padding: 0 28rpx;
+  border-radius: 80rpx;
+  background: #1d1d1f;
+  color: #ffffff;
+  font-size: 28rpx;
+  font-weight: 700;
+  white-space: nowrap;
+  z-index: 3;
+  box-sizing: border-box;
+}
+
+.college-icon {
+  position: absolute;
+  width: 122rpx;
+  height: 122rpx;
+  right: 10rpx;
+  top: 58rpx;
+  z-index: 2;
+  overflow: hidden;
+}
+
+.college-icon-img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Science — scaled to Figma 122.47px card */
+.college-icon--science .sci-base {
+  position: absolute;
+  left: 5rpx;
+  top: 0;
+  width: 109rpx;
+  height: 109rpx;
+}
+
+.college-icon--science .sci-book {
+  position: absolute;
+  left: 66rpx;
+  top: 68rpx;
+  width: 44rpx;
+  height: 52rpx;
+  transform: scaleY(-1) rotate(180deg);
+}
+
+.college-icon--science .sci-paper {
+  position: absolute;
+  left: 30rpx;
+  top: 94rpx;
+  width: 32rpx;
+  height: 24rpx;
+  transform: rotate(5deg) skewX(-2deg);
+}
+
+.college-icon--science .sci-flask {
+  position: absolute;
+  left: 62rpx;
+  top: 88rpx;
+  width: 22rpx;
+  height: 32rpx;
+}
+
+/* Computer */
+.college-icon--computer .college-icon-img {
+  position: absolute;
+  left: -11rpx;
+  top: -3rpx;
+  width: 145rpx;
+  height: 129rpx;
+  transform: rotate(-11.7deg);
+}
+
+/* Law */
+.college-icon--law .college-icon-img {
+  position: absolute;
+  left: 5rpx;
+  top: 0;
+  width: 115rpx;
+  height: 122rpx;
+}
+
+/* Medical */
+.college-icon--medical .college-icon-img {
+  position: absolute;
+  left: 5rpx;
+  top: 5rpx;
+  width: 113rpx;
+  height: 115rpx;
+}
+
+/* Literature */
+.college-icon--literature .college-icon-img {
+  position: absolute;
+  left: -22rpx;
+  top: -28rpx;
+  width: 157rpx;
+  height: 157rpx;
+}
+
+/* Business */
+.college-icon--business {
+  overflow: visible;
+}
+
+.biz-device {
+  position: absolute;
+  left: 28rpx;
+  top: 3rpx;
+  width: 76rpx;
+  height: 95rpx;
+  border: 6rpx solid #446977;
+  border-radius: 12rpx;
+  background: #f9fbff;
+  box-sizing: border-box;
+}
+
+.biz-speaker {
+  position: absolute;
+  left: 28rpx;
+  top: 9rpx;
+  width: 20rpx;
+  height: 5rpx;
+  border-radius: 10rpx;
+  background: #1d1d1f;
+}
+
+.biz-bar {
+  position: absolute;
+  bottom: 18rpx;
+  width: 11rpx;
+  border-radius: 11rpx 11rpx 0 0;
+  background: #ffb13b;
+}
+
+.biz-bar--short {
+  left: 17rpx;
+  height: 23rpx;
+}
+
+.biz-bar--mid {
+  left: 34rpx;
+  height: 34rpx;
+  background: #6aa8ff;
+}
+
+.biz-bar--tall {
+  left: 51rpx;
+  height: 46rpx;
+  background: #4cc8c1;
+}
+
+.biz-line {
+  position: absolute;
+  left: 17rpx;
+  top: 18rpx;
+  width: 43rpx;
+  height: 2rpx;
+  border-radius: 4rpx;
+  background: rgba(29, 29, 31, 0.2);
+}
+
+.biz-coin {
+  position: absolute;
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20rpx;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.biz-coin--primary {
+  background: #ffb13b;
+  right: 6rpx;
+  bottom: 3rpx;
+}
+
+.biz-coin--secondary {
+  background: #f0930a;
+  right: 24rpx;
+  bottom: -6rpx;
+  opacity: 0.8;
+}
+
+.home-tabbar {
+  position: fixed;
+  left: 24rpx;
+  right: 24rpx;
+  bottom: calc(18rpx + env(safe-area-inset-bottom));
+  height: 104rpx;
+  border: 2rpx solid #9762ff;
+  border-radius: 26rpx;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 8rpx 24rpx rgba(107, 35, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  z-index: 30;
+}
+
+.tab-item {
+  width: 20%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4rpx;
+  color: #9a79ff;
+}
+
+.tab-icon {
+  width: 48rpx;
+  height: 48rpx;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tab-icon-img {
+  width: 36rpx;
+  height: 36rpx;
+  display: block;
+}
+
+.tab-item--active .tab-icon {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 20rpx;
+  background: rgba(151, 98, 255, 0.14);
+}
+
+.tab-item--active .tab-icon-img {
+  width: 40rpx;
+  height: 40rpx;
+}
+
+.tab-icon--locked {
+  overflow: visible;
+}
+
+.tab-lock-badge {
+  position: absolute;
+  right: -4rpx;
+  top: -4rpx;
+  width: 18rpx;
+  height: 18rpx;
+  opacity: 0.86;
+}
+
+.tab-more-icon {
+  position: relative;
+  width: 36rpx;
+  height: 36rpx;
+}
+
+.tab-more-tile {
+  position: absolute;
+  width: 11rpx;
+  height: 11rpx;
+  border: 1.5rpx solid #c797ff;
+  border-radius: 4rpx;
+  box-sizing: border-box;
+  background: linear-gradient(90deg, #e7c2ff 0%, #9762ff 100%);
+}
+
+.tab-more-tile--top-left {
+  left: 4rpx;
+  top: 4rpx;
+}
+
+.tab-more-tile--bottom-left {
+  left: 4rpx;
+  top: 19rpx;
+}
+
+.tab-more-tile--top-right {
+  left: 19rpx;
+  top: 4rpx;
+}
+
+.tab-more-line {
+  position: absolute;
+  display: block;
+  height: 2rpx;
+}
+
+.tab-more-line--middle {
+  left: 19rpx;
+  top: 19rpx;
+  width: 13rpx;
+}
+
+.tab-more-line--short {
+  left: 24rpx;
+  top: 23rpx;
+  width: 8rpx;
+}
+
+.tab-more-line--bottom {
+  left: 19rpx;
+  top: 28rpx;
+  width: 13rpx;
+}
+
+.tab-text {
+  font-size: 18rpx;
+  line-height: 1;
+  white-space: nowrap;
+}
 </style>

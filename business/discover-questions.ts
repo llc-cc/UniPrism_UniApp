@@ -1,10 +1,18 @@
 /**
  * AUTO-SYNCED from UniPrism_New-main/lib/discover-questions.ts
  * Do not edit manually — run: npm run questions:sync
- * Synced at: 2026-06-08T07:48:29.725Z
+ * Synced at: 2026-06-18T05:00:23.775Z
  */
 
-import { RIASECDimension, RIASECScores } from './riasecEngine';
+import {
+  HOLLAND_FINE_DIMENSION_DATA,
+  HOLLAND_FINE_DIMENSION_ORDER,
+  type HollandFineBankItem,
+  type HollandFineBankSection,
+} from './hollandFineQuestionBank';
+import { DISCOVER_ABILITY_QUESTION_IDS } from './discoverAbilityModule';
+import { getTopDimensions, normalizeScores, RIASECDimension, RIASECScores } from './riasecEngine';
+import { SURAKARTA_PUZZLES_V2, type SurakartaPuzzle } from './surakarta/puzzles';
 
 export type QuestionType =
   | 'profile-form'
@@ -15,6 +23,8 @@ export type QuestionType =
   | 'slider'
   | 'card-select'
   | 'career-scenario'
+  | 'holland-fine-grained'
+  | 'career-calibration-scale'
   | 'free-text'
   | 'ai-dialogue';
 
@@ -26,6 +36,14 @@ export interface QuestionOption {
   correct?: boolean;
   riasecWeights: Partial<Record<RIASECDimension, number>>;
   personalityTags?: string[];
+  hollandFineAxis?: {
+    dimension: RIASECDimension;
+    axisKey: string;
+    axisLabel: string;
+    side: 'left' | 'right';
+    sideKey: string;
+    sideLabel: string;
+  };
 }
 
 export interface ScenarioPair {
@@ -52,6 +70,7 @@ export interface AbilitySetup {
 export interface AbilityPuzzleTable {
   columns: string[];
   rows: string[][];
+  visible?: boolean;
 }
 
 export type AbilityBoardPieceSide = 'B' | 'W';
@@ -67,17 +86,25 @@ export interface AbilityBoard {
   caption?: string;
 }
 
+export interface AbilityPuzzleVisual {
+  imageSrc: string;
+  title?: string;
+  kind?: 'scene' | 'clue';
+}
+
 export interface AbilityPuzzle {
   scene: string;
   imageSrc: string;
   hint?: string;
   tables?: AbilityPuzzleTable[];
   board?: AbilityBoard;
+  visuals?: AbilityPuzzleVisual[];
 }
 
 export interface CareerScenarioConfig {
   scene: string;
   sceneImageSrc?: string;
+  sceneImageMode?: 'per-section' | 'single';
   firstPrompt: string;
   firstOptions: QuestionOption[];
   itemScene?: string;
@@ -93,6 +120,29 @@ export interface CareerScenarioConfig {
   openFields: ProfileField[];
 }
 
+export interface HollandFineQuestionConfig extends HollandFineBankSection {
+  dimension: RIASECDimension;
+  dimensionLabel: string;
+  sourcePath: string;
+}
+
+export type CareerCalibrationDimensionKey =
+  | 'stabilityChangeTolerance'
+  | 'innovationMeaningNeed'
+  | 'moneyStatusWeight'
+  | 'riskUncertaintyTolerance'
+  | 'workLifeBoundaryPreference';
+
+export type CareerCalibrationScoringDirection = 'positive' | 'reverse';
+
+export interface CareerCalibrationQuestionConfig {
+  sourcePath: string;
+  dimension: CareerCalibrationDimensionKey;
+  dimensionLabel: string;
+  scoringDirection: CareerCalibrationScoringDirection;
+  questionNumber: number;
+}
+
 export interface Question {
   id: string;
   phase: 'A' | 'B' | 'C' | 'D';
@@ -104,6 +154,8 @@ export interface Question {
   abilitySetup?: AbilitySetup;
   abilityPuzzle?: AbilityPuzzle;
   careerScenario?: CareerScenarioConfig;
+  hollandFine?: HollandFineQuestionConfig;
+  careerCalibration?: CareerCalibrationQuestionConfig;
   options?: QuestionOption[];
   scenarioPair?: ScenarioPair;
   rankWeights?: number[];
@@ -117,8 +169,6 @@ export interface Question {
   maxSelections?: number;
   placeholder?: string;
   minLength?: number;
-  correctFeedback?: string;
-  incorrectFeedback?: string;
 }
 
 export interface AiDialogueAnswer {
@@ -145,6 +195,15 @@ export interface CareerScenarioAnswer {
   aiDialogue: AiDialogueAnswer;
 }
 
+export interface HollandFineAnswerItemValue {
+  selectedOptionIds?: string[];
+  openResponses?: Record<string, string>;
+}
+
+export interface HollandFineAnswer {
+  items: Record<string, HollandFineAnswerItemValue>;
+}
+
 export type AnswerValue =
   | string
   | string[]
@@ -152,6 +211,7 @@ export type AnswerValue =
   | { text: string }
   | { fields: Record<string, string | string[]> }
   | CareerScenarioAnswer
+  | HollandFineAnswer
   | AiDialogueAnswer;
 
 export interface Answer {
@@ -160,8 +220,41 @@ export interface Answer {
   timestamp: number;
 }
 
+export const MBTI_KNOWN_QUESTION_ID = 'personality-mbti-known-type';
+
+export type MbtiLetter = 'E' | 'I' | 'S' | 'N' | 'T' | 'F' | 'J' | 'P';
+export type MbtiDimensionKey = 'EI' | 'SN' | 'TF' | 'JP';
+export type MbtiSource = 'self-selected' | 'system-tested';
+
+export interface MbtiDimensionScore {
+  dimension: MbtiDimensionKey;
+  left: MbtiLetter;
+  right: MbtiLetter;
+  leftScore: number;
+  rightScore: number;
+  selected: MbtiLetter;
+}
+
+export interface MbtiProfile {
+  type: string;
+  source: MbtiSource;
+  confidence: number;
+  scores: Record<MbtiLetter, number>;
+  dimensions: MbtiDimensionScore[];
+  answerIds: string[];
+  selectedOptionIds: string[];
+}
+
 const DISCOVER_IMAGE = (index: number) => `/images/explore/discover/generated/interest-q-${String(index).padStart(2, '0')}-v1.png`;
 const DISCOVER_GENERATED_IMAGE = (fileName: string) => `/images/explore/discover/generated/${fileName}`;
+const DISCOVER_ASSESSMENT_MBTI_IMAGE = (sectionKey: string, index: number) =>
+  DISCOVER_GENERATED_IMAGE(`discover-question-scene-mbti-${sectionKey}-doc-${String(index + 1).padStart(2, '0')}-20260615-semantic-v5.png`);
+const DISCOVER_ASSESSMENT_HOLLAND_IMAGE = (sectionSlug: string, index: number) =>
+  DISCOVER_GENERATED_IMAGE(`discover-question-scene-holland-${sectionSlug}-${String(index + 1).padStart(2, '0')}-20260615-semantic-v5.png`);
+const DISCOVER_ASSESSMENT_DEEP_HOLLAND_IMAGE = (sectionSlug: string, index: number) =>
+  DISCOVER_GENERATED_IMAGE(`discover-question-scene-deep-holland-${sectionSlug}-${String(index + 1).padStart(3, '0')}-20260615-semantic-v5.png`);
+const DISCOVER_CAREER_CALIBRATION_IMAGE = (index: number) =>
+  DISCOVER_GENERATED_IMAGE(`discover-question-scene-career-calibration-${String(index + 1).padStart(2, '0')}-20260616-semantic-v1.png`);
 const DISCOVER_CHOICE_ICON = (fileName: string) => `/images/explore/discover/icons/generated/${fileName}`;
 
 type InterestTagSource = {
@@ -210,7 +303,6 @@ const INTEREST_TAG_SOURCES: InterestTagSource[] = [
   { id: 'literature', label: '文学', category: 'AI' },
   { id: 'makeup', label: '美妆', category: 'AE' },
   { id: 'food-review', label: '美食探店', category: 'AES' },
-  { id: 'psychology', label: '心理学', category: 'IS' },
   { id: 'calligraphy', label: '书法', category: 'A' },
   { id: 'skincare', label: '护肤', category: 'A' },
   { id: 'coffee', label: '咖啡', category: 'RA' },
@@ -221,7 +313,6 @@ const INTEREST_TAG_SOURCES: InterestTagSource[] = [
   { id: 'cars', label: '汽车', category: 'RI' },
   { id: 'handcraft', label: '手工', category: 'RA' },
   { id: 'trend-items', label: '潮流单品', category: 'AE' },
-  { id: 'local-snacks', label: '地方小吃', category: 'RAC' },
   { id: 'foreign-language', label: '外语', category: 'IS' },
   { id: 'fitness', label: '健身', category: 'RS' },
   { id: 'sneaker-culture', label: '球鞋文化', category: 'AEC' },
@@ -247,6 +338,13 @@ function stableInterestHash(value: string) {
   return hash >>> 0;
 }
 
+function stableOptionShuffle<T extends { id: string }>(items: T[], seed: string): T[] {
+  return [...items].sort((left, right) =>
+    stableInterestHash(`${seed}:${left.id}:career-option-order-20260611`) -
+    stableInterestHash(`${seed}:${right.id}:career-option-order-20260611`),
+  );
+}
+
 function getInterestWeights(category: string): Partial<Record<RIASECDimension, number>> {
   const letters = Array.from(category).filter((letter): letter is RIASECDimension =>
     ['R', 'I', 'A', 'S', 'E', 'C'].includes(letter),
@@ -269,7 +367,7 @@ function toInterestOption(source: InterestTagSource): QuestionOption {
   return {
     id: `interest-${source.id}`,
     label: source.label,
-    iconSrc: DISCOVER_CHOICE_ICON(`discover-choice-icon-interest-${source.id}-20260607-v1.svg`),
+    iconSrc: DISCOVER_CHOICE_ICON(`discover-choice-icon-interest-${source.id}-20260610-v5.png`),
     riasecWeights: getInterestWeights(source.category),
   };
 }
@@ -339,24 +437,6 @@ const BASIC_INFO: Question[] = [
           { id: 'clarity-career', label: '有明确职业', riasecWeights: { E: 2, C: 1 }, personalityTags: ['goal-oriented'] },
           { id: 'clarity-area', label: '只有大概领域', riasecWeights: { I: 1, A: 1, R: 1 }, personalityTags: ['exploring'] },
           { id: 'clarity-none', label: '完全没有', riasecWeights: { S: 1, A: 1 }, personalityTags: ['open'] },
-        ],
-      },
-      {
-        id: 'dislike',
-        label: '下面哪3类事情最消耗你？',
-        type: 'multi',
-        maxSelections: 3,
-        options: [
-          { id: 'hate-proof', label: '长时间抽象推理和证明', riasecWeights: { I: -2, C: -1 }, personalityTags: ['avoid-abstraction'] },
-          { id: 'hate-debug', label: '反复调试、失败、重做', riasecWeights: { R: -2, I: -1 }, personalityTags: ['avoid-iteration'] },
-          { id: 'hate-writing', label: '写长文、表达观点、做展示', riasecWeights: { A: -2, S: -1 }, personalityTags: ['avoid-expression'] },
-          { id: 'hate-social', label: '大量社交、协调、处理冲突', riasecWeights: { S: -2, E: -1 }, personalityTags: ['avoid-social-load'] },
-          { id: 'hate-detail', label: '长期做表格、文档和细节核对', riasecWeights: { C: -3 }, personalityTags: ['avoid-detail'] },
-          { id: 'hate-risk', label: '竞争、压力和不确定结果', riasecWeights: { E: -3 }, personalityTags: ['avoid-risk'] },
-          { id: 'hate-lab', label: '重复实验和精密操作', riasecWeights: { R: -2, C: -1 }, personalityTags: ['avoid-lab'] },
-          { id: 'hate-care', label: '持续照顾他人情绪和需求', riasecWeights: { S: -3 }, personalityTags: ['avoid-care'] },
-          { id: 'hate-opencreate', label: '没有标准答案的创作任务', riasecWeights: { A: -3 }, personalityTags: ['avoid-ambiguity'] },
-          { id: 'hate-business', label: '谈判、销售、争取资源', riasecWeights: { E: -2, S: -1 }, personalityTags: ['avoid-persuasion'] },
         ],
       },
     ],
@@ -531,247 +611,339 @@ function personalityOption(id: string, label: string, tag: string): QuestionOpti
   };
 }
 
+type MbtiQuestionSeed = {
+  id: string;
+  prompt: string;
+  leftLabel: string;
+  leftLetter: MbtiLetter;
+  rightLabel: string;
+  rightLetter: MbtiLetter;
+};
+
+const MBTI_QUESTION_SECTIONS = {
+  ei: {
+    leftLetter: 'E',
+    rightLetter: 'I',
+    items: [
+      ['到一个新班级或新社团时，我通常会：', '主动和别人聊天，尽快熟悉环境', '先观察一段时间，等熟悉后再交流'],
+      ['忙了一周后，我更想通过以下方式恢复状态：', '约朋友出去玩、聊天、参加活动', '一个人休息、看书、听音乐或打游戏'],
+      ['小组讨论时，我更常：', '边说边整理想法', '先想清楚，再选择性发言'],
+      ['当我有一个新想法时，我通常会：', '很快说出来，和别人一起碰撞', '先自己琢磨，想成熟后再说'],
+      ['在很多人参加的活动中，我通常：', '越聊越有精神', '时间久了会想安静一下'],
+      ['面对陌生同学，我通常：', '比较容易主动开启话题', '需要一点时间进入状态'],
+      ['我更喜欢的课堂形式是：', '有互动、讨论、展示和活动', '有安静思考、独立完成任务的空间'],
+      ['当遇到烦恼时，我更可能：', '找朋友说出来，边说边理清楚', '先自己消化，不一定马上告诉别人'],
+      ['在团队项目中，我更自然的角色是：', '带动气氛，协调大家交流', '深入思考，负责比较安静但重要的部分'],
+      ['别人通常会觉得我：', '比较外向、好接近', '比较安静、慢热'],
+      ['我在表达观点时，通常：', '说出来以后更容易想清楚', '想清楚以后才更愿意说出来'],
+      ['如果连续几天都有社交活动，我会：', '觉得挺充实，甚至还想继续', '感觉消耗比较大，需要独处恢复'],
+      ['在课间或宿舍休息时，我通常更倾向于：', '找人聊天、开玩笑或一起活动', '安静待一会儿，做自己的事情'],
+      ['当老师提出一个开放性问题时，我通常会：', '比较愿意现场说出自己的看法', '更希望先思考，再决定是否回答'],
+      ['对我来说，认识新朋友通常是：', '一件比较自然、轻松的事情', '一件需要时间慢慢适应的事情'],
+    ],
+  },
+  sn: {
+    leftLetter: 'S',
+    rightLetter: 'N',
+    items: [
+      ['学习新知识时，我更喜欢：', '先看具体例子、步骤和应用', '先理解整体概念、规律和意义'],
+      ['选择专业时，我更关注：', '这个专业具体学什么、就业路径是否清楚', '这个专业未来可能带来的发展空间'],
+      ['做作业或项目时，我更擅长：', '按要求一步步完成', '提出新想法、新角度'],
+      ['听老师讲课时，我更容易记住：', '具体案例、定义、公式、操作方法', '背后的逻辑、趋势、框架和可能性'],
+      ['我更喜欢的学习资料是：', '重点明确、结构清晰、有例题', '启发思考、有观点、有延展内容'],
+      ['当别人提出一个计划时，我通常先想：', '现实中能不能执行', '有没有更有创意的可能'],
+      ['我更喜欢的任务是：', '要求清楚、目标具体', '空间较大、可以自由发挥'],
+      ['看待问题时，我更常关注：', '眼前实际情况和已有事实', '未来趋势和潜在机会'],
+      ['我更相信：', '已经验证过的方法', '新思路和新可能'],
+      ['做选择时，我更喜欢依据：', '现实条件、数据、经验', '灵感、方向感、长远想象'],
+      ['当我读一本书或看一个视频时，我更容易被吸引的是：', '具体内容是否实用', '它带来的启发和想象空间'],
+      ['我通常更像：', '关注细节、事实和当下', '关注概念、意义和未来'],
+      ['面对一个复杂问题时，我通常会先：', '找出已有信息和具体条件', '思考这个问题背后的可能规律'],
+      ['当老师布置一个开放作业时，我更希望：', '老师给出清楚要求和评分标准', '老师给我较大的发挥空间'],
+      ['我在理解一个知识点时，更依赖：', '例题、步骤、图表和实际操作', '比喻、联想、框架和整体理解'],
+    ],
+  },
+  tf: {
+    leftLetter: 'T',
+    rightLetter: 'F',
+    items: [
+      ['朋友向我倾诉问题时，我通常会：', '帮他分析原因，提出解决办法', '先理解他的感受，给他情绪支持'],
+      ['小组合作中，如果有人拖延，我更倾向于：', '直接指出问题，希望提高效率', '注意表达方式，避免伤害关系'],
+      ['做重要决定时，我更看重：', '逻辑是否成立，结果是否有效', '是否照顾到自己和他人的感受'],
+      ['我更希望别人评价我：', '理性、公正、有判断力', '温暖、体贴、善解人意'],
+      ['发生争论时，我通常更在意：', '哪个观点更有道理', '双方关系会不会变僵'],
+      ['如果老师或同学批评我，我更容易关注：', '批评内容是否合理，能否帮助改进', '对方语气和态度是否让我舒服'],
+      ['团队做决策时，我更倾向于：', '按标准、数据、效率判断', '考虑大家是否能接受'],
+      ['我认为一个好决定应该首先：', '客观、清楚、有效', '合适、体贴、让人舒服'],
+      ['当规则和人情冲突时，我通常更倾向于：', '维护规则和公平', '结合具体情况照顾感受'],
+      ['我在表达不同意见时，更看重：', '把问题讲清楚', '让对方更容易接受'],
+      ['面对一个失败的项目，我首先会想：', '问题出在哪里，如何改进', '大家的感受如何，如何安抚和鼓励'],
+      ['我更像是：', '用理性分析做判断', '用价值感和关系感做判断'],
+      ['当朋友问我真实意见时，我通常会：', '直接说出我的判断，即使不太好听', '尽量用温和方式表达，避免让对方难受'],
+      ['在评价一个方案时，我更重视：', '方案是否高效、合理、有结果', '方案是否照顾到参与者的感受'],
+      ['当班级或小组需要分工时，我更倾向于：', '按能力和效率分配任务', '尽量考虑每个人的意愿和感受'],
+    ],
+  },
+  jp: {
+    leftLetter: 'J',
+    rightLetter: 'P',
+    items: [
+      ['面对考试复习，我通常会：', '提前安排计划，按进度推进', '看状态调整，临近考试时效率更高'],
+      ['我的书桌、电脑文件或学习资料通常：', '比较有分类和秩序', '不一定整齐，但我自己知道在哪里'],
+      ['做项目时，我更喜欢：', '尽早确定主题和方案', '多探索一段时间，最后再定'],
+      ['周末安排上，我更喜欢：', '提前约好时间和活动', '随性一点，看当天状态'],
+      ['当计划被临时改变时，我通常：', '会有点不舒服，希望重新安排', '可以接受，随机应变也不错'],
+      ['我更喜欢的任务状态是：', '截止时间清楚、要求明确', '空间灵活，可以边做边调整'],
+      ['完成作业时，我更接近：', '分阶段完成，尽量不拖到最后', '灵感来了集中完成'],
+      ['对未来规划，我更倾向于：', '尽早设定目标，按计划推进', '保持开放，边探索边决定'],
+      ['当有很多任务时，我通常会：', '列清单、排优先级', '先做最想做或最紧急的'],
+      ['我更喜欢：', '确定感和稳定节奏', '灵活感和变化空间'],
+      ['如果一个活动没有明确安排，我会：', '想知道具体流程和时间', '觉得这样也挺自由'],
+      ['我通常更像：', '先计划，再行动', '先行动，再根据情况调整'],
+      ['面对一项长期任务，我更习惯：', '先拆分步骤，再逐步完成', '先大致开始，过程中不断调整'],
+      ['当截止日期还比较远时，我通常会：', '提前启动，避免最后赶工', '等压力明显后再集中完成'],
+      ['我对生活和学习安排的偏好更接近：', '有计划、有节奏、心里更踏实', '保持弹性、随时调整、更自在'],
+    ],
+  },
+} as const satisfies Record<string, {
+  leftLetter: MbtiLetter;
+  rightLetter: MbtiLetter;
+  items: readonly (readonly [string, string, string])[];
+}>;
+
+function createMbtiQuestions(sectionKey: keyof typeof MBTI_QUESTION_SECTIONS): Question[] {
+  const section = MBTI_QUESTION_SECTIONS[sectionKey];
+  return section.items.map(([prompt, leftLabel, rightLabel], index) => {
+    const questionId = `personality-${sectionKey}-doc-${String(index + 1).padStart(2, '0')}`;
+    return {
+      id: questionId,
+      phase: 'C',
+      type: 'card-select',
+      imageSrc: DISCOVER_ASSESSMENT_MBTI_IMAGE(sectionKey, index),
+      prompt,
+      options: [
+        personalityOption(`${questionId}-a`, leftLabel, section.leftLetter),
+        personalityOption(`${questionId}-b`, rightLabel, section.rightLetter),
+      ],
+    };
+  });
+}
+
+type HollandScaleQuestionSeed = {
+  dimension: RIASECDimension;
+  slug: string;
+  prompts: string[];
+};
+
+const HOLLAND_SCALE_CHOICES = [
+  { id: '5', label: '非常符合', score: 5 },
+  { id: '4', label: '符合', score: 4 },
+  { id: '3', label: '一般', score: 3 },
+  { id: '2', label: '不符合', score: 2 },
+  { id: '1', label: '非常不符合', score: 1 },
+] as const;
+
+const HOLLAND_SCALE_SECTIONS: HollandScaleQuestionSeed[] = [
+  {
+    dimension: 'R',
+    slug: 'r',
+    prompts: [
+      '我喜欢研究电子产品、电脑配件、相机、无人机或游戏设备是怎么工作的。',
+      '如果学校有机器人、无人机、赛车模型、3D打印或工程制作类活动，我会想参加。',
+      '我喜欢把一个想法真正做出来，比如模型、装置、手工、实验作品或技术作品。',
+      '比起只听理论课，我更喜欢实验课、实训课、体育训练课或实践操作课。',
+      '当电脑、耳机、手机、打印机或其他设备出问题时，我会想尝试自己解决。',
+      '我愿意学习摄影设备、剪辑设备、实验仪器、运动器械或专业工具的使用方法。',
+      '我对智能硬件、汽车、建筑、航空、机械、电子设备或运动训练比较感兴趣。',
+      '如果一个任务需要搭建、调试、安装、修复或操作设备，我通常不会排斥。',
+      '我喜欢看到自己亲手完成的东西有实际效果，而不只是停留在想法上。',
+      '如果未来的专业或职业能接触技术设备、工程现场、实验室或运动训练，我会觉得有吸引力。',
+    ],
+  },
+  {
+    dimension: 'I',
+    slug: 'i',
+    prompts: [
+      '我喜欢研究一个现象背后的原因，比如为什么某个App会火，为什么短视频让人停不下来。',
+      '当一个观点很流行时，我会想查资料、看数据，而不是马上相信。',
+      '我对AI、心理学、医学、经济、科技、社会热点背后的规律感兴趣。',
+      '我喜欢分析问题，比如学习效率为什么下降、一个产品为什么成功、一个游戏机制为什么吸引人。',
+      '遇到复杂问题时，我愿意慢慢推理，而不是只听别人给结论。',
+      '我喜欢用数据、证据、实验或逻辑来支持自己的看法。',
+      '我愿意学习编程、数据分析、统计、建模、实验设计或AI工具的原理。',
+      '如果一个游戏、影视作品、品牌或社交平台很受欢迎，我会想分析它成功的原因。',
+      '我喜欢解决有挑战的问题，比如数学题、推理题、策略题、编程题或商业案例分析。',
+      '如果未来能做研究、数据分析、科技开发、医学、金融分析或咨询类工作，我会感兴趣。',
+    ],
+  },
+  {
+    dimension: 'A',
+    slug: 'a',
+    prompts: [
+      '我喜欢拍照、剪视频、写文案、做海报、画画、设计PPT或制作内容。',
+      '我会注意一个视频、账号、游戏、电影、品牌或海报的画面风格和审美。',
+      '我喜欢有创意发挥空间的作业，比如短片、演讲、故事、展示、海报或活动策划。',
+      '我经常会想到一些有趣的点子，比如视频选题、人物设定、标题文案、视觉风格或剧情创意。',
+      '我喜欢用文字、图片、音乐、视频、表演或设计来表达自己的想法。',
+      '如果班级或社团要做宣传片、公众号推文、活动海报或短视频，我愿意参与创意制作。',
+      '我不太喜欢所有事情都只有标准答案，更喜欢可以表达个人想法的任务。',
+      '我对影视、动画、音乐、设计、摄影、文学、新媒体、游戏美术或内容创作感兴趣。',
+      '我希望自己的作品有个人风格，而不是和别人看起来完全一样。',
+      '如果未来能做设计、传媒、影视、广告、品牌策划、游戏内容或自媒体相关工作，我会感兴趣。',
+    ],
+  },
+  {
+    dimension: 'S',
+    slug: 's',
+    prompts: [
+      '当朋友情绪不好或遇到困扰时，我愿意听他倾诉。',
+      '我喜欢和别人交流想法，也愿意理解不同人的感受和处境。',
+      '如果同学学习上遇到困难，我愿意给他讲题、分享方法或帮他整理思路。',
+      '我对心理、教育、医学、公益、社会服务、校园辅导等方向有兴趣。',
+      '我愿意参加志愿服务、迎新活动、支教活动、公益项目或校园服务工作。',
+      '当我帮助别人解决问题或变得更好时，我会有成就感。',
+      '在团队中，我常常会注意大家的状态，愿意协调关系或缓和气氛。',
+      '我喜欢需要沟通、陪伴、教学、引导、咨询或服务他人的任务。',
+      '如果学校有朋辈辅导、学习互助、社团培训、心理活动或志愿者项目，我会愿意参与。',
+      '如果未来能做教师、心理咨询、医生、护理、人力资源、培训、公益服务等工作，我会感兴趣。',
+    ],
+  },
+  {
+    dimension: 'E',
+    slug: 'e',
+    prompts: [
+      '我喜欢组织活动，比如班级活动、社团招新、比赛项目、校园市集或线上活动。',
+      '我对赚钱、创业、商业模式、品牌运营、直播带货、市场营销等话题感兴趣。',
+      '在小组合作中，我愿意负责分工、推进进度、协调资源或带大家完成任务。',
+      '如果有机会做校园小生意、线上账号、二手交易、活动策划或创业项目，我会想尝试。',
+      '我喜欢表达观点，也愿意说服别人接受一个方案、产品或想法。',
+      '我会关注热门品牌、网红店、App、游戏、产品为什么能火。',
+      '我希望未来的学习和工作有成长空间、竞争感、影响力和成就感。',
+      '我愿意参加商业挑战赛、创业比赛、模拟公司、辩论赛、演讲比赛或营销策划活动。',
+      '遇到机会时，我更倾向于主动争取，而不是一直等别人安排。',
+      '如果未来能做管理、市场、金融、销售、法律、创业、产品经理或商务拓展类工作，我会感兴趣。',
+    ],
+  },
+  {
+    dimension: 'C',
+    slug: 'c',
+    prompts: [
+      '我喜欢把学习资料、文件、笔记、照片、任务清单或网盘内容整理得有条理。',
+      '我做事比较重视准确性，不喜欢马虎、混乱或没有规则。',
+      '我愿意处理表格、数据、账目、流程、计划安排、报名信息或活动预算。',
+      '相比变化很大、规则不清的任务，我更喜欢要求明确、步骤清楚的任务。',
+      '我能接受需要耐心、细心、重复检查的工作，比如核对信息、整理数据、检查格式。',
+      '做小组项目时，我愿意负责记录、排期、资料整理、预算统计或提交文件。',
+      '我喜欢用日程表、待办清单、Excel、Notion、飞书、备忘录等工具管理学习和任务。',
+      '我觉得稳定、有秩序、有明确规则的学习或工作环境更适合我。',
+      '我对会计、财务、审计、行政、数据管理、银行、运营、供应链等方向不排斥。',
+      '如果未来能做财务、审计、行政管理、银行业务、数据运营、项目执行或流程管理，我会感兴趣。',
+    ],
+  },
+];
+
+function hollandScaleOption(questionId: string, dimension: RIASECDimension, choice: (typeof HOLLAND_SCALE_CHOICES)[number]): QuestionOption {
+  const riasecWeights: Partial<Record<RIASECDimension, number>> = { [dimension]: choice.score };
+  return {
+    id: `${questionId}-${choice.id}`,
+    label: choice.label,
+    riasecWeights,
+  };
+}
+
+function createHollandScaleQuestions(section: HollandScaleQuestionSeed): Question[] {
+  return section.prompts.map((prompt, index) => {
+    const questionId = `personality-holland-${section.slug}-${String(index + 1).padStart(2, '0')}`;
+    return {
+      id: questionId,
+      phase: 'C',
+      type: 'card-select',
+      imageSrc: DISCOVER_ASSESSMENT_HOLLAND_IMAGE(section.slug, index),
+      prompt,
+      options: HOLLAND_SCALE_CHOICES.map((choice) => hollandScaleOption(questionId, section.dimension, choice)),
+    };
+  });
+}
+
+export const PERSONALITY_MBTI_QUESTION_IDS = (Object.keys(MBTI_QUESTION_SECTIONS) as Array<keyof typeof MBTI_QUESTION_SECTIONS>)
+  .flatMap((sectionKey) =>
+    MBTI_QUESTION_SECTIONS[sectionKey].items.map((_, index) =>
+      `personality-${sectionKey}-doc-${String(index + 1).padStart(2, '0')}`,
+    ),
+  );
+
+export const PERSONALITY_HOLLAND_SCALE_QUESTION_IDS = HOLLAND_SCALE_SECTIONS.flatMap((section) =>
+  section.prompts.map((_, index) => `personality-holland-${section.slug}-${String(index + 1).padStart(2, '0')}`),
+);
+
+function stableHash(value: string) {
+  let hash = 2166136261;
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
+function stableShuffle<T>(items: readonly T[], seed: string): T[] {
+  return items
+    .map((item, index) => ({
+      item,
+      index,
+      sortKey: stableHash(`${seed}:${index}:${String(item)}`),
+    }))
+    .sort((a, b) => a.sortKey - b.sortKey || a.index - b.index)
+    .map(({ item }) => item);
+}
+
+function interleaveStableShuffledGroups<T>(groups: readonly (readonly T[])[], seed: string): T[] {
+  const shuffledGroups = groups.map((group, index) => stableShuffle(group, `${seed}:group-${index}`));
+  const maxLength = Math.max(...shuffledGroups.map((group) => group.length));
+  const result: T[] = [];
+
+  for (let row = 0; row < maxLength; row += 1) {
+    const groupOrder = stableShuffle(
+      groups.map((_, index) => index),
+      `${seed}:row-${row}`,
+    );
+
+    for (const groupIndex of groupOrder) {
+      const item = shuffledGroups[groupIndex]?.[row];
+      if (item !== undefined) result.push(item);
+    }
+  }
+
+  return result;
+}
+
+export const PERSONALITY_MBTI_DISPLAY_QUESTION_IDS = interleaveStableShuffledGroups(
+  [
+    PERSONALITY_MBTI_QUESTION_IDS.slice(0, 15),
+    PERSONALITY_MBTI_QUESTION_IDS.slice(15, 30),
+    PERSONALITY_MBTI_QUESTION_IDS.slice(30, 45),
+    PERSONALITY_MBTI_QUESTION_IDS.slice(45, 60),
+  ],
+  'discover-second-stage-mbti-display-20260614',
+);
+
+export const PERSONALITY_HOLLAND_SCALE_DISPLAY_QUESTION_IDS = interleaveStableShuffledGroups(
+  [
+    PERSONALITY_HOLLAND_SCALE_QUESTION_IDS.slice(0, 10),
+    PERSONALITY_HOLLAND_SCALE_QUESTION_IDS.slice(10, 20),
+    PERSONALITY_HOLLAND_SCALE_QUESTION_IDS.slice(20, 30),
+    PERSONALITY_HOLLAND_SCALE_QUESTION_IDS.slice(30, 40),
+    PERSONALITY_HOLLAND_SCALE_QUESTION_IDS.slice(40, 50),
+    PERSONALITY_HOLLAND_SCALE_QUESTION_IDS.slice(50, 60),
+  ],
+  'discover-second-stage-holland-display-20260614',
+);
+
 const PERSONALITY_QUESTIONS: Question[] = [
-  {
-    id: 'personality-ei-1',
-    phase: 'C',
-    type: 'card-select',
-    prompt: '新生见面会：大学新生群组织了一次线下聚餐，会有很多新同学参加。你更可能：',
-    options: [
-      personalityOption('personality-ei-1-a', '很期待，主动去认识大家，聊得热火朝天', 'E'),
-      personalityOption('personality-ei-1-b', '有点犹豫，担心人多会累，或者只和同宿舍的坐一起', 'I'),
-    ],
-  },
-  {
-    id: 'personality-ei-2',
-    phase: 'C',
-    type: 'card-select',
-    prompt: '一整天社交后：周末参加了一次社团露营或朋友聚会，从早到晚都和人待在一起。结束时你通常：',
-    options: [
-      personalityOption('personality-ei-2-a', '还想续摊，觉得越玩越有劲', 'E'),
-      personalityOption('personality-ei-2-b', '电量耗尽，需要一个人静静，比如戴上耳机听歌或闷头睡一觉', 'I'),
-    ],
-  },
-  {
-    id: 'personality-ei-3',
-    phase: 'C',
-    type: 'card-select',
-    prompt: '课堂或会议发言：在小组讨论或线上会议中，你通常是：',
-    options: [
-      personalityOption('personality-ei-3-a', '想到什么就说什么，不怕打断别人', 'E'),
-      personalityOption('personality-ei-3-b', '先把想法在心里过一遍，确认成熟了再开口', 'I'),
-    ],
-  },
-  {
-    id: 'personality-ei-4',
-    phase: 'C',
-    type: 'card-select',
-    prompt: '食堂吃饭：在学校食堂吃午饭，你更喜欢：',
-    options: [
-      personalityOption('personality-ei-4-a', '坐到人多的地方，边吃边聊', 'E'),
-      personalityOption('personality-ei-4-b', '找一个相对安静的角落，独自吃完或者只和 1 个熟人一起', 'I'),
-    ],
-  },
-  {
-    id: 'personality-ei-5',
-    phase: 'C',
-    type: 'card-select',
-    prompt: '周末早晨：周六早上醒来，你更想做：',
-    options: [
-      personalityOption('personality-ei-5-a', '立刻看手机有没有人约，或者主动找人出去玩', 'E'),
-      personalityOption('personality-ei-5-b', '先享受一段完全属于自己的安静时间，发呆、听歌或打游戏', 'I'),
-    ],
-  },
-  {
-    id: 'personality-ei-6',
-    phase: 'C',
-    type: 'card-select',
-    prompt: '自我介绍：在一个新班级或新团队里做自我介绍，你通常：',
-    options: [
-      personalityOption('personality-ei-6-a', '声音洪亮，讲得比较长，希望给别人留下印象', 'E'),
-      personalityOption('personality-ei-6-b', '简短几句，希望快点结束，不太习惯成为焦点', 'I'),
-    ],
-  },
-  {
-    id: 'personality-sn-1',
-    phase: 'C',
-    type: 'card-select',
-    prompt: '看宿舍好物推荐：你在小红书或抖音刷到一篇“大学宿舍必备好物”分享。你更在意：',
-    options: [
-      personalityOption('personality-sn-1-a', '具体的价格、尺寸、链接、实拍细节图', 'S'),
-      personalityOption('personality-sn-1-b', '这个博主整体营造的生活氛围和改造灵感', 'N'),
-    ],
-  },
-  {
-    id: 'personality-sn-2',
-    phase: 'C',
-    type: 'card-select',
-    prompt: '做课程项目：老师布置了一个开放性课题，比如设计一个小程序或策划一场活动。你习惯：',
-    options: [
-      personalityOption('personality-sn-2-a', '先找现成的案例和成熟模板，按照成功经验来做', 'S'),
-      personalityOption('personality-sn-2-b', '自己先天马行空想几个有意思的点子，再慢慢落地', 'N'),
-    ],
-  },
-  {
-    id: 'personality-sn-3',
-    phase: 'C',
-    type: 'card-select',
-    prompt: '欣赏的博主：你更愿意关注哪种类型的博主或 up 主？',
-    options: [
-      personalityOption('personality-sn-3-a', '实用型：教你怎么学、怎么省、怎么解决实际问题', 'S'),
-      personalityOption('personality-sn-3-b', '创意型：脑洞大、视角独特、总能给你新鲜感', 'N'),
-    ],
-  },
-  {
-    id: 'personality-sn-4',
-    phase: 'C',
-    type: 'card-select',
-    prompt: '看新闻：刷到一条关于“AI 发展”的新闻，你更容易被哪部分吸引？',
-    options: [
-      personalityOption('personality-sn-4-a', '具体数据：最新模型的参数、成本、应用案例', 'S'),
-      personalityOption('personality-sn-4-b', '未来想象：AI 会如何改变人类生活、带来哪些可能性', 'N'),
-    ],
-  },
-  {
-    id: 'personality-sn-5',
-    phase: 'C',
-    type: 'card-select',
-    prompt: '学新技能：你想学一个手机剪辑软件。你更倾向于：',
-    options: [
-      personalityOption('personality-sn-5-a', '找一份图文教程，一步步跟着操作', 'S'),
-      personalityOption('personality-sn-5-b', '自己先乱点乱试，遇到不懂的再查，或者直接看创意混剪找灵感', 'N'),
-    ],
-  },
-  {
-    id: 'personality-sn-6',
-    phase: 'C',
-    type: 'card-select',
-    prompt: '听朋友讲旅行：朋友刚从外地回来，跟你讲旅途经历。你更喜欢听：',
-    options: [
-      personalityOption('personality-sn-6-a', '他去了哪些具体景点、花了多少钱、吃了什么好吃的', 'S'),
-      personalityOption('personality-sn-6-b', '他整个旅程的心情变化、遇到的有趣陌生人或意外奇遇', 'N'),
-    ],
-  },
-  {
-    id: 'personality-tf-1',
-    phase: 'C',
-    type: 'card-select',
-    prompt: '选暑假工：两份兼职时薪差不多，一份数据录入，一份奶茶店员。你更看重：',
-    options: [
-      personalityOption('personality-tf-1-a', '哪份工作更高效、更划算、更符合我的实际收益', 'T'),
-      personalityOption('personality-tf-1-b', '哪份工作做起来更开心、同事关系更融洽', 'F'),
-    ],
-  },
-  {
-    id: 'personality-tf-2',
-    phase: 'C',
-    type: 'card-select',
-    prompt: '朋友失恋：你的好朋友失恋了，半夜给你发消息。你会：',
-    options: [
-      personalityOption('personality-tf-2-a', '帮他理性复盘：你们主要矛盾是什么？接下来该怎么做？', 'T'),
-      personalityOption('personality-tf-2-b', '先陪他骂一通、听他哭，说“我知道你很难受，我陪你”', 'F'),
-    ],
-  },
-  {
-    id: 'personality-tf-3',
-    phase: 'C',
-    type: 'card-select',
-    prompt: '选小组搭档：A 同学逻辑强、做事快但说话直接；B 同学性格好、配合度高但能力一般。你更可能选：',
-    options: [
-      personalityOption('personality-tf-3-a', 'A 同学，效率优先', 'T'),
-      personalityOption('personality-tf-3-b', 'B 同学，合作舒服优先', 'F'),
-    ],
-  },
-  {
-    id: 'personality-tf-4',
-    phase: 'C',
-    type: 'card-select',
-    prompt: '看辩论赛：你看了一场辩论赛，正反方观点都很有道理。你更容易被哪一方说服？',
-    options: [
-      personalityOption('personality-tf-4-a', '逻辑更严密、数据更充分、反驳更有力的一方', 'T'),
-      personalityOption('personality-tf-4-b', '表达更打动人、更有人情味、更能引发共情的一方', 'F'),
-    ],
-  },
-  {
-    id: 'personality-tf-5',
-    phase: 'C',
-    type: 'card-select',
-    prompt: '宿舍公约：你和室友一起制定宿舍公约。关于空调温度设定，有人怕冷有人怕热。你更倾向：',
-    options: [
-      personalityOption('personality-tf-5-a', '投票决定一个固定温度，少数服从多数，严格执行', 'T'),
-      personalityOption('personality-tf-5-b', '大家灵活商量，热的时候调低，冷了就调高，以都舒服为主', 'F'),
-    ],
-  },
-  {
-    id: 'personality-tf-6',
-    phase: 'C',
-    type: 'card-select',
-    prompt: '被批评：老师或领导当着别人的面批评了你，但他说得确实有道理。你的第一反应是：',
-    options: [
-      personalityOption('personality-tf-6-a', '虽然不舒服，但先听进去哪些地方说得对，以后改进', 'T'),
-      personalityOption('personality-tf-6-b', '很受伤，觉得他完全可以私下说，太不给面子了', 'F'),
-    ],
-  },
-  {
-    id: 'personality-jp-1',
-    phase: 'C',
-    type: 'card-select',
-    prompt: '规划暑假：暑假快到了，你通常：',
-    options: [
-      personalityOption('personality-jp-1-a', '提前把实习、旅行、学习都排好日程，甚至精确到每天几点', 'J'),
-      personalityOption('personality-jp-1-b', '只有一个大概想法，比如“这个暑假要减肥/学个技能”，具体再说', 'P'),
-    ],
-  },
-  {
-    id: 'personality-jp-2',
-    phase: 'C',
-    type: 'card-select',
-    prompt: '交论文：你有两周时间完成一篇期末论文。你的习惯是：',
-    options: [
-      personalityOption('personality-jp-2-a', '马上开始查资料、列大纲，每天写一点，提前一两天交', 'J'),
-      personalityOption('personality-jp-2-b', '前 10 天基本没动，最后 3 天熬夜赶出来', 'P'),
-    ],
-  },
-  {
-    id: 'personality-jp-3',
-    phase: 'C',
-    type: 'card-select',
-    prompt: '手机桌面：看一眼你的手机主屏幕或电脑桌面，更像哪种？',
-    options: [
-      personalityOption('personality-jp-3-a', '分类放在文件夹里，只有少量常用 App 留在外面，很整洁', 'J'),
-      personalityOption('personality-jp-3-b', '好几屏 App 散落，图标位置比较随意，但我找得到', 'P'),
-    ],
-  },
-  {
-    id: 'personality-jp-4',
-    phase: 'C',
-    type: 'card-select',
-    prompt: '看电影：你打算周末看一部电影。你通常：',
-    options: [
-      personalityOption('personality-jp-4-a', '提前选好片子、下载好、定好几点开始看', 'J'),
-      personalityOption('personality-jp-4-b', '到了时间随便翻，看到哪个海报顺眼就看哪个', 'P'),
-    ],
-  },
-  {
-    id: 'personality-jp-5',
-    phase: 'C',
-    type: 'card-select',
-    prompt: '做旅行攻略：和朋友计划一次短期旅游。你在团队里通常扮演：',
-    options: [
-      personalityOption('personality-jp-5-a', '负责订车票、酒店、列出每日景点和时间表的人', 'J'),
-      personalityOption('personality-jp-5-b', '跟着走就行，或者只提“我想去这个地方”，具体随性', 'P'),
-    ],
-  },
-  {
-    id: 'personality-jp-6',
-    phase: 'C',
-    type: 'card-select',
-    prompt: '整理笔记：期末考试前复习，你的笔记或电子文档通常是：',
-    options: [
-      personalityOption('personality-jp-6-a', '有清晰的大纲、标题、分点，查找方便', 'J'),
-      personalityOption('personality-jp-6-b', '比较分散，有些在书上、有些在便签、有些在手机备忘录，但自己知道在哪', 'P'),
-    ],
-  },
+  ...createMbtiQuestions('ei'),
+  ...createMbtiQuestions('sn'),
+  ...createMbtiQuestions('tf'),
+  ...createMbtiQuestions('jp'),
+  ...HOLLAND_SCALE_SECTIONS.flatMap(createHollandScaleQuestions),
 ];
 
 const LEGACY_ABILITY_TESTS: Question[] = [
@@ -781,8 +953,6 @@ const LEGACY_ABILITY_TESTS: Question[] = [
     type: 'card-select',
     abilitySetup: { series: '语言学 1/5', title: '未知语言：词序', lines: ['nala tor = 蓝色的河', 'nala ven = 蓝色的树', 'sori tor = 红色的河'] },
     prompt: '“红色的树”最可能怎么说？',
-    correctFeedback: '正确。前一个词表示颜色，后一个词表示名词。',
-    incorrectFeedback: '先比较 nala/sori 和 tor/ven 的位置变化。',
     options: [
       { id: 'lang1-a', label: 'sori ven', correct: true, riasecWeights: { I: 4, C: 1 }, personalityTags: ['pattern-detection'] },
       { id: 'lang1-b', label: 'ven sori', riasecWeights: {} },
@@ -796,8 +966,6 @@ const LEGACY_ABILITY_TESTS: Question[] = [
     type: 'card-select',
     abilitySetup: { series: '语言学 2/5', title: '未知语言：复数', lines: ['meka tor = 大河', 'meka tori = 大河们', 'lumi ven = 小树'] },
     prompt: '“小树们”最可能怎么说？',
-    correctFeedback: '正确。复数是在名词后加 i，所以 ven 变成 veni。',
-    incorrectFeedback: '观察 tor 和 tori 的差别，复数标记附着在名词后。',
     options: [
       { id: 'lang2-a', label: 'lumi veni', correct: true, riasecWeights: { I: 4, C: 1 }, personalityTags: ['rule-transfer'] },
       { id: 'lang2-b', label: 'lumii ven', riasecWeights: {} },
@@ -811,8 +979,6 @@ const LEGACY_ABILITY_TESTS: Question[] = [
     type: 'card-select',
     abilitySetup: { series: '语言学 3/5', title: '未知语言：主语替换', lines: ['mi nala ven = 我看蓝树', 'tu nala ven = 你看蓝树', 'mi sori tor = 我看红河'] },
     prompt: '“你看红河”最可能怎么说？',
-    correctFeedback: '正确。mi/tu 是主语，我/你；后面颜色和名词保持同样顺序。',
-    incorrectFeedback: '只替换主语和颜色，不要改变词序。',
     options: [
       { id: 'lang3-a', label: 'tu sori tor', correct: true, riasecWeights: { I: 4, C: 1 }, personalityTags: ['compositional'] },
       { id: 'lang3-b', label: 'mi sori ven', riasecWeights: {} },
@@ -826,8 +992,6 @@ const LEGACY_ABILITY_TESTS: Question[] = [
     type: 'card-select',
     abilitySetup: { series: '语言学 4/5', title: '未知语言：时间标记', lines: ['ka mi tor = 我昨天去河边', 'na mi tor = 我明天去河边', 'ka tu ven = 你昨天去树边'] },
     prompt: '“你明天去树边”最可能怎么说？',
-    correctFeedback: '正确。ka/na 表示昨天/明天，mi/tu 表示我/你，tor/ven 表示河边/树边。',
-    incorrectFeedback: '时间标记在最前面，主语在中间，地点在最后。',
     options: [
       { id: 'lang4-a', label: 'na tu ven', correct: true, riasecWeights: { I: 4, C: 1 }, personalityTags: ['syntax'] },
       { id: 'lang4-b', label: 'ka tu ven', riasecWeights: {} },
@@ -841,8 +1005,6 @@ const LEGACY_ABILITY_TESTS: Question[] = [
     type: 'card-select',
     abilitySetup: { series: '语言学 5/5', title: '未知语言：组合迁移', lines: ['mi meka veni = 我看大树们', 'tu lumi tor = 你看小河', 'daro = 石头'] },
     prompt: '“你看小石头们”最可能怎么说？',
-    correctFeedback: '正确。tu = 你，lumi = 小，daro 加复数 i 变 daroi。',
-    incorrectFeedback: '把主语、形容词、名词和复数标记分别组合起来。',
     options: [
       { id: 'lang5-a', label: 'tu lumi daroi', correct: true, riasecWeights: { I: 5, C: 1 }, personalityTags: ['transfer'] },
       { id: 'lang5-b', label: 'mi lumi daro', riasecWeights: {} },
@@ -856,8 +1018,6 @@ const LEGACY_ABILITY_TESTS: Question[] = [
     type: 'card-select',
     abilitySetup: { series: '符号规则 1/4', title: '符号运算', lines: ['A ⊕ B = A 后面接 B', 'A ★ B = B 后面接 A', '例：红 ⊕ 蓝 = 红蓝'] },
     prompt: '“猫 ★ 鱼”的结果是什么？',
-    correctFeedback: '正确。★ 会把后面的内容放到前面。',
-    incorrectFeedback: '注意 ★ 和 ⊕ 的方向相反。',
     options: [
       { id: 'sym1-a', label: '鱼猫', correct: true, riasecWeights: { I: 3, C: 2 }, personalityTags: ['formal-rule'] },
       { id: 'sym1-b', label: '猫鱼', riasecWeights: {} },
@@ -871,8 +1031,6 @@ const LEGACY_ABILITY_TESTS: Question[] = [
     type: 'card-select',
     abilitySetup: { series: '符号规则 2/4', title: '括号规则', lines: ['f(x) = x + 2', 'g(x) = 3x', '先算括号内，再算外层'] },
     prompt: 'f(g(2)) 的结果是多少？',
-    correctFeedback: '正确。g(2)=6，f(6)=8。',
-    incorrectFeedback: '先算 g(2)，再把结果放进 f。',
     options: [
       { id: 'sym2-a', label: '8', correct: true, riasecWeights: { I: 4, C: 2 }, personalityTags: ['formal-calculation'] },
       { id: 'sym2-b', label: '6', riasecWeights: {} },
@@ -886,8 +1044,6 @@ const LEGACY_ABILITY_TESTS: Question[] = [
     type: 'card-select',
     abilitySetup: { series: '符号规则 3/4', title: '代码追踪', lines: ['开始：x = 2', '第 1 步：x = x + 3', '第 2 步：x = 2 * x'] },
     prompt: '执行完两步后，x 等于多少？',
-    correctFeedback: '正确。先变成 5，再变成 10。',
-    incorrectFeedback: '变量会被更新，第二步用的是更新后的 x。',
     options: [
       { id: 'sym3-a', label: '10', correct: true, riasecWeights: { I: 3, C: 3, R: 1 }, personalityTags: ['program-tracing'] },
       { id: 'sym3-b', label: '7', riasecWeights: {} },
@@ -901,8 +1057,6 @@ const LEGACY_ABILITY_TESTS: Question[] = [
     type: 'card-select',
     abilitySetup: { series: '符号规则 4/4', title: '分类规则', lines: ['若对象有 A 特征，放入 1 类', '若对象没有 A 但有 B，放入 2 类', '若 A、B 都没有，放入 3 类'] },
     prompt: '一个对象没有 A，但有 B，应放入哪一类？',
-    correctFeedback: '正确。第二条规则命中：没有 A 但有 B。',
-    incorrectFeedback: '按规则顺序判断，先看 A，再看 B。',
     options: [
       { id: 'sym4-a', label: '2 类', correct: true, riasecWeights: { I: 3, C: 3 }, personalityTags: ['classification'] },
       { id: 'sym4-b', label: '1 类', riasecWeights: {} },
@@ -916,8 +1070,6 @@ const LEGACY_ABILITY_TESTS: Question[] = [
     type: 'card-select',
     abilitySetup: { series: '数据推理 1/4', title: '比例判断', lines: ['A 班：20 人中 5 人选择机器人社', 'B 班：40 人中 8 人选择机器人社', '比较“比例”，不是人数'] },
     prompt: '哪个班选择机器人社的比例更高？',
-    correctFeedback: '正确。A 班是 25%，B 班是 20%。',
-    incorrectFeedback: '人数多不等于比例高，先分别除以总人数。',
     options: [
       { id: 'data1-a', label: 'A 班', correct: true, riasecWeights: { I: 3, C: 2 }, personalityTags: ['numeracy'] },
       { id: 'data1-b', label: 'B 班', riasecWeights: {} },
@@ -931,8 +1083,6 @@ const LEGACY_ABILITY_TESTS: Question[] = [
     type: 'card-select',
     abilitySetup: { series: '数据推理 2/4', title: '增长率', lines: ['第一周：10 个用户', '第二周：15 个用户', '第三周：21 个用户'] },
     prompt: '从第二周到第三周的增长率最接近多少？',
-    correctFeedback: '正确。从 15 到 21 增加 6，6/15 = 40%。',
-    incorrectFeedback: '增长率用增加量除以前一周的基数。',
     options: [
       { id: 'data2-a', label: '40%', correct: true, riasecWeights: { I: 3, C: 2 }, personalityTags: ['quantitative'] },
       { id: 'data2-b', label: '30%', riasecWeights: {} },
@@ -946,8 +1096,6 @@ const LEGACY_ABILITY_TESTS: Question[] = [
     type: 'card-select',
     abilitySetup: { series: '数据推理 3/4', title: '加权平均', lines: ['平时作业占 40%，得 80 分', '期末考试占 60%，得 90 分', '总评 = 0.4 * 作业 + 0.6 * 期末'] },
     prompt: '总评是多少？',
-    correctFeedback: '正确。0.4*80 + 0.6*90 = 86。',
-    incorrectFeedback: '不要直接平均 80 和 90，要按权重计算。',
     options: [
       { id: 'data3-a', label: '86', correct: true, riasecWeights: { I: 3, C: 3 }, personalityTags: ['weighted-thinking'] },
       { id: 'data3-b', label: '85', riasecWeights: {} },
@@ -961,8 +1109,6 @@ const LEGACY_ABILITY_TESTS: Question[] = [
     type: 'card-select',
     abilitySetup: { series: '数据推理 4/4', title: '异常值', lines: ['五次测试：10、11、12、13、60', '多数数据集中在 10 到 13', '60 明显远离其他值'] },
     prompt: '如果要描述“典型水平”，哪种说法更谨慎？',
-    correctFeedback: '正确。异常值会显著拉高平均数，中位数更稳健。',
-    incorrectFeedback: '注意 60 是异常值，会改变平均数。',
     options: [
       { id: 'data4-a', label: '中位数更能代表典型水平', correct: true, riasecWeights: { I: 3, C: 2 }, personalityTags: ['data-sense'] },
       { id: 'data4-b', label: '平均数一定最可靠', riasecWeights: {} },
@@ -976,8 +1122,6 @@ const LEGACY_ABILITY_TESTS: Question[] = [
     type: 'card-select',
     abilitySetup: { series: '科学实验 1/4', title: '变量控制', lines: ['变量控制 = 一次只改变一个因素', '目标：测试肥料是否影响植物高度', '其他条件尽量保持一致'] },
     prompt: '最合理的实验设计是哪一个？',
-    correctFeedback: '正确。只改变肥料，其他条件尽量一致。',
-    incorrectFeedback: '一次只改变你要研究的因素。',
     options: [
       { id: 'sci1-a', label: '一组加肥料，一组不加，水和光照尽量一样', correct: true, riasecWeights: { I: 3, C: 2, R: 1 }, personalityTags: ['scientific'] },
       { id: 'sci1-b', label: '一组加肥料且多晒太阳，另一组不加且少晒太阳', riasecWeights: {} },
@@ -991,8 +1135,6 @@ const LEGACY_ABILITY_TESTS: Question[] = [
     type: 'card-select',
     abilitySetup: { series: '科学实验 2/4', title: '相关与因果', lines: ['发现：喝咖啡多的人熬夜也多', '可能：咖啡导致熬夜', '也可能：熬夜的人更需要咖啡'] },
     prompt: '最严谨的判断是？',
-    correctFeedback: '正确。相关不等于因果，需要进一步实验或控制变量。',
-    incorrectFeedback: '看到共同变化时，先警惕第三变量或反向因果。',
     options: [
       { id: 'sci2-a', label: '只能说二者相关，不能直接断定因果', correct: true, riasecWeights: { I: 4, C: 2 }, personalityTags: ['causal-reasoning'] },
       { id: 'sci2-b', label: '一定是咖啡导致熬夜', riasecWeights: {} },
@@ -1006,8 +1148,6 @@ const LEGACY_ABILITY_TESTS: Question[] = [
     type: 'card-select',
     abilitySetup: { series: '科学实验 3/4', title: '样本偏差', lines: ['想了解全校学生睡眠情况', '只调查篮球队 20 人', '篮球队作息可能不代表全校'] },
     prompt: '这个调查最大的风险是什么？',
-    correctFeedback: '正确。样本来源太单一，可能不代表总体。',
-    incorrectFeedback: '关键不是 20 这个数字本身，而是样本来源偏了。',
     options: [
       { id: 'sci3-a', label: '样本偏差', correct: true, riasecWeights: { I: 3, C: 2, S: 1 }, personalityTags: ['sampling'] },
       { id: 'sci3-b', label: '计算太复杂', riasecWeights: {} },
@@ -1021,8 +1161,6 @@ const LEGACY_ABILITY_TESTS: Question[] = [
     type: 'card-select',
     abilitySetup: { series: '科学实验 4/4', title: '证据强度', lines: ['同学甲说：我试过一次，有用', '实验乙：100 人随机分组，重复三轮', '结论需要看证据质量'] },
     prompt: '哪种证据更可靠？',
-    correctFeedback: '正确。随机分组和重复实验更能减少偶然性。',
-    incorrectFeedback: '个人经验有价值，但证据强度通常低于可重复实验。',
     options: [
       { id: 'sci4-a', label: '实验乙更可靠', correct: true, riasecWeights: { I: 4, C: 2 }, personalityTags: ['evidence-based'] },
       { id: 'sci4-b', label: '同学甲更可靠', riasecWeights: {} },
@@ -1034,7 +1172,7 @@ const LEGACY_ABILITY_TESTS: Question[] = [
 
 const CORRECT_ABILITY_WEIGHTS: Partial<Record<RIASECDimension, number>> = { I: 4, C: 1 };
 
-function lampLanguageOption(
+function lotaLanguageOption(
   id: string,
   label: string,
   correct = false,
@@ -1077,406 +1215,340 @@ const ABILITY_TESTS: Question[] = [
     id: 'ability-jinchao-lamp-1',
     phase: 'B',
     type: 'card-select',
-    abilitySetup: { series: '烬潮城的灯语 1/8', title: '第一题：灰墙上的三重刻痕', lines: [] },
+    abilitySetup: { series: '', title: '东门棚下的食物小牌', lines: [] },
     abilityPuzzle: {
-      scene: '你穿越到一座没有太阳的异世界城市——烬潮城。每到夜晚，黑潮会从地下涌出，城里的人用一种被探险家称为“灯语”的语言交流。\n\n你从裂开的天空坠入烬潮城，醒来时正靠在一面灰墙下。墙上刻着门、桥、水、井和灯的图案。部分图案旁边留下了探险家的中文注释。',
-      hint: '同一个后缀般的影子词，常常改变前面那个东西的性质。',
-      imageSrc: DISCOVER_GENERATED_IMAGE('discover-question-scene-jinchao-gray-wall-20260607-v1.png'),
+      scene: '东门棚下的灯石还在滴水，几块食物小牌被风吹得轻轻碰撞。摊主把面饼、青汤、河鱼和茶杯摆在柜台前，只等外乡人自己读牌点单。\n\n同行者饿得发慌，指着一盘冒着热气、撒着红香料的河鱼问你那块小牌到底写的是什么。旧笔记第一页残留着几组图牌对照，刚好可以让你先摸清词语排列的习惯。',
+      imageSrc: DISCOVER_GENERATED_IMAGE('discover-question-scene-lota-city-gate-signs-20260610-flat2d-r1.png'),
       tables: [
         {
-          columns: ['灯语', '中文意思'],
+          columns: ['旧笔记图牌', '图上物件'],
           rows: [
-            ['vark', '门'],
-            ['sel', '桥'],
-            ['omi', '水'],
-            ['kora', '井'],
-            ['lio', '灯'],
-            ['vark oru', '古门'],
-            ['sel oru', '古桥'],
-            ['omi nesh', '黑水'],
-            ['kora nesh', '黑井'],
-            ['sel sai', '受庇护的桥'],
-            ['lio sai', '受庇护的灯'],
+            ['banu lomi', '一块冒热气的面饼'],
+            ['banu salo', '一块撒着红香料的面饼'],
+            ['raku kera', '一盘放在冰石上的河鱼'],
+            ['tela kera', '一杯冷茶'],
+            ['sema mira', '一碗颜色很淡的青汤'],
           ],
         },
       ],
     },
-    prompt: '灰墙上还有一幅被火烧缺的图：一口井上方画着白色灯圈，旁边刻着 `kora sai`。它最可能表示什么？',
-    correctFeedback: '正确。sai 是后置修饰词，表示“受庇护的 / 安全的”，kora sai 就是受庇护的井。',
-    incorrectFeedback: '先比较 sel sai 和 lio sai，判断 sai 放在名词后时表示什么。',
+    prompt: '那盘河鱼旁的小牌写着 `raku lomi salo`。同行者问你这到底是什么，哪一项最合理？',
     options: [
-      lampLanguageOption('jinchao-lamp-1-a', '受庇护的井', true, ['linguistic-pattern', 'modifier-after-noun']),
-      lampLanguageOption('jinchao-lamp-1-b', '受庇护的水'),
-      lampLanguageOption('jinchao-lamp-1-c', '黑井'),
-      lampLanguageOption('jinchao-lamp-1-d', '古桥'),
+      lotaLanguageOption('jinchao-lamp-1-a', '清淡青汤。'),
+      lotaLanguageOption('jinchao-lamp-1-b', '热辣鱼肉。', true, ['linguistic-pattern', 'modifier-after-noun']),
+      lotaLanguageOption('jinchao-lamp-1-c', '冷茶。'),
+      lotaLanguageOption('jinchao-lamp-1-d', '安全的面饼。'),
     ],
   },
   {
     id: 'ability-jinchao-lamp-2',
     phase: 'B',
     type: 'card-select',
-    abilitySetup: { series: '烬潮城的灯语 2/8', title: '第二题：祈灯室的残缺名册', lines: [] },
+    abilitySetup: { series: '', title: '取餐牌和进城名册', lines: [] },
     abilityPuzzle: {
-      scene: '你沿着墙上的灯痕前进，进入一间废弃的祈灯室。室内挂着小斗篷、铜灯架和一排空名牌。桌上有一本被黑潮泡烂的名册，记录了灯童、守夜人、潮影和灯具。',
-      imageSrc: DISCOVER_GENERATED_IMAGE('discover-question-scene-jinchao-lamp-registry-20260607-v1.png'),
+      scene: '穿过月井广场时，钟声敲到第二下。摊主把取餐牌挂到绳上，城门文书在旁边登记进城的人；食物、物件和人名挤在同一块木板上，数字写法相似，词尾却不完全一样。\n\n厨窗里正好摆出三碗清淡青汤，老板把一块空木牌推到你面前，等你写给后厨看。同行者对着名册和取餐牌看了一会儿，低声说：人名和食物后面的词尾好像不是同一种。',
+      imageSrc: DISCOVER_GENERATED_IMAGE('discover-question-scene-lota-city-order-tags-20260610-flat2d-r1.png'),
       tables: [
         {
-          columns: ['灯语', '中文意思'],
+          columns: ['木牌文字', '木牌旁的图画 / 记录'],
           rows: [
-            ['ko ena', '一名灯童'],
-            ['nar ena-ri', '两名灯童'],
-            ['sen vel-ri', '三名守夜人'],
-            ['nar moru-ri', '两只潮影'],
-            ['ko lio', '一盏灯'],
-            ['nar lio-ta', '两盏灯'],
-            ['sen vark-ta', '三扇门'],
-            ['nar kora-ta nesh', '两口黑井'],
+            ['un banu', '一份面饼'],
+            ['do banu-ta', '两份面饼'],
+            ['tri tela-ta kera', '三杯冷茶'],
+            ['un vora', '一名保管人'],
+            ['do vora-ri', '两名保管人'],
+            ['tri ena-ri', '三个孩子'],
+            ['sema mira', '清淡青汤'],
           ],
         },
       ],
     },
-    prompt: '名册缺页上画着三盏被白色灯圈围住的灯。这个标签最可能应该写作什么？',
-    correctFeedback: '正确。sen 表示三，非活物复数用 -ta，sai 仍放在整个名词单位后面。',
-    incorrectFeedback: '先区分活物复数 -ri 和非活物复数 -ta，再看修饰词 sai 的位置。',
+    prompt: '厨窗要挂出“三碗清淡青汤”的取餐牌。根据你刚看到的名册和取餐牌，这块牌最应该写成哪一项？',
     options: [
-      lampLanguageOption('jinchao-lamp-2-a', 'sen lio-ri sai'),
-      lampLanguageOption('jinchao-lamp-2-b', 'sai sen lio-ta'),
-      lampLanguageOption('jinchao-lamp-2-c', 'sen lio-ta sai', true, ['rule-transfer', 'morphology', 'modifier-after-noun']),
-      lampLanguageOption('jinchao-lamp-2-d', 'sen lio sai-ta'),
+      lotaLanguageOption('jinchao-lamp-2-a', 'tri mira sema-ta'),
+      lotaLanguageOption('jinchao-lamp-2-b', 'tri sema-ri mira'),
+      lotaLanguageOption('jinchao-lamp-2-c', 'sema-ta tri mira'),
+      lotaLanguageOption('jinchao-lamp-2-d', 'tri sema-ta mira', true, ['rule-transfer', 'morphology', 'modifier-after-noun']),
     ],
   },
   {
     id: 'ability-jinchao-lamp-3',
     phase: 'B',
     type: 'card-select',
-    abilitySetup: { series: '烬潮城的灯语 3/8', title: '第三题：桥边审讯记录', lines: [] },
+    abilitySetup: { series: '', title: '发证柜台前的交付顺序', lines: [] },
     abilityPuzzle: {
-      scene: '你离开祈灯室，来到一座断桥前。桥边石碑刻着几句像是审讯记录的话。探险家翻译了其中几句，并在石碑底部写了一行小字：',
-      hint: '这里的小词比词序更重要。谁做事、给谁、对什么做事，都有标记。',
-      imageSrc: DISCOVER_GENERATED_IMAGE('discover-question-scene-jinchao-bridge-record-20260607-v1.png'),
+      scene: '发证柜台前的人越来越多。保管人 `vora` 从木盒里拿出一个盖着暮桥徽记的小包 `sabo`，正递到你的腕牌前；旁边的孩子也伸手去够柜台上的另一只木盒，同行者一时看错，以为小包是递给孩子的。\n\n柜台墙上贴着几张旧交付图，每张图都把人名、物品和递送方向写在同一句洛塔语里。你压低声音提醒同行者：眼前这次交付，是保管人正在把通行小包递给你。',
+      imageSrc: DISCOVER_GENERATED_IMAGE('discover-question-scene-lota-city-ticket-wall-20260610-flat2d-r1.png'),
       tables: [
         {
-          columns: ['灯语', '中文意思'],
+          columns: ['旧交付图', '图里发生的事'],
           rows: [
-            ['mi e omi u mir-a.', '我喝水。'],
-            ['vel e vark u rek-a.', '守夜人开启门。'],
-            ['mi e sel sai ra ru-a.', '我去受庇护的桥。'],
-            ['vel e ena ra lio u dar-a.', '守夜人把灯交给灯童。'],
-            ['moru e vark nesh ra ru-a.', '潮影去黑门那边。'],
+            ['vora e mi ra kelo u da-a.', '钥匙从保管人手边递到写着 mi 的腕牌前'],
+            ['mi e ena ra tela kera u da-a.', '冷茶从写着 mi 的手边递到孩子 ena 面前'],
+            ['ena e vora ra sema mira u da-a.', '青汤从孩子 ena 面前递到保管人柜台前'],
+            ['sabo', '暮桥徽记小包上的标签'],
           ],
         },
       ],
     },
-    prompt: '石碑背面还有一句未译文字：`ena e vel ra omi nesh u dar-a.` 它最可能是什么意思？',
-    correctFeedback: '正确。e 标记动作发出者，ra 标记接受者，u 标记被给予物。',
-    incorrectFeedback: '用 vel e ena ra lio u dar-a. 作为模板，替换给予者、接受者和物品。',
+    prompt: '同行者把交付方向看反了。你要提醒他：保管人正在把通行小包递给我。哪一句最合适？',
     options: [
-      lampLanguageOption('jinchao-lamp-3-a', '灯童把黑水交给守夜人。', true, ['syntax-role', 'compositional-reasoning']),
-      lampLanguageOption('jinchao-lamp-3-b', '守夜人把黑水交给灯童。'),
-      lampLanguageOption('jinchao-lamp-3-c', '灯童喝了黑水。'),
-      lampLanguageOption('jinchao-lamp-3-d', '潮影去黑井那边。'),
+      lotaLanguageOption('jinchao-lamp-3-a', 'mi e vora ra sabo u da-a.'),
+      lotaLanguageOption('jinchao-lamp-3-b', 'vora e sabo ra mi u da-a.'),
+      lotaLanguageOption('jinchao-lamp-3-c', 'vora e mi ra sabo u da-a.', true, ['syntax-role', 'compositional-reasoning']),
+      lotaLanguageOption('jinchao-lamp-3-d', 'vora e mi u sabo ra da-a.'),
     ],
   },
   {
     id: 'ability-jinchao-lamp-4',
     phase: 'B',
     type: 'card-select',
-    abilitySetup: { series: '烬潮城的灯语 4/8', title: '第四题：钟塔下的潮汐预言', lines: [] },
+    abilitySetup: { series: '', title: '封路牌旁的守卫警告', lines: [] },
     abilityPuzzle: {
-      scene: '你进入烬潮城中央的钟塔。塔底刻着一圈潮汐预言，旁边的探险家笔记比之前更潦草：',
-      hint: '黑潮涨起前，必须分清已经发生、正在发生和即将发生。黑井水不能喝。',
-      imageSrc: DISCOVER_GENERATED_IMAGE('discover-question-scene-jinchao-clocktower-prophecy-20260607-v1.png'),
+      scene: '离开广场时，香料市 `tavi` 那条街忽然拉起封路绳。一个守卫举着红灯牌拦住行人，洛塔语喊得很快；同行者听不懂，还以为那只是普通问路，已经往封路绳那边迈了一步。\n\n旧笔记这一页抄着同一个动词在不同时间和语气里的样子。你来不及解释整句，只需要立刻喊出最短的提醒，让同行者别再往集市走。',
+      imageSrc: DISCOVER_GENERATED_IMAGE('discover-question-scene-lota-city-bridge-register-20260610-flat2d-r1.png'),
       tables: [
         {
-          columns: ['灯语', '中文意思'],
+          columns: ['旧笔记残句', '残页小图'],
           rows: [
-            ['mi e vark u rek-o.', '我开启了门。'],
-            ['mi e vark u rek-a.', '我正在开启门。'],
-            ['mi e vark u rek-el.', '我将开启门。'],
-            ['tu e sel sai ra ru-el.', '你将去受庇护的桥。'],
-            ['mi e omi u ma mir-a.', '我不喝水。'],
-            ['omi nesh u ma mir-ke.', '不要喝黑水！'],
+            ['mi e doro ra vel-o.', '写着 mi 的人已经站在旅店牌下'],
+            ['mi e doro ra vel-el.', '写着 mi 的人还在去旅店的路上'],
+            ['doro ra vel-ke.', '有人指着旅店方向催同伴过去'],
+            ['tela u nor-ke.', '有人端起茶杯准备喝'],
+            ['tela lomi u ma nor-ke.', '红叉挡在热茶前'],
+            ['mi ra kelo u da-ke.', '有人把钥匙递向写着 mi 的腕牌'],
           ],
         },
       ],
     },
-    prompt: '潮门忽然用你的声音说话。守夜人盯着你，等你表明下一步。你要表达“我将不会开启黑门”，应选择哪一句？',
-    correctFeedback: '正确。将来时用 -el，否定 ma 放在动词前，开启黑门仍用宾语标记 u。',
-    incorrectFeedback: '先保留“我 + 黑门 + 开启”的结构，再加入否定 ma 和将来时 -el。',
+    prompt: '同行者正要往封路的 `tavi` 走，你要立刻提醒他“不要去集市！”。哪一句最合理？',
     options: [
-      lampLanguageOption('jinchao-lamp-4-a', 'mi e vark nesh u ma rek-el.', true, ['tense-negation', 'syntax-role']),
-      lampLanguageOption('jinchao-lamp-4-b', 'mi e vark nesh u ma rek-o.'),
-      lampLanguageOption('jinchao-lamp-4-c', 'vark nesh u ma rek-ke.'),
-      lampLanguageOption('jinchao-lamp-4-d', 'mi e vark nesh ra ma ru-el.'),
+      lotaLanguageOption('jinchao-lamp-4-a', 'tavi ra ma vel-o.'),
+      lotaLanguageOption('jinchao-lamp-4-b', 'tavi ra ma vel-ke.', true, ['tense-negation', 'imperative-negation']),
+      lotaLanguageOption('jinchao-lamp-4-c', 'mi e tavi ra vel-el.'),
+      lotaLanguageOption('jinchao-lamp-4-d', 'tavi u ma nor-ke.'),
     ],
   },
   {
     id: 'ability-jinchao-lamp-5',
     phase: 'B',
     type: 'card-select',
-    abilitySetup: { series: '烬潮城的灯语 5/8', title: '第五题：失灯的灯童', lines: [] },
+    abilitySetup: { series: '', title: '月井面铺的点菜单', lines: [] },
     abilityPuzzle: {
-      scene: '黑潮第一次越过街沟。一名灯童摔在墙根，胸前的灯碎成两半。两只潮影贴着墙面滑近。守夜人抱着一盏备用灯，却被潮声震住，迟迟没有动作。',
-      imageSrc: DISCOVER_GENERATED_IMAGE('discover-question-scene-jinchao-lost-lamp-child-20260607-v1.png'),
+      scene: '通行小包已经拿到，但暮桥要等最后一盏夜灯亮起才放行。你和同行者挤进月井旁的小面铺，老板把木菜单推到柜台中间，只等你把要点的东西念出来。\n\n你们钱袋里只有 17 枚星贝，要凑一份能带走的路餐：至少一份主食、至少一份鱼肉、至少两份茶饮。同行者指了指红香料河鱼，说冷雾里走到桥口需要一点辣味，所以鱼肉必须选辣的那一种；菜单上有洛塔语名、价格和给外乡人看的小图，旧笔记只帮你确认一句“请把某物给我”的说法。',
+      imageSrc: DISCOVER_GENERATED_IMAGE('discover-question-scene-lota-city-noodle-shop-20260609-v1.png'),
+      visuals: [
+        { imageSrc: DISCOVER_GENERATED_IMAGE('discover-question-scene-lota-city-noodle-shop-20260609-v1.png'), kind: 'scene' },
+        { imageSrc: DISCOVER_GENERATED_IMAGE('discover-question-clue-lota-city-noodle-menu-20260609-v2.png'), kind: 'clue' },
+      ],
+      tables: [
+        {
+          columns: ['旧笔记残句', '残页小图'],
+          rows: [
+            ['mi ra kelo u da-ke.', '一只手把钥匙递向写着 mi 的腕牌'],
+            ['un banu', '单独一份面饼的取餐牌'],
+            ['do banu-ta', '两份面饼的取餐牌'],
+            ['tri tela-ta kera', '三杯冷茶的取餐牌'],
+          ],
+        },
+      ],
     },
-    prompt: '你只能喊出一句灯语。哪一句最能立刻改变局势？',
-    correctFeedback: '正确。局势里最需要的是让守夜人把灯交给灯童，命令句 -ke 能立刻发出指令。',
-    incorrectFeedback: '先判断场景目标：灯童失去灯，守夜人有备用灯，危险正在逼近。',
+    prompt: '你要点一份主食、一份辣鱼肉、至少两份茶饮，总价不能超过 17 枚星贝。哪一句最适合对老板说？',
     options: [
-      lampLanguageOption('jinchao-lamp-5-a', 'ena ra lio u dar-ke.', true, ['scene-judgment', 'imperative', 'syntax-role']),
-      lampLanguageOption('jinchao-lamp-5-b', 'ena ra omi u dar-ke.'),
-      lampLanguageOption('jinchao-lamp-5-c', 'moru-ri e ena ra ru-a.'),
-      lampLanguageOption('jinchao-lamp-5-d', 'mi e sel sai ra ru-el.'),
+      lotaLanguageOption('jinchao-lamp-5-a', 'mi ra un banu lomi u da-ke; mi ra un raku lomi u da-ke; mi ra do tela-ta kera u da-ke.'),
+      lotaLanguageOption('jinchao-lamp-5-b', 'mi ra un banu lomi u da-ke; mi ra un raku salo u da-ke; mi ra do tela-ta kera u da-ke.', true, ['scene-judgment', 'budget-constraint', 'syntax-role']),
+      lotaLanguageOption('jinchao-lamp-5-c', 'mi ra un banu lomi u da-ke; mi ra un raku lomi u da-ke; mi ra un tela kera u da-ke.'),
+      lotaLanguageOption('jinchao-lamp-5-d', 'mi ra un banu lomi u da-ke; mi ra un sema mira u da-ke; mi ra un raku lomi u da-ke; mi ra do tela-ta kera u da-ke.'),
     ],
   },
   {
     id: 'ability-jinchao-lamp-6',
     phase: 'B',
     type: 'card-select',
-    abilitySetup: { series: '烬潮城的灯语 6/8', title: '第六题：黑井边的银光', lines: [] },
+    abilitySetup: { series: '', title: '蓝桥路口的纸地图', lines: [] },
     abilityPuzzle: {
-      scene: '灯童带你们穿过祈灯室后的窄巷。井口的水泛着银光，井沿却粘着黑色盐痕。你的同伴没有看过钟塔预言，已经把手伸进井里。',
-      imageSrc: DISCOVER_GENERATED_IMAGE('discover-question-scene-jinchao-black-well-20260607-v1.png'),
+      scene: '饭后，水雾压低了街灯。你们从旅店 `doro` 出发，正北的小巷被路障封住，香料市 `tavi` 也不能穿过；安全桥 `brin sai` 在地图另一侧，最后一盏夜灯已经亮到一半。\n\n纸地图上没有画路线，只把旅店、小广场、药坊、香料市和安全桥标出来。旧笔记夹着几张走格子的小图：每张图只画两个相邻地点和一句短命令。你要先判断方向词，再选一条能绕开封路的路线。',
+      imageSrc: DISCOVER_GENERATED_IMAGE('discover-question-scene-lota-city-route-20260610-flat2d-r1.png'),
+      visuals: [
+        { imageSrc: DISCOVER_GENERATED_IMAGE('discover-question-scene-lota-city-route-20260610-flat2d-r1.png'), kind: 'scene' },
+        { imageSrc: DISCOVER_GENERATED_IMAGE('discover-question-clue-lota-city-route-map-20260610-flat2d-r1.png'), kind: 'clue' },
+      ],
+      tables: [
+        {
+          columns: ['旧笔记小图', '图下短句'],
+          rows: [
+            ['药坊 havo 在小广场的上方', 'nora ra vel-ke.'],
+            ['香料市 tavi 在小广场的右方', 'est ra vel-ke.'],
+            ['月井在小广场的下方', 'suda ra vel-ke.'],
+            ['旅店 doro 在小广场的左方', 'ves ra vel-ke.'],
+            ['两张小图连在一起时，中间写', 'pe'],
+          ],
+        },
+      ],
     },
-    prompt: '你必须在他饮下前作出反应。选出最合适的一句。',
-    correctFeedback: '正确。黑井水不能喝，应使用否定命令：不要喝黑水。',
-    incorrectFeedback: '银光不是关键，黑色盐痕和前面的预言才是危险线索。',
+    prompt: '从旅店 `doro` 出发，避开正北路障和封路的香料市 `tavi`，哪串短命令能把你们带到安全桥 `brin sai`？',
     options: [
-      lampLanguageOption('jinchao-lamp-6-a', 'omi nesh u mir-ke.'),
-      lampLanguageOption('jinchao-lamp-6-b', 'omi nesh u ma mir-ke.', true, ['scene-judgment', 'danger-recognition', 'tense-negation']),
-      lampLanguageOption('jinchao-lamp-6-c', 'mi e kora nesh ra ru-el.'),
-      lampLanguageOption('jinchao-lamp-6-d', 'tu e sel sai ra ru-el.'),
+      lotaLanguageOption('jinchao-lamp-6-a', 'est ra vel-ke, pe est ra vel-ke, pe nora ra vel-ke.'),
+      lotaLanguageOption('jinchao-lamp-6-b', 'nora ra vel-ke, pe est ra vel-ke, pe est ra vel-ke.'),
+      lotaLanguageOption('jinchao-lamp-6-c', 'suda ra vel-ke, pe est ra vel-ke, pe nora ra vel-ke.'),
+      lotaLanguageOption('jinchao-lamp-6-d', 'est ra vel-ke, pe nora ra vel-ke, pe est ra vel-ke.', true, ['scene-judgment', 'safe-route', 'direction-sequence']),
     ],
   },
   {
     id: 'ability-jinchao-lamp-7',
     phase: 'B',
     type: 'card-select',
-    abilitySetup: { series: '烬潮城的灯语 7/8', title: '第七题：会说话的潮门', lines: [] },
+    abilitySetup: { series: '', title: '药坊柜台上的两杯药茶', lines: [] },
     abilityPuzzle: {
-      scene: '岔路左边是一扇黑门，门内传来亲人的声音。右边是一座刻着 `sai` 标记的桥，桥下黑潮翻滚。守夜人抬起长杖，挡在路中央，似乎只等你说出选择。',
-      imageSrc: DISCOVER_GENERATED_IMAGE('discover-question-scene-jinchao-talking-gate-20260607-v1.png'),
+      scene: '去暮桥前，你们经过药坊 `havo`。香料市的辛辣粉尘被风吹到巷口，同行者咳得说不出话。药师把两杯应急药茶放在柜台上：蓝杯靠着凉石和清水碗，红杯靠着辛辣粉袋。\n\n药师被后排病人叫走的一瞬间，同行者误把红杯拿起来。你来不及解释，只能先叫他别喝手里那杯，再指向旁边的蓝杯。',
+      imageSrc: DISCOVER_GENERATED_IMAGE('discover-question-scene-lota-city-pharmacy-20260609-v4.png'),
+      tables: [
+        {
+          columns: ['旧笔记残句 / 现场物件', '你看到的关系'],
+          rows: [
+            ['tela kera', '贴在靠近凉石的茶杯旁'],
+            ['tela lomi salo', '贴在靠近辛辣粉袋的茶杯旁'],
+            ['sema mira', '前一页清淡青汤旁也出现过 mira'],
+            ['tela u nor-ke.', '笔记小图里有人端起茶杯喝'],
+            ['tela lomi u ma nor-ke.', '笔记小图里红叉挡在热茶前'],
+          ],
+        },
+      ],
     },
-    prompt: '哪一句最可能让守夜人放你通过？',
-    correctFeedback: '正确。sai 标记受庇护的桥，说“我将去受庇护的桥”最符合安全路线。',
-    incorrectFeedback: '黑门会诱惑人；守夜人等待你表明的是路线选择，不是开门或过去发生的事。',
+    prompt: '同行者已经把红杯举到嘴边。哪一句最像你此刻会脱口而出的提醒：先别喝红杯，再喝蓝杯？',
     options: [
-      lampLanguageOption('jinchao-lamp-7-a', 'mi e vark nesh u rek-el.'),
-      lampLanguageOption('jinchao-lamp-7-b', 'mi e sel sai ra ru-el.', true, ['scene-judgment', 'safe-route', 'future-tense']),
-      lampLanguageOption('jinchao-lamp-7-c', 'tu e sel sai ra ru-o.'),
-      lampLanguageOption('jinchao-lamp-7-d', 'vel e vark u rek-o.'),
+      lotaLanguageOption('jinchao-lamp-7-a', 'tela kera mira u ma nor-ke; tela lomi salo u nor-ke.'),
+      lotaLanguageOption('jinchao-lamp-7-b', 'tela lomi salo u ma nor-ke; tela kera mira u nor-ke.', true, ['scene-judgment', 'danger-recognition', 'imperative-negation']),
+      lotaLanguageOption('jinchao-lamp-7-c', 'raku salo u nor-ke; tela lomi salo u da-ke.'),
+      lotaLanguageOption('jinchao-lamp-7-d', 'mi e tela kera mira u nor-o; tu e tavi ra vel-el.'),
     ],
   },
   {
     id: 'ability-jinchao-lamp-8',
     phase: 'B',
     type: 'card-select',
-    abilitySetup: { series: '烬潮城的灯语 8/8', title: '第八题：潮桥前的交灯仪式', lines: [] },
+    abilitySetup: { series: '', title: '暮桥守卫前的领取争执', lines: [] },
     abilityPuzzle: {
-      scene: '桥面尽头，三名灯童排成一列。每个人都举着一盏灯，灯柄朝向你。守夜人退到一旁，向灯童们低头。你的同伴压低声音问：“他们要做什么？”',
-      imageSrc: DISCOVER_GENERATED_IMAGE('discover-question-scene-jinchao-lamp-ritual-20260607-v1.png'),
+      scene: '暮桥前最后一盏灯亮起时，守卫拦住你们。他认得你手里的通行小包 `sabo`，但登记册上你们那一格还空着；如果说不清小包从哪里来，他会让你们回到发证柜台重排。\n\n你把小包背面翻给他看：保管人 `vora` 的印章压在左下，旁边刻着你的腕牌编号 `mi`。守卫看完印章，等你用洛塔语说明这只小包已经交到你手里。',
+      imageSrc: DISCOVER_GENERATED_IMAGE('discover-question-scene-lota-city-inn-deposit-20260609-v4.png'),
+      tables: [
+        {
+          columns: ['旧笔记残句 / 现场物件', '你能确认的关系'],
+          rows: [
+            ['sabo', '小包正面同一个徽记下写着这个词'],
+            ['vora', '保管人印章旁写着这个词'],
+            ['mi', '你的腕牌编号旁写着这个词'],
+            ['vora e mi ra kelo u da-a.', '旧图里钥匙从保管人手边递到你的腕牌前'],
+            ['mi e vora ra tela kera u da-a.', '旧图里冷茶从你的手边递到保管人柜台前'],
+            ['mi e tavi ra vel-o.', '旧图里你已经站在集市牌下'],
+            ['mi e tavi ra vel-el.', '旧图里你还在去集市的路上'],
+          ],
+        },
+      ],
     },
-    prompt: '根据你已掌握的灯语，哪一句最像对此时情景的判断？',
-    correctFeedback: '正确。三名灯童将把三盏灯交给你，句子同时用到了复数、给予结构和将来时。',
-    incorrectFeedback: '根据动作判断：灯童们举着灯柄朝向你，守夜人退让，说明他们要把灯交给你。',
+    prompt: '守卫要听你说清小包的来源。哪一句最自然地说明：保管人已经把通行小包给了你？',
     options: [
-      lampLanguageOption('jinchao-lamp-8-a', 'sen ena-ri e mi ra sen lio-ta u dar-el.', true, ['scene-judgment', 'morphology', 'syntax-role', 'future-tense']),
-      lampLanguageOption('jinchao-lamp-8-b', 'sen ena-ri e sen lio-ta ra mi u dar-el.'),
-      lampLanguageOption('jinchao-lamp-8-c', 'sen ena-ri e kora nesh ra ru-el.'),
-      lampLanguageOption('jinchao-lamp-8-d', 'mi e sen ena-ri ra lio u dar-el.'),
+      lotaLanguageOption('jinchao-lamp-8-a', 'mi e vora ra sabo u da-o.'),
+      lotaLanguageOption('jinchao-lamp-8-b', 'vora e mi ra sabo u da-el.'),
+      lotaLanguageOption('jinchao-lamp-8-c', 'vora e mi ra sabo u da-o.', true, ['scene-judgment', 'syntax-role', 'past-tense']),
+      lotaLanguageOption('jinchao-lamp-8-d', 'vora e sabo ra mi u da-o.'),
     ],
   },
 ];
 
-const SURAKARTA_ABILITY_TESTS: Question[] = [
-  {
-    id: 'ability-surakarta-1-step-count',
-    phase: 'B',
-    type: 'card-select',
-    abilitySetup: { series: '苏拉卡尔塔棋局 1/6', title: '第一题：基础邻移计数', lines: [] },
-    abilityPuzzle: {
-      scene: '第二个能力场景切换到一张 6 x 6 交点棋盘。你面前的是标准苏拉卡尔塔棋残局：棋子落在交点上，普通移动只能走到周围一格的空交点，吃子才会使用外侧回路。',
-      hint: '本题只问“不经过回路”的普通邻移。目标点必须相邻，而且必须是空点。',
-      imageSrc: DISCOVER_GENERATED_IMAGE('discover-question-scene-surakarta-step-count-20260607-v1.png'),
-      board: surakartaBoard(
-        [
-          { side: 'W', at: 'B2' },
-          { side: 'B', at: 'C2' },
-          { side: 'W', at: 'D2' },
-          { side: 'W', at: 'B3' },
-          { side: 'B', at: 'C3' },
-          { side: 'B', at: 'D3' },
-        ],
-        '目标棋子：黑棋 C3。只统计普通邻移，不统计旋吃。',
-        ['C3'],
-      ),
+const SURAKARTA_PUZZLE_BY_ID = new Map(SURAKARTA_PUZZLES_V2.map((puzzle) => [puzzle.id, puzzle]));
+
+function getSurakartaPuzzle(id: string): SurakartaPuzzle {
+  const puzzle = SURAKARTA_PUZZLE_BY_ID.get(id);
+  if (!puzzle) throw new Error(`Missing Surakarta v2 puzzle: ${id}`);
+  return puzzle;
+}
+
+function surakartaPuzzleBoard(puzzle: SurakartaPuzzle, caption: string, focus: string[] = []): AbilityBoard {
+  return surakartaBoard(
+    puzzle.board.pieces.map((piece) => ({ side: piece.side, at: piece.at })),
+    caption,
+    focus,
+  );
+}
+
+const SURAKARTA_ABILITY_TESTS: Question[] = (() => {
+  const q1 = getSurakartaPuzzle('surakarta-01-step-count');
+  const q2 = getSurakartaPuzzle('surakarta-02-capture-targets');
+  const q3 = getSurakartaPuzzle('surakarta-03-side-captures');
+  const q4 = getSurakartaPuzzle('surakarta-04-piece-legal-moves');
+
+  return [
+    {
+      id: 'ability-surakarta-1-step-count',
+      phase: 'B',
+      type: 'card-select',
+      abilityPuzzle: {
+        scene: '',
+        imageSrc: DISCOVER_GENERATED_IMAGE('discover-question-scene-surakarta-step-count-20260610-flat2d-r1.png'),
+        board: surakartaPuzzleBoard(q1, '', ['C3']),
+      },
+      prompt: q1.prompt.text,
+      options: [
+        surakartaOption('surakarta-v2-1-a', '3 种', true, ['spatial-reasoning', 'local-constraint-check']),
+        surakartaOption('surakarta-v2-1-b', '5 种'),
+        surakartaOption('surakarta-v2-1-c', '2 种'),
+        surakartaOption('surakarta-v2-1-d', '8 种'),
+      ],
     },
-    prompt: '黑棋 C3 不经过回路时，有几种合法邻移？',
-    correctFeedback: '正确。C3 周围只有 B4、C4、D4 是空的相邻交点。',
-    incorrectFeedback: '先看 C3 周围 8 个交点，再排除已被黑白棋占住的位置。',
-    options: [
-      surakartaOption('surakarta-1-a', '3 种：B4、C4、D4', true, ['spatial-reasoning', 'local-constraint-check']),
-      surakartaOption('surakarta-1-b', '5 种：B2、C2、D2、B4、D4'),
-      surakartaOption('surakarta-1-c', '2 种：C4、D4'),
-      surakartaOption('surakarta-1-d', '8 种：周围八个交点都可以走'),
-    ],
-  },
-  {
-    id: 'ability-surakarta-2-capture-targets',
-    phase: 'B',
-    type: 'card-select',
-    abilitySetup: { series: '苏拉卡尔塔棋局 2/6', title: '第二题：单子旋吃目标判断', lines: [] },
-    abilityPuzzle: {
-      scene: '你已经知道普通邻移的规则。现在棋局进入苏拉卡尔塔棋最特殊的部分：吃子必须沿横竖线穿过至少一个回路，路径中不能提前撞上任何棋子。',
-      hint: '经过回路之前遇到的敌子不是可吃目标，而是阻塞点。',
-      imageSrc: DISCOVER_GENERATED_IMAGE('discover-question-scene-surakarta-loop-capture-20260607-v1.png'),
-      board: surakartaBoard(
-        [
-          { side: 'W', at: 'F3' },
-          { side: 'B', at: 'D4' },
-          { side: 'W', at: 'E4' },
-          { side: 'W', at: 'C6' },
-          { side: 'W', at: 'D6' },
-        ],
-        '目标棋子：黑棋 D4。只数可以经过回路旋吃到的白棋坐标。',
-        ['D4'],
-      ),
+    {
+      id: 'ability-surakarta-2-capture-targets',
+      phase: 'B',
+      type: 'card-select',
+      abilityPuzzle: {
+        scene: '',
+        imageSrc: DISCOVER_GENERATED_IMAGE('discover-question-scene-surakarta-loop-capture-20260610-flat2d-r1.png'),
+        board: surakartaPuzzleBoard(q2, '', ['D4']),
+      },
+      prompt: q2.prompt.text,
+      options: [
+        surakartaOption('surakarta-v2-2-a', '2 枚', true, ['rule-transfer', 'path-blocking']),
+        surakartaOption('surakarta-v2-2-b', '4 枚'),
+        surakartaOption('surakarta-v2-2-c', '1 枚'),
+        surakartaOption('surakarta-v2-2-d', '0 枚'),
+      ],
     },
-    prompt: '黑棋 D4 当前可以旋吃到几枚白棋？',
-    correctFeedback: '正确。D4 可以经回路吃到 F3 和 C6；E4、D6 在对应方向上提前阻塞。',
-    incorrectFeedback: '不要把相邻白棋直接算作可吃目标，苏拉卡尔塔棋吃子必须先经过回路。',
-    options: [
-      surakartaOption('surakarta-2-a', '2 枚：F3、C6', true, ['rule-transfer', 'path-blocking']),
-      surakartaOption('surakarta-2-b', '4 枚：F3、E4、C6、D6'),
-      surakartaOption('surakarta-2-c', '1 枚：F3'),
-      surakartaOption('surakarta-2-d', '0 枚：D4 当前没有旋吃'),
-    ],
-  },
-  {
-    id: 'ability-surakarta-3-side-captures',
-    phase: 'B',
-    type: 'card-select',
-    abilitySetup: { series: '苏拉卡尔塔棋局 3/6', title: '第三题：全局旋吃数量', lines: [] },
-    abilityPuzzle: {
-      scene: '棋盘上不止一枚黑棋。你需要从局部判断升级到全局扫描：分别检查每枚黑棋从四个正交方向出发，是否能经过回路吃到白棋。',
-      hint: '同一个终点只按一手棋计数；本题要求列出所有黑方合法旋吃。',
-      imageSrc: DISCOVER_GENERATED_IMAGE('discover-question-scene-surakarta-global-scan-20260607-v1.png'),
-      board: surakartaBoard(
-        [
-          { side: 'B', at: 'B2' },
-          { side: 'W', at: 'A3' },
-          { side: 'B', at: 'C3' },
-          { side: 'W', at: 'F3' },
-          { side: 'B', at: 'D4' },
-          { side: 'W', at: 'F5' },
-          { side: 'W', at: 'B6' },
-          { side: 'W', at: 'C6' },
-        ],
-        '黑方行动。请扫描所有黑棋，而不是只看 D4。',
-        ['B2', 'C3', 'D4'],
-      ),
+    {
+      id: 'ability-surakarta-3-side-captures',
+      phase: 'B',
+      type: 'card-select',
+      abilityPuzzle: {
+        scene: '',
+        imageSrc: DISCOVER_GENERATED_IMAGE('discover-question-scene-surakarta-global-scan-20260610-flat2d-r1.png'),
+        board: surakartaPuzzleBoard(q3, '', ['C3', 'D4', 'E4']),
+      },
+      prompt: q3.prompt.text,
+      options: [
+        surakartaOption('surakarta-v2-3-a', '4 个', true, ['global-scan', 'path-enumeration']),
+        surakartaOption('surakarta-v2-3-b', '3 个'),
+        surakartaOption('surakarta-v2-3-c', '5 个'),
+        surakartaOption('surakarta-v2-3-d', '6 个'),
+      ],
     },
-    prompt: '黑方当前一共有多少个合法旋吃走法？',
-    correctFeedback: '正确。四个旋吃是 B2xF5、C3xA3、D4xC6、D4xF3。',
-    incorrectFeedback: '把每枚黑棋都当作起点检查一次，并确认路径是否先经过回路。',
-    options: [
-      surakartaOption('surakarta-3-a', '4 个：B2xF5、C3xA3、D4xC6、D4xF3', true, ['global-scan', 'path-enumeration']),
-      surakartaOption('surakarta-3-b', '3 个：C3xA3、D4xC6、D4xF3'),
-      surakartaOption('surakarta-3-c', '5 个：再加 D4xE4'),
-      surakartaOption('surakarta-3-d', '2 个：D4xC6、D4xF3'),
-    ],
-  },
-  {
-    id: 'ability-surakarta-4-piece-legal-moves',
-    phase: 'B',
-    type: 'card-select',
-    abilitySetup: { series: '苏拉卡尔塔棋局 4/6', title: '第四题：单子总合法走法计数', lines: [] },
-    abilityPuzzle: {
-      scene: '这一题把两套规则合并：普通邻移看周围八格，旋吃看横竖方向和回路。你需要把两类合法走法合在一起计数。',
-      hint: '普通邻移不能吃子；旋吃必须经过回路。两类走法不要混在同一条规则里判断。',
-      imageSrc: DISCOVER_GENERATED_IMAGE('discover-question-scene-surakarta-legal-moves-20260607-v1.png'),
-      board: surakartaBoard(
-        [
-          { side: 'B', at: 'C3' },
-          { side: 'W', at: 'F3' },
-          { side: 'B', at: 'D4' },
-          { side: 'W', at: 'E4' },
-          { side: 'B', at: 'E5' },
-          { side: 'W', at: 'C6' },
-          { side: 'W', at: 'D6' },
-        ],
-        '目标棋子：黑棋 D4。统计普通邻移和旋吃的总数。',
-        ['D4'],
-      ),
+    {
+      id: 'ability-surakarta-4-piece-legal-moves',
+      phase: 'B',
+      type: 'card-select',
+      abilityPuzzle: {
+        scene: '',
+        imageSrc: DISCOVER_GENERATED_IMAGE('discover-question-scene-surakarta-legal-moves-20260610-flat2d-r1.png'),
+        board: surakartaPuzzleBoard(q4, '', ['D4']),
+      },
+      prompt: q4.prompt.text,
+      options: [
+        surakartaOption('surakarta-v2-4-a', '7 种', true, ['compositional-reasoning', 'move-counting']),
+        surakartaOption('surakarta-v2-4-b', '5 种'),
+        surakartaOption('surakarta-v2-4-c', '6 种'),
+        surakartaOption('surakarta-v2-4-d', '8 种'),
+      ],
     },
-    prompt: '黑棋 D4 当前总共有几种合法走法？',
-    correctFeedback: '正确。D4 有 5 个普通邻移，加上 D4xC6、D4xF3 两个旋吃，共 7 种。',
-    incorrectFeedback: '先单独数普通邻移，再单独数经过回路后的旋吃目标。',
-    options: [
-      surakartaOption('surakarta-4-a', '7 种：5 个邻移，加 D4xC6、D4xF3', true, ['compositional-reasoning', 'move-counting']),
-      surakartaOption('surakarta-4-b', '5 种：只包括普通邻移'),
-      surakartaOption('surakarta-4-c', '6 种：5 个邻移，加 D4xF3'),
-      surakartaOption('surakarta-4-d', '8 种：5 个邻移，加 D4xC6、D4xF3、D4xE4'),
-    ],
-  },
-  {
-    id: 'ability-surakarta-5-mate-in-one',
-    phase: 'B',
-    type: 'card-select',
-    abilitySetup: { series: '苏拉卡尔塔棋局 5/6', title: '第五题：一步获胜判断', lines: [] },
-    abilityPuzzle: {
-      scene: '残局越来越短。白方只剩最后一枚棋子，黑方先行。你需要判断有没有一手棋能立刻吃掉它。',
-      hint: '如果一手吃掉对方最后一枚棋子，就立即获胜。',
-      imageSrc: DISCOVER_GENERATED_IMAGE('discover-question-scene-surakarta-final-capture-20260607-v1.png'),
-      board: surakartaBoard(
-        [
-          { side: 'W', at: 'F3' },
-          { side: 'B', at: 'D4' },
-        ],
-        '黑方先行。白方只剩 F3 一枚棋子。',
-        ['D4'],
-      ),
-    },
-    prompt: '黑方是否有一步必胜？',
-    correctFeedback: '正确。D4 可以经回路旋吃 F3，吃掉白方最后一枚棋子后立即获胜。',
-    incorrectFeedback: '不要只看相邻关系；检查 D4 是否能沿直线进入回路后到达 F3。',
-    options: [
-      surakartaOption('surakarta-5-a', '有，唯一获胜走法是 D4xF3', true, ['terminal-state', 'capture-recognition']),
-      surakartaOption('surakarta-5-b', '有，唯一获胜走法是 D4-E4'),
-      surakartaOption('surakarta-5-c', '没有，D4 与 F3 不相邻'),
-      surakartaOption('surakarta-5-d', '有，唯一获胜走法是 D4xE4'),
-    ],
-  },
-  {
-    id: 'ability-surakarta-6-forced-win-depth',
-    phase: 'B',
-    type: 'card-select',
-    abilitySetup: { series: '苏拉卡尔塔棋局 6/6', title: '第六题：两手内强制必胜', lines: [] },
-    abilityPuzzle: {
-      scene: '最后一题不是只看眼前能不能吃，而是看一个很小的博弈树。黑方第一手走完后，无论白方怎样逃，黑方下一手都要能吃掉白方唯一棋子。',
-      hint: '强制必胜的关键是：第一手不能只制造一种威胁，而要覆盖白方所有合法应手。',
-      imageSrc: DISCOVER_GENERATED_IMAGE('discover-question-scene-surakarta-forced-win-20260607-v1.png'),
-      board: surakartaBoard(
-        [
-          { side: 'B', at: 'A2' },
-          { side: 'W', at: 'D2' },
-          { side: 'B', at: 'E2' },
-        ],
-        '黑方先行。目标是保证黑方第二手吃掉白方唯一棋子。',
-        ['A2', 'E2'],
-      ),
-    },
-    prompt: '黑方是否具有两手内强制必胜策略？',
-    correctFeedback: '正确。A2-B3 后，无论白方如何应对，黑方下一手都能吃掉白方唯一棋子。',
-    incorrectFeedback: '检验第一手后白方的所有合法应手；只威胁一种逃法不算强制必胜。',
-    options: [
-      surakartaOption('surakarta-6-a', '有，唯一最优第一手是 A2-B3', true, ['search-planning', 'strategy-tree']),
-      surakartaOption('surakarta-6-b', '有，唯一最优第一手是 E2-D3'),
-      surakartaOption('surakarta-6-c', '有，黑方现在可以直接 E2xD2'),
-      surakartaOption('surakarta-6-d', '没有，白棋 D2 总能逃出包围'),
-    ],
-  },
-];
+  ];
+})();
 
 const SCENARIO_TESTS: Question[] = [
   {
@@ -1542,91 +1614,327 @@ const SCENARIO_TESTS: Question[] = [
   },
 ];
 
+const CAREER_SCENARIO_IMAGE = (slug: string) =>
+  DISCOVER_GENERATED_IMAGE(`discover-question-scene-career-${slug}-20260610-flat2d-r3.png`);
+
 const VALUE_TESTS: Question[] = [
   {
     id: 'value-life-goal',
     phase: 'D',
     type: 'career-scenario',
-    imageSrc: DISCOVER_IMAGE(12),
-    prompt: '职业倾向 —— 情景测试题',
+    imageSrc: CAREER_SCENARIO_IMAGE('empty-city-survival-first-reaction'),
+    prompt: '末日生存 / 空城幸存者',
     careerScenario: {
       scene:
-        '如果一觉醒来，你发现整座城市似乎只剩下你一个人；手机没有信号。大街上空荡荡的，还有很多地方一地狼藉；像是发生过什么灵异事件。你想起你还没吃早饭，周围的超市大门敞开；远处隐隐约约听到一些规律的噪声。',
-      sceneImageSrc: DISCOVER_GENERATED_IMAGE('discover-question-scene-empty-city-no-signal-20260607-v1.png'),
-      firstPrompt: '你的第一反应是......',
+        '一觉醒来，城市空荡，手机没有信号。大街上有被翻乱的痕迹，超市大门敞开，远处传来规律噪声。后来，一辆车靠近，你遇到一支同样困惑的幸存者小队。',
+      sceneImageSrc: CAREER_SCENARIO_IMAGE('empty-city-survival-first-reaction'),
+      sceneImageMode: 'per-section',
+      firstPrompt: '如果这是你醒来后的第一分钟，你最可能先做什么？',
       firstOptions: [
-        { id: 'city-calm-analyze', label: '保持冷静，尝试分析出当下的处境和可能的威胁再行动', riasecWeights: { I: 1, C: 1 }, personalityTags: ['analytical', 'structured'] },
-        { id: 'city-story-clues', label: '观察周围场景和任何不自然的现象，试着在脑海中想出一个合理的故事', riasecWeights: { A: 1, I: 1 }, personalityTags: ['creative', 'pattern-seeking'] },
-        { id: 'city-supplies-first', label: '事已至此、我可能仍有危险，先搜集点物资回家再说', riasecWeights: { R: 1, C: 1 }, personalityTags: ['practical', 'risk-aware'] },
-        { id: 'city-find-survivors', label: '远处似乎还有幸存者。我想去确认情况，如果真的有人，就先把大家组织起来。', riasecWeights: { S: 1, E: 1 }, personalityTags: ['social', 'organizer'] },
+        { id: 'city-first-risk-map', label: '先观察街道、噪声方向和异常痕迹，判断有没有危险', riasecWeights: { I: 1, C: 1 }, personalityTags: ['analytical', 'structured'] },
+        { id: 'city-first-record-clues', label: '记录眼前画面和细节，试着理解这座城市发生了什么', riasecWeights: { A: 1, I: 1 }, personalityTags: ['creative', 'pattern-seeking'] },
+        { id: 'city-first-supply-run', label: '先找水、食物、工具和可用装备，保证自己撑过今天', riasecWeights: { R: 1, C: 1 }, personalityTags: ['practical', 'risk-aware'] },
+        { id: 'city-first-find-team', label: '朝可能有人声或车辆声的方向靠近，确认能否合作', riasecWeights: { S: 1, E: 1 }, personalityTags: ['social', 'organizer'] },
       ],
       itemScene:
-        '你想了想，决定先走进超市。货架上的物品几乎被洗劫一空，地上散着包装袋、碎玻璃和被翻乱的购物篮。就在你准备继续往里走时，门外突然传来一阵急促的汽车鸣笛，声音越来越近，你一下慌了神。',
-      itemImageSrc: DISCOVER_GENERATED_IMAGE('discover-question-scene-looted-supermarket-horn-20260607-v1.png'),
-      itemPrompt: '你只能从眼前还能拿到的物品里快速选 4 组带走。你的第一反应会选哪 4 组？请按优先级从先到后排列。',
+        '你进入超市后，货架几乎被洗劫一空。门外忽然传来急促鸣笛，你只能快速选 4 组眼前还能拿到的物品。',
+      itemImageSrc: CAREER_SCENARIO_IMAGE('empty-city-survival-ranking'),
+      itemPrompt: '你只能快速选 4 组物资带走。你的第一反应会选哪 4 组？请按优先级从先到后排列。',
       itemMaxSelections: 4,
       itemOptions: [
-        { id: 'city-item-headlamp', label: '头灯、备用电池、小镜子', riasecWeights: { R: 2, A: 1 }, personalityTags: ['action-ready', 'observant'] },
-        { id: 'city-item-water-food', label: '瓶装水、能量棒、密封面包', riasecWeights: { C: 3 }, personalityTags: ['stability-first'] },
-        { id: 'city-item-map-radio-pencil', label: '城区折页地图、便携收音机、铅笔', riasecWeights: { I: 2, C: 1 }, personalityTags: ['information-seeking', 'structured'] },
-        { id: 'city-item-first-aid-protection', label: '碘伏棉片、弹性绷带、一次性手套', riasecWeights: { S: 2, R: 1 }, personalityTags: ['helper', 'risk-aware'] },
-        { id: 'city-item-contact-signal', label: '对讲机、反光背心、口哨', riasecWeights: { E: 2, S: 1 }, personalityTags: ['connector', 'organizer'] },
-        { id: 'city-item-record-label', label: '拍立得相机、透明文件袋、防水记号笔', riasecWeights: { A: 2, I: 1 }, personalityTags: ['expressive', 'pattern-seeking'] },
-        { id: 'city-item-repair-tools', label: '尼龙绳、宽胶带、螺丝刀', riasecWeights: { R: 2, E: 1 }, personalityTags: ['practical', 'resourceful'] },
-        { id: 'city-item-inventory', label: '大号收纳袋、标签贴、小记账本', riasecWeights: { C: 1, I: 1, A: 1 }, personalityTags: ['organized', 'record-keeper'] },
-        { id: 'city-item-care-comfort', label: '毛巾、暖宝宝、硬糖', riasecWeights: { S: 2, A: 1 }, personalityTags: ['supportive', 'empathetic'] },
-        { id: 'city-item-power-card-calculator', label: '移动电源、预付电话卡、小型计算器', riasecWeights: { E: 2, I: 1 }, personalityTags: ['connector', 'judgment'] },
+        { id: 'city-item-toolkit', label: '手电筒、胶带、多功能刀', riasecWeights: { R: 1 }, personalityTags: ['hands-on'] },
+        { id: 'city-item-fire-rope', label: '备用电池、打火机、绳索', riasecWeights: { R: 1 }, personalityTags: ['practical'] },
+        { id: 'city-item-map-notebook', label: '城市地图、笔记本、记号笔', riasecWeights: { I: 1 }, personalityTags: ['information-seeking'] },
+        { id: 'city-item-radio-board', label: '收音机、旧手机、可拆电路板', riasecWeights: { I: 1 }, personalityTags: ['technical-curiosity'] },
+        { id: 'city-item-camera-tags', label: '相机、录音笔、彩色贴纸', riasecWeights: { A: 1 }, personalityTags: ['expressive'] },
+        { id: 'city-item-sign-board', label: '彩笔、纸板、醒目标识牌', riasecWeights: { A: 1 }, personalityTags: ['visual-communication'] },
+        { id: 'city-item-first-aid', label: '急救包、干净毛巾、常用药', riasecWeights: { S: 1 }, personalityTags: ['helper'] },
+        { id: 'city-item-signal-help', label: '扩音器、口哨、求助纸牌', riasecWeights: { S: 1 }, personalityTags: ['supportive'] },
+        { id: 'city-item-car-radio', label: '对讲机、车钥匙、工具箱', riasecWeights: { E: 1 }, personalityTags: ['connector'] },
+        { id: 'city-item-task-board', label: '小白板、任务贴、分工表', riasecWeights: { E: 1 }, personalityTags: ['organizer'] },
+        { id: 'city-item-food-water', label: '饮用水、压缩饼干、罐头', riasecWeights: { C: 1 }, personalityTags: ['stability-first'] },
+        { id: 'city-item-storage-list', label: '塑料箱、密封袋、清单夹', riasecWeights: { C: 1 }, personalityTags: ['record-keeper'] },
       ],
       openScene:
-        '远方驶来一辆车，是一批和你一样不知道发生了什么的幸存者；他们邀请你接下来一起探索城市、发掘真相。你们一共有4名成员。决定一起在这个未知的世界中探明真相。',
-      openImageSrc: DISCOVER_GENERATED_IMAGE('discover-question-scene-survivor-team-20260607-v1.png'),
-      teamPrompt: '大家在交换彼此的意见，你倾向于接下来首先应该做什么？',
+        '车上共有 4 名成员。大家决定一起探索城市、确认真相，也必须马上分工。',
+      openImageSrc: CAREER_SCENARIO_IMAGE('empty-city-survival-team-next-step'),
+      teamPrompt: '大家交换意见时，你倾向于小队首先应该做什么？',
       teamOptions: [
-        { id: 'city-team-analyze-info', label: '整理一下大家已有的信息，分析造成这一切的原因', riasecWeights: { I: 1, C: 1 }, personalityTags: ['analytical', 'structured'] },
-        { id: 'city-team-name-photo', label: '给我们的队伍先起个好听的名字并拍一张集体照', riasecWeights: { A: 1, I: 1 }, personalityTags: ['creative', 'story-maker'] },
-        { id: 'city-team-inventory', label: '计算一下车上的物资还够维持多久、是否齐全', riasecWeights: { R: 1, C: 1 }, personalityTags: ['practical', 'stability-first'] },
-        { id: 'city-team-find-others', label: '尽快沿着路一直走，沿途可能还有其余的幸存者', riasecWeights: { S: 1, E: 1 }, personalityTags: ['social', 'connector'] },
+        { id: 'city-team-info-model', label: '整理已知信息，分析异常原因、风险区域和下一步假设', riasecWeights: { I: 1, C: 1 }, personalityTags: ['analytical', 'structured'] },
+        { id: 'city-team-visual-clues', label: '记录异常画面、声音和线索，从细节里找隐藏规律', riasecWeights: { A: 1, I: 1 }, personalityTags: ['creative', 'pattern-seeking'] },
+        { id: 'city-team-supply-plan', label: '计算物资还能撑多久，列出最急需补充的清单', riasecWeights: { R: 1, C: 1 }, personalityTags: ['practical', 'stability-first'] },
+        { id: 'city-team-roles-contact', label: '先确定队伍分工和沟通方式，再寻找更多幸存者', riasecWeights: { S: 1, E: 1 }, personalityTags: ['social', 'organizer'] },
       ],
       openPrompt: '大家决定分工。你觉得自己在这个四人小队里最适合承担什么角色？',
       openFields: [
-        { id: 'teamRole', label: '（可选）大家决定分工。你觉得自己在这个四人小队里最适合承担什么角色？', type: 'text', placeholder: '我可以当一名技术大佬 / 领导组织者 / 物资后勤保障 / 联络外界 / 鼓舞人心……' },
+        { id: 'teamRole', label: '（可选）你最适合承担什么角色？', type: 'text', placeholder: '例如技术大佬、领导组织者、物资后勤、联络外界、鼓舞人心，或者你自己的角色。' },
       ],
     },
   },
   {
-    id: 'value-moral-line',
+    id: 'value-ai-life-route',
     phase: 'D',
-    type: 'card-select',
-    imageSrc: DISCOVER_IMAGE(13),
-    prompt: '道德判断：一个选择能提高效率，但会让少数人明显受损，你会怎么判断？',
-    options: [
-      { id: 'moral-efficiency', label: '看总体收益，只要结果足够好就可以接受', riasecWeights: { E: 3, C: 1 }, personalityTags: ['utilitarian'] },
-      { id: 'moral-rights', label: '先保护少数人的基本权益', riasecWeights: { S: 4, I: 1 }, personalityTags: ['fairness'] },
-      { id: 'moral-rules', label: '先看规则和程序是否正当', riasecWeights: { C: 4, I: 1 }, personalityTags: ['principled'] },
-      { id: 'moral-redesign', label: '重新设计方案，不轻易接受二选一', riasecWeights: { A: 2, I: 2, S: 1 }, personalityTags: ['creative-problem-solving'] },
-    ],
+    type: 'career-scenario',
+    imageSrc: CAREER_SCENARIO_IMAGE('ai-life-route-first-reaction'),
+    prompt: 'AI 生成了一份完美人生路线',
+    careerScenario: {
+      scene:
+        '高考结束后，一个生涯规划软件把你的成绩、兴趣、热门专业和就业率交给 AI，生成一份十年路线：学校、专业、实习、工作和年薪都写得很完整。可是你越看越觉得，它好像不太像你。',
+      sceneImageSrc: CAREER_SCENARIO_IMAGE('ai-life-route-first-reaction'),
+      sceneImageMode: 'per-section',
+      firstPrompt: '拿到这份路线时，你的第一反应是什么？',
+      firstOptions: [
+        { id: 'ai-first-source-check', label: '先核对数据来源、推理过程和有没有明显编造', riasecWeights: { I: 1, C: 1 }, personalityTags: ['analytical', 'fact-checking'] },
+        { id: 'ai-first-personal-edit', label: '删掉不像自己的部分，改成更符合想象的未来版本', riasecWeights: { A: 1, I: 1 }, personalityTags: ['creative', 'self-authoring'] },
+        { id: 'ai-first-small-test', label: '挑一个能展示的小任务，先做出来再拿去沟通', riasecWeights: { R: 1, E: 1 }, personalityTags: ['practical', 'initiative'] },
+        { id: 'ai-first-feedback', label: '主动约老师或学长讨论，争取看清哪些建议更现实', riasecWeights: { S: 1, E: 1 }, personalityTags: ['feedback-seeking', 'initiative'] },
+      ],
+      itemScene:
+        '你决定不马上相信，也不马上否定这份 AI 报告。接下来你只能先做 4 件事来验证它。',
+      itemImageSrc: CAREER_SCENARIO_IMAGE('ai-life-route-ranking'),
+      itemPrompt: '你会优先做哪 4 件事来验证这份 AI 路线？请按优先级从先到后排列。',
+      itemMaxSelections: 4,
+      itemOptions: [
+        { id: 'ai-item-fact-check', label: '查学校和专业数据来源', riasecWeights: { I: 1 }, personalityTags: ['fact-checking'] },
+        { id: 'ai-item-compare-courses', label: '对比真实专业课内容', riasecWeights: { I: 1 }, personalityTags: ['researching'] },
+        { id: 'ai-item-three-day-task', label: '做一个三天小任务', riasecWeights: { R: 1 }, personalityTags: ['hands-on'] },
+        { id: 'ai-item-shadow-work', label: '体验一次真实工作片段', riasecWeights: { R: 1 }, personalityTags: ['practice-first'] },
+        { id: 'ai-item-future-story', label: '重写一版未来生活画面', riasecWeights: { A: 1 }, personalityTags: ['self-authoring'] },
+        { id: 'ai-item-route-board', label: '做一张个人路线草图', riasecWeights: { A: 1 }, personalityTags: ['visual-thinking'] },
+        { id: 'ai-item-teacher-talk', label: '约老师聊路线合理性', riasecWeights: { S: 1 }, personalityTags: ['feedback-seeking'] },
+        { id: 'ai-item-peer-review', label: '请朋友指出哪里不像我', riasecWeights: { S: 1 }, personalityTags: ['social-reflection'] },
+        { id: 'ai-item-ask-admissions', label: '主动咨询招生或从业者', riasecWeights: { E: 1 }, personalityTags: ['initiative'] },
+        { id: 'ai-item-decision-pitch', label: '把选择理由讲给家人听', riasecWeights: { E: 1 }, personalityTags: ['persuasive'] },
+        { id: 'ai-item-risk-list', label: '列出风险、截止期和成本', riasecWeights: { C: 1 }, personalityTags: ['structured'] },
+        { id: 'ai-item-plan-table', label: '整理一张验证计划表', riasecWeights: { C: 1 }, personalityTags: ['organized'] },
+      ],
+      openScene:
+        '你准备把 AI 路线改成一个能被自己真正使用的版本。',
+      openImageSrc: CAREER_SCENARIO_IMAGE('ai-life-route-team-next-step'),
+      teamPrompt: '如果你觉得这份路线“不太像自己”，你最可能怎么处理？',
+      teamOptions: [
+        { id: 'ai-team-data-audit', label: '逐项查证学校、专业、薪资和就业数据是否可靠', riasecWeights: { I: 1, C: 1 }, personalityTags: ['analytical', 'structured'] },
+        { id: 'ai-team-self-prompt', label: '重新描述自己想过的生活，主动把 AI 引向更像自己的版本', riasecWeights: { A: 1, E: 1 }, personalityTags: ['creative', 'self-authoring'] },
+        { id: 'ai-team-action-proof', label: '从路线里挑一个能展示的小任务，用结果推动判断', riasecWeights: { R: 1, E: 1 }, personalityTags: ['practical', 'initiative'] },
+        { id: 'ai-team-human-review', label: '组织一次小范围讨论，区分模板建议和真实建议', riasecWeights: { S: 1, E: 1 }, personalityTags: ['feedback-seeking', 'organizer'] },
+      ],
+      openPrompt: '如果你花 30 分钟填写这样一份报告，你最希望它帮你解决什么问题？',
+      openFields: [
+        { id: 'teamRole', label: '（可选）你最希望这份报告帮你解决什么？', type: 'text', placeholder: '例如验证方向、找到行动入口、看清不适感、和家人沟通，或其他具体问题。' },
+      ],
+    },
   },
   {
-    id: 'value-tradeoff',
+    id: 'value-17th-century',
     phase: 'D',
-    type: 'card-select',
-    imageSrc: DISCOVER_IMAGE(14),
-    prompt: '专业选择里，如果只能优先考虑一个，你会选？',
-    options: [
-      { id: 'trade-interest', label: '长期兴趣：我愿意每天继续学', riasecWeights: { I: 2, A: 2 }, personalityTags: ['intrinsic'] },
-      { id: 'trade-income', label: '现实回报：就业、收入、确定性', riasecWeights: { E: 3, C: 2 }, personalityTags: ['pragmatic'] },
-      { id: 'trade-society', label: '社会价值：这件事是否帮助真实的人', riasecWeights: { S: 4 }, personalityTags: ['purpose-driven'] },
-      { id: 'trade-mastery', label: '专业深度：我能不能成为高手', riasecWeights: { I: 3, R: 1, C: 1 }, personalityTags: ['mastery'] },
-    ],
+    type: 'career-scenario',
+    imageSrc: CAREER_SCENARIO_IMAGE('17th-century-first-reaction'),
+    prompt: '穿越到 17 世纪',
+    careerScenario: {
+      scene:
+        '穿越系统出了 BUG，你被送到 17 世纪。这里没有现代网络和工业体系，但当地工坊、港口、学校和集市都愿意听你带来的未来知识。你只能选择少量东西和少量行动，决定先怎样推动改变。',
+      sceneImageSrc: CAREER_SCENARIO_IMAGE('17th-century-first-reaction'),
+      sceneImageMode: 'per-section',
+      firstPrompt: '如果只能先带一种“未来知识”过去，你更想带什么？',
+      firstOptions: [
+        { id: 'century-first-tools', label: '带基础机械工具和制作方法，先改造生产问题', riasecWeights: { R: 1, A: 1 }, personalityTags: ['hands-on', 'creative-problem-solving'] },
+        { id: 'century-first-experiments', label: '带自然科学实验笔记，先建立验证和解释方法', riasecWeights: { I: 1, C: 1 }, personalityTags: ['analytical', 'scientific'] },
+        { id: 'century-first-printing', label: '带图文传播和印刷方法，让新想法被更多人看见', riasecWeights: { A: 1, E: 1 }, personalityTags: ['creative', 'influential'] },
+        { id: 'century-first-school', label: '带学校和工坊协作方法，先组织人一起学习', riasecWeights: { S: 1, E: 1 }, personalityTags: ['teaching', 'organizer'] },
+      ],
+      itemScene:
+        '系统允许你从随身包里留下 4 类资料或工具。每类都可能改变一部分生活，但你不能全带。',
+      itemImageSrc: CAREER_SCENARIO_IMAGE('17th-century-ranking'),
+      itemPrompt: '你会优先留下哪 4 类资料或工具？请按优先级从先到后排列。',
+      itemMaxSelections: 4,
+      itemOptions: [
+        { id: 'century-item-toolbox', label: '锯、钳、尺和手摇钻图纸', riasecWeights: { R: 1 }, personalityTags: ['hands-on'] },
+        { id: 'century-item-medical-kit', label: '消毒、急救和卫生手册', riasecWeights: { R: 1 }, personalityTags: ['practical-care'] },
+        { id: 'century-item-science-notes', label: '电、热、光的实验笔记', riasecWeights: { I: 1 }, personalityTags: ['scientific'] },
+        { id: 'century-item-navigation', label: '地图、天文和航海方法', riasecWeights: { I: 1 }, personalityTags: ['exploration'] },
+        { id: 'century-item-art-book', label: '戏剧、绘画和音乐作品集', riasecWeights: { A: 1 }, personalityTags: ['creative'] },
+        { id: 'century-item-printing', label: '印刷排版和图文传播法', riasecWeights: { A: 1 }, personalityTags: ['visual-communication'] },
+        { id: 'century-item-school-plan', label: '识字课堂和学徒训练方案', riasecWeights: { S: 1 }, personalityTags: ['teaching'] },
+        { id: 'century-item-health-lessons', label: '公共卫生和照护课程', riasecWeights: { S: 1 }, personalityTags: ['helper'] },
+        { id: 'century-item-workshop-network', label: '工坊联盟和交易谈判指南', riasecWeights: { E: 1 }, personalityTags: ['initiative'] },
+        { id: 'century-item-demo-day', label: '公开演示和募资计划', riasecWeights: { E: 1 }, personalityTags: ['persuasive'] },
+        { id: 'century-item-accounts', label: '账本、标准计量和库存法', riasecWeights: { C: 1 }, personalityTags: ['structured'] },
+        { id: 'century-item-farming-plan', label: '农作流程和粮食保存表', riasecWeights: { C: 1 }, personalityTags: ['organized'] },
+      ],
+      openScene:
+        '当地人给你一个机会：你可以先推广一件事，证明未来知识不是空话。',
+      openImageSrc: CAREER_SCENARIO_IMAGE('17th-century-team-next-step'),
+      teamPrompt: '你最想先推广哪一类改变？',
+      teamOptions: [
+        { id: 'century-team-production', label: '能立刻改善生产和生活的工具、工艺与示范', riasecWeights: { R: 1, S: 1 }, personalityTags: ['practical', 'helpful'] },
+        { id: 'century-team-science', label: '能解释自然现象的实验方法和证据标准', riasecWeights: { I: 1, C: 1 }, personalityTags: ['scientific', 'analytical'] },
+        { id: 'century-team-culture', label: '能改变想象力的故事、图像和公共表达', riasecWeights: { A: 1, E: 1 }, personalityTags: ['creative', 'influential'] },
+        { id: 'century-team-learning', label: '能组织学校、工坊或公共讨论的协作方式', riasecWeights: { S: 1, E: 1 }, personalityTags: ['teaching', 'organizer'] },
+      ],
+      openPrompt: '如果只能用一句话说服当地人信任你，你会强调自己的什么贡献？',
+      openFields: [
+        { id: 'teamRole', label: '（可选）你会强调自己能带来什么贡献？', type: 'text', placeholder: '例如修工具、做实验、传播故事、组织课堂、管理物资，或其他具体贡献。' },
+      ],
+    },
   },
   {
-    id: 'value-open',
+    id: 'value-roommate-rules',
     phase: 'D',
-    type: 'free-text',
-    imageSrc: DISCOVER_IMAGE(16),
-    prompt: '开放题：如果 10 年后你对现在的自己说“这个选择是值得的”，那时最重要的证据会是什么？',
-    placeholder: '10 年后我会觉得值得，是因为……',
-    minLength: 12,
+    type: 'career-scenario',
+    imageSrc: CAREER_SCENARIO_IMAGE('roommate-rules-first-reaction'),
+    prompt: '室友合租规则谈不拢',
+    careerScenario: {
+      scene:
+        '你和室友住在一起一段时间后，问题越来越多：有人晚归开灯，有人公共区堆东西，有人觉得打扫不公平，也有人不想把关系弄僵。大家终于坐下来谈规则，但每个人都觉得自己有理由。',
+      sceneImageSrc: CAREER_SCENARIO_IMAGE('roommate-rules-first-reaction'),
+      sceneImageMode: 'per-section',
+      firstPrompt: '刚开始谈的时候，你最可能先做什么？',
+      firstOptions: [
+        { id: 'roommate-first-list-facts', label: '先把具体问题列出来，分清哪些是偶发、哪些是长期影响', riasecWeights: { I: 1, C: 1 }, personalityTags: ['analytical', 'structured'] },
+        { id: 'roommate-first-feelings', label: '先让每个人说出最受不了的点，避免一上来就互相指责', riasecWeights: { S: 1, I: 1 }, personalityTags: ['supportive', 'reflective'] },
+        { id: 'roommate-first-rule-table', label: '先提出一张值日和公共区规则表，让事情有标准可执行', riasecWeights: { C: 1, E: 1 }, personalityTags: ['structured', 'organizer'] },
+        { id: 'roommate-first-space-fix', label: '先调整公共空间和物品摆放，减少以后继续冲突的机会', riasecWeights: { R: 1, A: 1 }, personalityTags: ['hands-on', 'creative-problem-solving'] },
+      ],
+      itemScene:
+        '规则谈判不能只靠情绪，也不能只靠一张表。你需要选择最先推动的具体动作。',
+      itemImageSrc: CAREER_SCENARIO_IMAGE('roommate-rules-ranking'),
+      itemPrompt: '你只能先推动 4 个具体解决动作。你会优先选哪 4 个？请按优先级从先到后排列。',
+      itemMaxSelections: 4,
+      itemOptions: [
+        { id: 'roommate-item-clear-space', label: '整理公共区物品', riasecWeights: { R: 1 }, personalityTags: ['hands-on'] },
+        { id: 'roommate-item-fix-device', label: '修好或替换常出问题的设备', riasecWeights: { R: 1 }, personalityTags: ['practical'] },
+        { id: 'roommate-item-log-conflict', label: '记录一周冲突发生时间', riasecWeights: { I: 1 }, personalityTags: ['observant'] },
+        { id: 'roommate-item-root-cause', label: '分析最容易引爆矛盾的原因', riasecWeights: { I: 1 }, personalityTags: ['analytical'] },
+        { id: 'roommate-item-layout', label: '重新设计公共区布局', riasecWeights: { A: 1 }, personalityTags: ['creative'] },
+        { id: 'roommate-item-friendly-note', label: '做一张友好的规则提醒', riasecWeights: { A: 1 }, personalityTags: ['visual-communication'] },
+        { id: 'roommate-item-listen', label: '单独听室友真实顾虑', riasecWeights: { S: 1 }, personalityTags: ['supportive'] },
+        { id: 'roommate-item-talk', label: '组织一次不指责的沟通', riasecWeights: { S: 1 }, personalityTags: ['mediating'] },
+        { id: 'roommate-item-host-meeting', label: '主持一次规则讨论', riasecWeights: { E: 1 }, personalityTags: ['organizer'] },
+        { id: 'roommate-item-decide', label: '推动大家现场做决定', riasecWeights: { E: 1 }, personalityTags: ['decisive'] },
+        { id: 'roommate-item-duty-table', label: '制定值日和费用表', riasecWeights: { C: 1 }, personalityTags: ['structured'] },
+        { id: 'roommate-item-boundary', label: '写清噪音和访客边界', riasecWeights: { C: 1 }, personalityTags: ['detail-oriented'] },
+      ],
+      openScene:
+        '如果大家意见仍然不一致，你需要让关系、规则和执行同时向前走一点。',
+      openImageSrc: CAREER_SCENARIO_IMAGE('roommate-rules-team-next-step'),
+      teamPrompt: '你会怎么推进？',
+      teamOptions: [
+        { id: 'roommate-team-trial', label: '先定一个两周试行规则，到期按事实调整', riasecWeights: { R: 1, C: 1 }, personalityTags: ['practice-first', 'structured'] },
+        { id: 'roommate-team-mediate', label: '先处理最伤关系的部分，让每个人觉得被听见', riasecWeights: { S: 1, I: 1 }, personalityTags: ['mediating', 'reflective'] },
+        { id: 'roommate-team-redesign', label: '改造公共区和提醒方式，用环境减少摩擦', riasecWeights: { R: 1, A: 1 }, personalityTags: ['hands-on', 'creative-problem-solving'] },
+        { id: 'roommate-team-decision', label: '把争议拆成几项清楚选项，让每个人更容易表达底线', riasecWeights: { A: 1, S: 1 }, personalityTags: ['visual-communication', 'mediating'] },
+      ],
+      openPrompt: '如果你是这个合租小组的一员，你最适合负责哪种贡献？',
+      openFields: [
+        { id: 'teamRole', label: '（可选）你最适合负责哪种贡献？', type: 'text', placeholder: '例如整理空间、分析原因、安抚沟通、主持讨论、制定规则、记录执行，或其他具体贡献。' },
+      ],
+    },
+  },
+  {
+    id: 'value-family-pet-decision',
+    phase: 'D',
+    type: 'career-scenario',
+    imageSrc: CAREER_SCENARIO_IMAGE('family-pet-decision-first-reaction'),
+    prompt: '家里突然讨论要不要养宠物',
+    careerScenario: {
+      scene:
+        '家里突然认真讨论要不要养一只宠物。有人很期待陪伴，有人担心花费、卫生和责任，也有人担心只是三分钟热度。你不需要立刻表态喜欢或不喜欢，而是要判断这件事能不能长期负责。',
+      sceneImageSrc: CAREER_SCENARIO_IMAGE('family-pet-decision-first-reaction'),
+      sceneImageMode: 'per-section',
+      firstPrompt: '听到这个讨论时，你最可能先做什么？',
+      firstOptions: [
+        { id: 'pet-first-care-test', label: '先试着照顾几天，看看自己能不能承担日常喂养和清理', riasecWeights: { R: 1, S: 1 }, personalityTags: ['hands-on', 'helper'] },
+        { id: 'pet-first-cost-risk', label: '先查费用、疾病、时间和空间要求，判断现实压力', riasecWeights: { I: 1, C: 1 }, personalityTags: ['analytical', 'structured'] },
+        { id: 'pet-first-family-talk', label: '先听每个人的期待和担心，确认冲突点在哪里', riasecWeights: { S: 1, I: 1 }, personalityTags: ['supportive', 'reflective'] },
+        { id: 'pet-first-home-design', label: '先想象它进入家庭后的生活动线和空间布置', riasecWeights: { A: 1, R: 1 }, personalityTags: ['creative', 'hands-on'] },
+      ],
+      itemScene:
+        '养宠物不是一个只靠喜欢就能决定的问题。你需要先选出几项能验证长期责任的准备。',
+      itemImageSrc: CAREER_SCENARIO_IMAGE('family-pet-decision-ranking'),
+      itemPrompt: '如果要认真评估这件事，你会先做哪 4 项准备？请按优先级从先到后排列。',
+      itemMaxSelections: 4,
+      itemOptions: [
+        { id: 'pet-item-feed-clean', label: '试做喂养和清洁', riasecWeights: { R: 1 }, personalityTags: ['hands-on'] },
+        { id: 'pet-item-supplies', label: '准备基础用品清单', riasecWeights: { R: 1 }, personalityTags: ['practical'] },
+        { id: 'pet-item-health-risk', label: '查询品种和健康风险', riasecWeights: { I: 1 }, personalityTags: ['researching'] },
+        { id: 'pet-item-real-cases', label: '比较真实养护案例', riasecWeights: { I: 1 }, personalityTags: ['analytical'] },
+        { id: 'pet-item-activity-corner', label: '设计宠物活动角落', riasecWeights: { A: 1 }, personalityTags: ['creative'] },
+        { id: 'pet-item-life-scene', label: '记录理想相处画面', riasecWeights: { A: 1 }, personalityTags: ['self-authoring'] },
+        { id: 'pet-item-family-concerns', label: '和家人分别沟通顾虑', riasecWeights: { S: 1 }, personalityTags: ['supportive'] },
+        { id: 'pet-item-care-trial', label: '安排照护责任试运行', riasecWeights: { S: 1 }, personalityTags: ['helper'] },
+        { id: 'pet-item-adoption-contact', label: '联系领养或咨询机构', riasecWeights: { E: 1 }, personalityTags: ['initiative'] },
+        { id: 'pet-item-family-meeting', label: '推动一次家庭决策会议', riasecWeights: { E: 1 }, personalityTags: ['organizer'] },
+        { id: 'pet-item-monthly-cost', label: '计算月度费用', riasecWeights: { C: 1 }, personalityTags: ['structured'] },
+        { id: 'pet-item-duty-roster', label: '制定喂养和清洁排班', riasecWeights: { C: 1 }, personalityTags: ['organized'] },
+      ],
+      openScene:
+        '如果家里意见不一致，你需要让喜欢、担心和责任都变得更具体。',
+      openImageSrc: CAREER_SCENARIO_IMAGE('family-pet-decision-team-next-step'),
+      teamPrompt: '你更倾向于下一步怎么做？',
+      teamOptions: [
+        { id: 'pet-team-trial-care', label: '先做一段试照护，用真实执行情况推动家里做决定', riasecWeights: { R: 1, E: 1 }, personalityTags: ['hands-on', 'initiative'] },
+        { id: 'pet-team-risk-check', label: '把费用、时间、疾病和空间风险查清楚再谈', riasecWeights: { A: 1, C: 1 }, personalityTags: ['visual-thinking', 'risk-aware'] },
+        { id: 'pet-team-family-balance', label: '先解决家人最担心的责任分配和情绪顾虑', riasecWeights: { S: 1, E: 1 }, personalityTags: ['supportive', 'organizer'] },
+        { id: 'pet-team-space-plan', label: '设计一个不打扰生活的宠物空间和相处方式', riasecWeights: { A: 1, S: 1 }, personalityTags: ['creative', 'social'] },
+      ],
+      openPrompt: '如果最后真的养了，你最愿意长期承担哪一部分责任？',
+      openFields: [
+        { id: 'teamRole', label: '（可选）你愿意长期承担什么责任？', type: 'text', placeholder: '例如喂养、清洁、观察健康、陪伴训练、费用记录、家庭沟通，或其他长期责任。' },
+      ],
+    },
+  },
+  {
+    id: 'value-future-self-letter',
+    phase: 'D',
+    type: 'career-scenario',
+    imageSrc: CAREER_SCENARIO_IMAGE('future-self-letter-first-reaction'),
+    prompt: '给未来的自己写一封信',
+    careerScenario: {
+      scene:
+        '测评快结束时，系统弹出一个特别任务：给未来的自己写一封信。不是写漂亮愿望，而是留下一个未来能检查的证据：你希望几年后的自己回头看时，能看到你从现在开始真正做过什么。',
+      sceneImageSrc: CAREER_SCENARIO_IMAGE('future-self-letter-first-reaction'),
+      sceneImageMode: 'per-section',
+      firstPrompt: '如果这封信只能留下一个核心证据，你最想写下什么？',
+      firstOptions: [
+        { id: 'future-first-made-thing', label: '我希望未来能看到自己亲手做成过一个具体作品或项目', riasecWeights: { R: 1, A: 1 }, personalityTags: ['hands-on', 'creative'] },
+        { id: 'future-first-understood', label: '我希望未来能看到自己拆解并验证过一个复杂问题', riasecWeights: { I: 1, R: 1 }, personalityTags: ['analytical', 'practice-first'] },
+        { id: 'future-first-helped', label: '我希望未来能看到自己长期做成过一件对真实的人有帮助的小事', riasecWeights: { R: 1, C: 1 }, personalityTags: ['helper', 'consistent'] },
+        { id: 'future-first-led', label: '我希望未来能看到自己争取过机会，并带动别人一起做成事', riasecWeights: { E: 1, S: 1 }, personalityTags: ['initiative', 'organizer'] },
+      ],
+      itemScene:
+        '为了让这封信不是空话，你需要留下能被未来自己看见的证据。不同证据代表不同的投入方式。',
+      itemImageSrc: CAREER_SCENARIO_IMAGE('future-self-letter-ranking'),
+      itemPrompt: '为了让这封信不是空话，你会先留下哪 4 种证据？请按优先级从先到后排列。',
+      itemMaxSelections: 4,
+      itemOptions: [
+        { id: 'future-item-small-work', label: '一个可展示的小作品', riasecWeights: { R: 1 }, personalityTags: ['hands-on'] },
+        { id: 'future-item-practice-log', label: '一次真实动手实践记录', riasecWeights: { R: 1 }, personalityTags: ['practice-first'] },
+        { id: 'future-item-research-note', label: '一份问题研究笔记', riasecWeights: { I: 1 }, personalityTags: ['researching'] },
+        { id: 'future-item-evidence-map', label: '一张概念或证据地图', riasecWeights: { I: 1 }, personalityTags: ['analytical'] },
+        { id: 'future-item-artist-statement', label: '一段个人作品陈述', riasecWeights: { A: 1 }, personalityTags: ['self-authoring'] },
+        { id: 'future-item-creative-set', label: '一组图像、文字或声音作品', riasecWeights: { A: 1 }, personalityTags: ['creative'] },
+        { id: 'future-item-help-record', label: '一次帮助别人的记录', riasecWeights: { S: 1 }, personalityTags: ['helper'] },
+        { id: 'future-item-feedback', label: '一段来自他人的反馈', riasecWeights: { S: 1 }, personalityTags: ['feedback-seeking'] },
+        { id: 'future-item-opportunity', label: '一次主动争取机会', riasecWeights: { E: 1 }, personalityTags: ['initiative'] },
+        { id: 'future-item-organize-action', label: '一次组织或推进行动', riasecWeights: { E: 1 }, personalityTags: ['organizer'] },
+        { id: 'future-item-long-plan', label: '一张长期计划表', riasecWeights: { C: 1 }, personalityTags: ['structured'] },
+        { id: 'future-item-review-list', label: '一次阶段复盘清单', riasecWeights: { C: 1 }, personalityTags: ['organized'] },
+      ],
+      openScene:
+        '如果未来的你只看一段话，你需要让那段话能提醒自己做出真实行动。',
+      openImageSrc: CAREER_SCENARIO_IMAGE('future-self-letter-team-next-step'),
+      teamPrompt: '你更希望那段话提醒自己什么？',
+      teamOptions: [
+        { id: 'future-team-build', label: '不要只想，至少亲手做出一个能被看见的东西', riasecWeights: { R: 1, A: 1 }, personalityTags: ['hands-on', 'creative'] },
+        { id: 'future-team-learn', label: '不要只跟风，要留下自己理解和判断的证据', riasecWeights: { I: 1, C: 1 }, personalityTags: ['analytical', 'structured'] },
+        { id: 'future-team-care', label: '不要只追求个人结果，也要记得自己怎样影响别人', riasecWeights: { S: 1, A: 1 }, personalityTags: ['supportive', 'expressive'] },
+        { id: 'future-team-lead', label: '不要等别人安排，要主动争取并组织一次机会', riasecWeights: { E: 1, C: 1 }, personalityTags: ['initiative', 'organized'] },
+      ],
+      openPrompt: '你会给未来的自己留下一句什么提醒？这句话最好能对应一个真实行动。',
+      openFields: [
+        { id: 'teamRole', label: '（可选）你会留下什么提醒？', type: 'text', placeholder: '例如我要做出作品、查清问题、持续帮助别人、主动争取机会，或你自己的真实行动。' },
+      ],
+    },
   },
 ];
 
@@ -1641,6 +1949,297 @@ const AI_DIALOGUE_QUESTIONS: Question[] = [
   },
 ];
 
+function scrambleCareerScenarioOptions(question: Question): Question {
+  const scenario = question.careerScenario;
+  if (!scenario) return question;
+
+  return {
+    ...question,
+    careerScenario: {
+      ...scenario,
+      firstOptions: stableOptionShuffle(scenario.firstOptions, `${question.id}:first`),
+      itemOptions: stableOptionShuffle(scenario.itemOptions, `${question.id}:items`),
+      teamOptions: scenario.teamOptions
+        ? stableOptionShuffle(scenario.teamOptions, `${question.id}:team`)
+        : scenario.teamOptions,
+    },
+  };
+}
+
+const SCRAMBLED_VALUE_TESTS = VALUE_TESTS.map(scrambleCareerScenarioOptions);
+
+const HOLLAND_FINE_DIMENSION_IMAGES: Record<RIASECDimension, string> = {
+  R: DISCOVER_ASSESSMENT_DEEP_HOLLAND_IMAGE('r', 0),
+  I: DISCOVER_ASSESSMENT_DEEP_HOLLAND_IMAGE('i', 0),
+  A: DISCOVER_ASSESSMENT_DEEP_HOLLAND_IMAGE('a', 0),
+  S: DISCOVER_ASSESSMENT_DEEP_HOLLAND_IMAGE('s', 0),
+  E: DISCOVER_ASSESSMENT_DEEP_HOLLAND_IMAGE('e', 0),
+  C: DISCOVER_ASSESSMENT_DEEP_HOLLAND_IMAGE('c', 0),
+};
+
+const HOLLAND_FINE_ACCEPTED_DEEP_IMAGE_DIMENSIONS = new Set<RIASECDimension>(['R', 'I', 'A', 'S', 'E', 'C']);
+
+function getAcceptedHollandFineItemSceneImageSrc(
+  dimension: RIASECDimension,
+  item: HollandFineBankItem,
+  itemIndex: number,
+) {
+  if (!HOLLAND_FINE_ACCEPTED_DEEP_IMAGE_DIMENSIONS.has(dimension)) return item.sceneImageSrc;
+  const globalItemIndex = Number(item.id.match(/-(\d{3})$/)?.[1] ?? itemIndex + 1) - 1;
+  return DISCOVER_ASSESSMENT_DEEP_HOLLAND_IMAGE(dimension.toLowerCase(), globalItemIndex);
+}
+
+function createHollandFineQuestion(dimension: RIASECDimension, section: HollandFineBankSection): Question {
+  const dimensionData = HOLLAND_FINE_DIMENSION_DATA[dimension];
+  return {
+    id: section.id,
+    phase: 'D',
+    type: 'holland-fine-grained',
+    prompt: `${dimensionData.label}｜${section.title}`,
+    subtext: section.sectionIntro,
+    imageSrc: HOLLAND_FINE_DIMENSION_IMAGES[dimension],
+    hollandFine: {
+      ...section,
+      dimension,
+      dimensionLabel: dimensionData.label,
+      sourcePath: dimensionData.sourcePath,
+      items: section.items.map((item, itemIndex) => ({
+        ...item,
+        sceneImageSrc: getAcceptedHollandFineItemSceneImageSrc(dimension, item, itemIndex),
+      })) as HollandFineBankItem[],
+    },
+  };
+}
+
+export const HOLLAND_FINE_QUESTIONS: Question[] = HOLLAND_FINE_DIMENSION_ORDER.flatMap((dimension) =>
+  HOLLAND_FINE_DIMENSION_DATA[dimension].sections.map((section) => createHollandFineQuestion(dimension, section)),
+);
+
+export const HOLLAND_FINE_QUESTION_IDS = HOLLAND_FINE_QUESTIONS.map((question) => question.id);
+
+export function getHollandFineQuestionIdsForDimensions(dimensions: RIASECDimension[]) {
+  const uniqueDimensions = Array.from(new Set(dimensions)).filter((dimension) => HOLLAND_FINE_DIMENSION_DATA[dimension]);
+  return uniqueDimensions.flatMap((dimension) =>
+    HOLLAND_FINE_DIMENSION_DATA[dimension].sections.map((section) => section.id),
+  );
+}
+
+export function getHollandFineQuestionsForDimensions(dimensions: RIASECDimension[]) {
+  const ids = new Set(getHollandFineQuestionIdsForDimensions(dimensions));
+  return HOLLAND_FINE_QUESTIONS.filter((question) => ids.has(question.id));
+}
+
+export const FINAL_CAREER_CALIBRATION_SOURCE_PATH =
+  'docs/Zhiye_Huolande_Doc/final_career_recommendation_assessment.md';
+
+export const CAREER_CALIBRATION_DIMENSIONS: Array<{
+  key: CareerCalibrationDimensionKey;
+  label: string;
+  highMeaning: string;
+  lowMeaning: string;
+}> = [
+  {
+    key: 'stabilityChangeTolerance',
+    label: '稳定与变化承受',
+    highMeaning: '更能接受稳定流程、固定岗位、重复任务和长期积累。',
+    lowMeaning: '更需要变化、新问题、移动空间和阶段性更新。',
+  },
+  {
+    key: 'innovationMeaningNeed',
+    label: '创新与意义需求',
+    highMeaning: '更需要创新、表达、探索、问题解决和可感知的工作意义。',
+    lowMeaning: '可以接受任务意义不强但稳定清晰的工作安排。',
+  },
+  {
+    key: 'moneyStatusWeight',
+    label: '金钱与外部评价权重',
+    highMeaning: '更重视收入增长、社会认可、头衔、行业排名和可见成就。',
+    lowMeaning: '更能接受低曝光、低排名压力或回报较慢的方向。',
+  },
+  {
+    key: 'riskUncertaintyTolerance',
+    label: '风险与不确定性承受',
+    highMeaning: '可以接受不确定路径、竞争压力、阶段性失败和结果波动。',
+    lowMeaning: '更适合路径清晰、培养稳定、规则明确和风险较低的方向。',
+  },
+  {
+    key: 'workLifeBoundaryPreference',
+    label: '工作生活边界与节奏偏好',
+    highMeaning: '更需要清晰边界、稳定节奏、可预期作息和长期生活安排。',
+    lowMeaning: '能接受高强度、项目制、即时响应和阶段性投入。',
+  },
+];
+
+const CAREER_CALIBRATION_DIMENSION_BY_KEY = new Map(
+  CAREER_CALIBRATION_DIMENSIONS.map((dimension) => [dimension.key, dimension]),
+);
+
+export const CAREER_CALIBRATION_SCALE_OPTIONS: QuestionOption[] = [
+  { id: 'final-career-calibration-scale-5', label: '非常符合', riasecWeights: {} },
+  { id: 'final-career-calibration-scale-4', label: '比较符合', riasecWeights: {} },
+  { id: 'final-career-calibration-scale-3', label: '一般', riasecWeights: {} },
+  { id: 'final-career-calibration-scale-2', label: '不太符合', riasecWeights: {} },
+  { id: 'final-career-calibration-scale-1', label: '非常不符合', riasecWeights: {} },
+];
+
+type FinalCareerCalibrationQuestionSource = {
+  prompt: string;
+  dimension: CareerCalibrationDimensionKey;
+  scoringDirection: CareerCalibrationScoringDirection;
+};
+
+const FINAL_CAREER_CALIBRATION_SOURCES: FinalCareerCalibrationQuestionSource[] = [
+  {
+    dimension: 'stabilityChangeTolerance',
+    scoringDirection: 'positive',
+    prompt: '如果一份工作每天面对相似流程、相似对象和相似评价标准，只要它稳定可靠，我可以长期投入。',
+  },
+  {
+    dimension: 'stabilityChangeTolerance',
+    scoringDirection: 'positive',
+    prompt: '我能接受几年内工作内容变化不大，只要职责清楚、收入稳定、组织规则明确。',
+  },
+  {
+    dimension: 'stabilityChangeTolerance',
+    scoringDirection: 'reverse',
+    prompt: '如果一份工作很少出现新任务、新人群或新问题，即使条件不错，我也会明显感到消耗。',
+  },
+  {
+    dimension: 'stabilityChangeTolerance',
+    scoringDirection: 'positive',
+    prompt: '相比频繁换项目、换团队、换目标，我更愿意在一个熟悉岗位里把细节越做越稳。',
+  },
+  {
+    dimension: 'stabilityChangeTolerance',
+    scoringDirection: 'reverse',
+    prompt: '当生活和工作过于可预测时，我会主动寻找新的任务、环境或挑战来打破惯性。',
+  },
+  {
+    dimension: 'innovationMeaningNeed',
+    scoringDirection: 'positive',
+    prompt: '如果一份工作长期只是执行已有流程，没有提出新想法或改进方法的空间，我很难保持投入。',
+  },
+  {
+    dimension: 'innovationMeaningNeed',
+    scoringDirection: 'positive',
+    prompt: '选择专业或职业时，我会认真考虑这件事是否能让我接触真实问题，而不只是完成被分配的任务。',
+  },
+  {
+    dimension: 'innovationMeaningNeed',
+    scoringDirection: 'reverse',
+    prompt: '如果工作收入稳定、要求明确、压力可控，即使它本身没有太多创造性，我也可以接受。',
+  },
+  {
+    dimension: 'innovationMeaningNeed',
+    scoringDirection: 'positive',
+    prompt: '当一个方向能让我做出新方案、新表达、新产品或新解释时，它会明显增加我的兴趣。',
+  },
+  {
+    dimension: 'innovationMeaningNeed',
+    scoringDirection: 'positive',
+    prompt: '我不希望未来的工作只是在系统里处理任务、提交结果，而看不到它连接的真实人、问题或变化。',
+  },
+  {
+    dimension: 'moneyStatusWeight',
+    scoringDirection: 'positive',
+    prompt: '选择专业或职业时，未来收入上限会明显影响我的判断。',
+  },
+  {
+    dimension: 'moneyStatusWeight',
+    scoringDirection: 'positive',
+    prompt: '如果一个方向社会评价高、身边人也认可，我会更愿意认真考虑它。',
+  },
+  {
+    dimension: 'moneyStatusWeight',
+    scoringDirection: 'reverse',
+    prompt: '即使一个方向不热门、收入增长慢，只要它符合我的长期兴趣，我也能接受。',
+  },
+  {
+    dimension: 'moneyStatusWeight',
+    scoringDirection: 'positive',
+    prompt: '我希望自己的工作成果能被清楚看见，例如排名、奖金、晋升、作品传播或项目影响力。',
+  },
+  {
+    dimension: 'moneyStatusWeight',
+    scoringDirection: 'positive',
+    prompt: '如果一份工作很有价值但长期缺少外部认可、公开反馈或职业身份感，我会犹豫。',
+  },
+  {
+    dimension: 'riskUncertaintyTolerance',
+    scoringDirection: 'positive',
+    prompt: '如果一个职业方向前期路径不清晰，但有较大成长空间，我愿意用实习、项目和试错去验证。',
+  },
+  {
+    dimension: 'riskUncertaintyTolerance',
+    scoringDirection: 'positive',
+    prompt: '面对竞争强、淘汰快、反馈直接的环境，我会紧张，但不一定会回避。',
+  },
+  {
+    dimension: 'riskUncertaintyTolerance',
+    scoringDirection: 'reverse',
+    prompt: '如果一个方向需要长期承受收入波动、机会不稳定或项目失败，我会倾向避开。',
+  },
+  {
+    dimension: 'riskUncertaintyTolerance',
+    scoringDirection: 'positive',
+    prompt: '我可以接受先进入一个变化很快的行业，再根据真实反馈调整自己的位置。',
+  },
+  {
+    dimension: 'riskUncertaintyTolerance',
+    scoringDirection: 'reverse',
+    prompt: '相比高回报但不确定的路线，我更愿意选择培养路径、考试规则或晋升方式更明确的路线。',
+  },
+  {
+    dimension: 'workLifeBoundaryPreference',
+    scoringDirection: 'positive',
+    prompt: '选择职业时，我会认真考虑它是否长期占用晚上、周末或假期。',
+  },
+  {
+    dimension: 'workLifeBoundaryPreference',
+    scoringDirection: 'positive',
+    prompt: '如果一份工作经常需要临时响应、加班或根据项目节奏调整生活，我会比较难适应。',
+  },
+  {
+    dimension: 'workLifeBoundaryPreference',
+    scoringDirection: 'reverse',
+    prompt: '为了获得更快成长、更高收入或更好的机会，我可以接受一段时间的高强度工作。',
+  },
+  {
+    dimension: 'workLifeBoundaryPreference',
+    scoringDirection: 'positive',
+    prompt: '我希望未来工作结束后，仍然能保留稳定的家庭、朋友、休息和个人兴趣时间。',
+  },
+  {
+    dimension: 'workLifeBoundaryPreference',
+    scoringDirection: 'reverse',
+    prompt: '如果工作本身足够吸引我，我可以接受它阶段性占据生活中的大部分注意力。',
+  },
+];
+
+export const FINAL_CAREER_CALIBRATION_QUESTIONS: Question[] = FINAL_CAREER_CALIBRATION_SOURCES.map((source, index) => {
+  const dimension = CAREER_CALIBRATION_DIMENSION_BY_KEY.get(source.dimension);
+  if (!dimension) throw new Error(`Missing career calibration dimension: ${source.dimension}`);
+  const questionNumber = index + 1;
+  return {
+    id: `final-career-calibration-${String(questionNumber).padStart(2, '0')}`,
+    phase: 'D',
+    type: 'career-calibration-scale',
+    imageSrc: DISCOVER_CAREER_CALIBRATION_IMAGE(index),
+    prompt: source.prompt,
+    careerCalibration: {
+      sourcePath: FINAL_CAREER_CALIBRATION_SOURCE_PATH,
+      dimension: source.dimension,
+      dimensionLabel: dimension.label,
+      scoringDirection: source.scoringDirection,
+      questionNumber,
+    },
+    options: CAREER_CALIBRATION_SCALE_OPTIONS,
+  };
+});
+
+export const FINAL_CAREER_CALIBRATION_QUESTION_IDS =
+  FINAL_CAREER_CALIBRATION_QUESTIONS.map((question) => question.id);
+
 const FULL_QUESTION_BANK: Question[] = [
   ...BASIC_INFO,
   ...INTEREST_TAG_QUESTIONS,
@@ -1651,51 +2250,33 @@ const FULL_QUESTION_BANK: Question[] = [
   ...SURAKARTA_ABILITY_TESTS,
   ...SCENARIO_TESTS,
   ...AI_DIALOGUE_QUESTIONS,
-  ...VALUE_TESTS,
+  ...HOLLAND_FINE_QUESTIONS,
+  ...FINAL_CAREER_CALIBRATION_QUESTIONS,
+  ...SCRAMBLED_VALUE_TESTS,
 ];
+
+const FULL_QUESTION_BY_ID = new Map(FULL_QUESTION_BANK.map((question) => [question.id, question]));
+
+export function getDiscoverQuestionDefinition(questionId: string) {
+  return FULL_QUESTION_BY_ID.get(questionId) ?? null;
+}
+
+export const DISCOVER_ABILITY_MODULE_QUESTIONS: Question[] = DISCOVER_ABILITY_QUESTION_IDS.map((questionId) => {
+  const question = getDiscoverQuestionDefinition(questionId);
+  if (!question) throw new Error(`Missing inactive Discover ability question: ${questionId}`);
+  return question;
+});
 
 const ACTIVE_QUESTION_IDS = [
   'basic-profile',
-  'interest-tags-1',
-  'interest-tags-2',
-  'interest-tags-3',
-  'personality-ei-1',
-  'personality-ei-2',
-  'personality-ei-3',
-  'personality-ei-4',
-  'personality-ei-5',
-  'personality-ei-6',
-  'personality-sn-1',
-  'personality-sn-2',
-  'personality-sn-3',
-  'personality-sn-4',
-  'personality-sn-5',
-  'personality-sn-6',
-  'personality-tf-1',
-  'personality-tf-2',
-  'personality-tf-3',
-  'personality-tf-4',
-  'personality-tf-5',
-  'personality-tf-6',
-  'personality-jp-1',
-  'personality-jp-2',
-  'personality-jp-3',
-  'personality-jp-4',
-  'personality-jp-5',
-  'personality-jp-6',
-  'ability-jinchao-lamp-1',
-  'ability-jinchao-lamp-2',
-  'ability-jinchao-lamp-3',
-  'ability-jinchao-lamp-4',
-  'ability-jinchao-lamp-5',
-  'ability-jinchao-lamp-6',
-  'ability-jinchao-lamp-7',
-  'ability-jinchao-lamp-8',
-  'value-life-goal',
+  ...PERSONALITY_MBTI_QUESTION_IDS,
+  ...PERSONALITY_HOLLAND_SCALE_QUESTION_IDS,
+  ...HOLLAND_FINE_QUESTION_IDS,
+  ...FINAL_CAREER_CALIBRATION_QUESTION_IDS,
 ] as const;
 
 export const ALL_QUESTIONS: Question[] = ACTIVE_QUESTION_IDS.map((questionId) => {
-  const question = FULL_QUESTION_BANK.find((item) => item.id === questionId);
+  const question = getDiscoverQuestionDefinition(questionId);
   if (!question) throw new Error(`Missing active Discover question: ${questionId}`);
   return question;
 });
@@ -1751,6 +2332,25 @@ export function isCareerScenarioValue(value: AnswerValue | undefined): value is 
   );
 }
 
+export function createEmptyHollandFineAnswer(question?: Question): HollandFineAnswer {
+  const items: Record<string, HollandFineAnswerItemValue> = {};
+  for (const item of question?.hollandFine?.items ?? []) {
+    items[item.id] = item.mode === 'open' ? { openResponses: {} } : { selectedOptionIds: [] };
+  }
+  return { items };
+}
+
+export function isHollandFineAnswerValue(value: AnswerValue | undefined): value is HollandFineAnswer {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    !Array.isArray(value) &&
+    'items' in value &&
+    typeof (value as { items?: unknown }).items === 'object' &&
+    (value as { items?: unknown }).items !== null
+  );
+}
+
 function collectProfileOptions(question: Question, value: AnswerValue): QuestionOption[] {
   if (!question.profileFields || !isProfileValue(value)) return [];
   const options: QuestionOption[] = [];
@@ -1767,33 +2367,430 @@ function collectProfileOptions(question: Question, value: AnswerValue): Question
   return options;
 }
 
-export function computeRawScores(answers: Answer[]): RIASECScores {
-  const scores: RIASECScores = { R: 0, I: 0, A: 0, S: 0, E: 0, C: 0 };
+const RIASEC_DIMENSIONS: RIASECDimension[] = ['R', 'I', 'A', 'S', 'E', 'C'];
+export const DISCOVER_RIASEC_SECTION_WEIGHTS = {
+  preCareer: 1,
+  fineGrained: 0,
+  // Legacy keys are kept for older audit/debug callers.
+  interest: 1,
+  career: 0,
+} as const;
+
+export type AbilityQuestionType = 'language_understanding' | 'board_reasoning';
+
+export interface AbilityPerformanceItem {
+  questionId: string;
+  questionType: AbilityQuestionType;
+  questionTypeLabel: string;
+  selectedOptionId: string;
+  selectedLabel: string;
+  correctOptionId: string;
+  correctLabel: string;
+  isCorrect: boolean;
+}
+
+export interface AbilityPerformanceByType {
+  questionType: AbilityQuestionType;
+  questionTypeLabel: string;
+  totalCount: number;
+  correctCount: number;
+  incorrectCount: number;
+}
+
+export interface AbilityPerformanceSummary {
+  version: 'ability_performance_v1';
+  totalCount: number;
+  correctCount: number;
+  incorrectCount: number;
+  byQuestionType: AbilityPerformanceByType[];
+  items: AbilityPerformanceItem[];
+}
+
+function createEmptyRiasecScores(): RIASECScores {
+  return { R: 0, I: 0, A: 0, S: 0, E: 0, C: 0 };
+}
+
+function addRiasecWeights(
+  scores: RIASECScores,
+  weights: Partial<Record<RIASECDimension, number>>,
+  multiplier = 1,
+) {
+  for (const [dim, weight] of Object.entries(weights)) {
+    const numericWeight = Number(weight);
+    if (!Number.isFinite(numericWeight)) continue;
+    scores[dim as RIASECDimension] += numericWeight * multiplier;
+  }
+}
+
+function addCareerScenarioClosedChoiceScores(
+  scores: RIASECScores,
+  question: Question,
+  value: AnswerValue,
+) {
+  if (!isCareerScenarioValue(value)) return;
+  const scenario = question.careerScenario;
+  if (!scenario) return;
+
+  const firstOption = scenario.firstOptions.find((option) => option.id === value.firstChoiceId);
+  if (firstOption) addRiasecWeights(scores, firstOption.riasecWeights);
+
+  for (const optId of value.itemChoiceIds) {
+    const option = scenario.itemOptions.find((item) => item.id === optId);
+    if (option) addRiasecWeights(scores, option.riasecWeights);
+  }
+
+  const teamOption = scenario.teamOptions?.find((option) => option.id === value.teamChoiceId);
+  if (teamOption) addRiasecWeights(scores, teamOption.riasecWeights);
+}
+
+function scoreTotal(scores: RIASECScores) {
+  return RIASEC_DIMENSIONS.reduce((total, dimension) => total + Math.max(0, scores[dimension]), 0);
+}
+
+function collectHollandFineOptions(question: Question, value: AnswerValue): QuestionOption[] {
+  if (!question.hollandFine || !isHollandFineAnswerValue(value)) return [];
+  const options: QuestionOption[] = [];
+
+  for (const item of question.hollandFine.items) {
+    const answerItem = value.items[item.id];
+    const selectedIds = answerItem?.selectedOptionIds ?? [];
+    for (const optionId of selectedIds) {
+      const option = item.options?.find((candidate) => candidate.id === optionId);
+      if (option) options.push(option);
+    }
+  }
+
+  return options;
+}
+
+function addHollandFineClosedChoiceScores(
+  scores: RIASECScores,
+  question: Question,
+  value: AnswerValue,
+) {
+  for (const option of collectHollandFineOptions(question, value)) {
+    addRiasecWeights(scores, option.riasecWeights);
+  }
+}
+
+export function computeInterestTagScores(answers: Answer[]): RIASECScores {
+  const scores = createEmptyRiasecScores();
 
   for (const answer of answers) {
-    const question = ALL_QUESTIONS.find((q) => q.id === answer.questionId);
+    const question = getDiscoverQuestionDefinition(answer.questionId);
+    if (question?.type !== 'interest-tag-grid' || !question.id.startsWith('interest-tags-')) continue;
+    const selectedIds = Array.isArray(answer.value) ? answer.value : [];
+    for (const optId of selectedIds) {
+      const option = question.options?.find((item) => item.id === optId);
+      if (option) addRiasecWeights(scores, option.riasecWeights);
+    }
+  }
+
+  return scores;
+}
+
+export function computeCareerScenarioScores(answers: Answer[]): RIASECScores {
+  const scores = createEmptyRiasecScores();
+
+  for (const answer of answers) {
+    const question = getDiscoverQuestionDefinition(answer.questionId);
+    if (question?.type !== 'career-scenario') continue;
+    addCareerScenarioClosedChoiceScores(scores, question, answer.value);
+  }
+
+  return scores;
+}
+
+export function computeHollandFineScores(answers: Answer[]): RIASECScores {
+  const scores = createEmptyRiasecScores();
+
+  for (const answer of answers) {
+    const question = getDiscoverQuestionDefinition(answer.questionId);
+    if (question?.type !== 'holland-fine-grained') continue;
+    addHollandFineClosedChoiceScores(scores, question, answer.value);
+  }
+
+  return scores;
+}
+
+export function computeSecondStageHollandScaleScores(answers: Answer[]): RIASECScores {
+  const scores = createEmptyRiasecScores();
+
+  for (const answer of answers) {
+    const question = getDiscoverQuestionDefinition(answer.questionId);
+    if (question?.type !== 'card-select' || !question.id.startsWith('personality-holland-')) continue;
+    const selectedId = typeof answer.value === 'string' ? answer.value : '';
+    const option = question.options?.find((item) => item.id === selectedId);
+    if (option) addRiasecWeights(scores, option.riasecWeights);
+  }
+
+  return scores;
+}
+
+export function computeBlendedRiasecScores(answers: Answer[]): RIASECScores {
+  const interestScores = computeInterestTagScores(answers);
+  const hollandScaleScores = computeSecondStageHollandScaleScores(answers);
+  const hasInterestScores = scoreTotal(interestScores) > 0;
+  const hasHollandScaleScores = scoreTotal(hollandScaleScores) > 0;
+
+  if (hasHollandScaleScores) return normalizeScores(hollandScaleScores);
+  if (hasInterestScores) return normalizeScores(interestScores);
+
+  return createEmptyRiasecScores();
+}
+
+export function computePreCareerRiasecScores(answers: Answer[]): RIASECScores {
+  const blendedScores = computeBlendedRiasecScores(answers);
+  if (scoreTotal(blendedScores) > 0) return blendedScores;
+
+  const preCareerAnswers = answers.filter((answer) => {
+    const question = getDiscoverQuestionDefinition(answer.questionId);
+    return question &&
+      question.phase !== 'D' &&
+      (
+        question.type === 'profile-form' ||
+        question.type === 'interest-tag-grid' ||
+        question.type === 'multi-select' ||
+        question.type === 'rank-select' ||
+        question.type === 'scenario-pair' ||
+        question.type === 'slider'
+      );
+  });
+  return normalizeScores(computeRawScores(preCareerAnswers));
+}
+
+export function computePreCareerRiasecTopDimensions(answers: Answer[], count = 2): RIASECDimension[] {
+  return getTopDimensions(computePreCareerRiasecScores(answers), count);
+}
+
+export function computeWeightedRiasecScores(answers: Answer[]): RIASECScores {
+  return computePreCareerRiasecScores(answers);
+}
+
+function getAbilityQuestionType(question: Question): {
+  questionType: AbilityQuestionType;
+  questionTypeLabel: string;
+} | null {
+  if (question.id.startsWith('ability-jinchao-lamp-')) {
+    return { questionType: 'language_understanding', questionTypeLabel: '语言理解' };
+  }
+  if (question.id.startsWith('ability-surakarta-')) {
+    return { questionType: 'board_reasoning', questionTypeLabel: '棋类逻辑' };
+  }
+  return null;
+}
+
+function createAbilityPerformanceGroup(
+  questionType: AbilityQuestionType,
+  questionTypeLabel: string,
+): AbilityPerformanceByType {
+  return {
+    questionType,
+    questionTypeLabel,
+    totalCount: 0,
+    correctCount: 0,
+    incorrectCount: 0,
+  };
+}
+
+export function computeAbilityPerformance(answers: Answer[]): AbilityPerformanceSummary {
+  const items: AbilityPerformanceItem[] = [];
+  const groups = new Map<AbilityQuestionType, AbilityPerformanceByType>();
+
+  for (const answer of answers) {
+    const question = getDiscoverQuestionDefinition(answer.questionId);
+    if (!question || question.type !== 'card-select') continue;
+    const typeInfo = getAbilityQuestionType(question);
+    if (!typeInfo) continue;
+    const selectedOptionId = typeof answer.value === 'string' ? answer.value : '';
+    if (!selectedOptionId) continue;
+
+    const selectedOption = question.options?.find((option) => option.id === selectedOptionId);
+    const correctOption = question.options?.find((option) => option.correct);
+    if (!correctOption) continue;
+
+    const isCorrect = selectedOptionId === correctOption.id;
+    const item: AbilityPerformanceItem = {
+      questionId: question.id,
+      questionType: typeInfo.questionType,
+      questionTypeLabel: typeInfo.questionTypeLabel,
+      selectedOptionId,
+      selectedLabel: selectedOption?.label ?? selectedOptionId,
+      correctOptionId: correctOption.id,
+      correctLabel: correctOption.label,
+      isCorrect,
+    };
+    items.push(item);
+
+    const group = groups.get(typeInfo.questionType) ??
+      createAbilityPerformanceGroup(typeInfo.questionType, typeInfo.questionTypeLabel);
+    group.totalCount += 1;
+    if (isCorrect) {
+      group.correctCount += 1;
+    } else {
+      group.incorrectCount += 1;
+    }
+    groups.set(typeInfo.questionType, group);
+  }
+
+  const correctCount = items.filter((item) => item.isCorrect).length;
+  const totalCount = items.length;
+
+  return {
+    version: 'ability_performance_v1',
+    totalCount,
+    correctCount,
+    incorrectCount: totalCount - correctCount,
+    byQuestionType: Array.from(groups.values()),
+    items,
+  };
+}
+
+export type CareerCalibrationLevel = 'low' | 'medium' | 'high';
+
+export interface CareerCalibrationDimensionScore {
+  key: CareerCalibrationDimensionKey;
+  label: string;
+  score: number;
+  maxScore: number;
+  average: number;
+  normalizedScore: number;
+  level: CareerCalibrationLevel;
+  answeredCount: number;
+  questionIds: string[];
+  selectedOptionIds: string[];
+  highMeaning: string;
+  lowMeaning: string;
+}
+
+export interface CareerCalibrationProfile {
+  version: 'final_career_calibration_v1';
+  sourcePath: string;
+  answeredCount: number;
+  totalQuestions: number;
+  completed: boolean;
+  scale: Array<{ score: number; label: string }>;
+  dimensions: Record<CareerCalibrationDimensionKey, CareerCalibrationDimensionScore>;
+  answerIds: string[];
+  selectedOptionIds: string[];
+}
+
+export function getCareerCalibrationOptionScore(optionId: string) {
+  const match = optionId.match(/^final-career-calibration-scale-([1-5])$/);
+  return match ? Number(match[1]) : null;
+}
+
+function getCareerCalibrationLevel(score: number): CareerCalibrationLevel {
+  if (score <= 11) return 'low';
+  if (score <= 18) return 'medium';
+  return 'high';
+}
+
+export function computeCareerCalibrationProfile(answers: Answer[]): CareerCalibrationProfile {
+  const scoreBuckets = new Map<CareerCalibrationDimensionKey, {
+    score: number;
+    answeredCount: number;
+    questionIds: string[];
+    selectedOptionIds: string[];
+  }>();
+  const answerIds: string[] = [];
+  const selectedOptionIds: string[] = [];
+
+  for (const dimension of CAREER_CALIBRATION_DIMENSIONS) {
+    scoreBuckets.set(dimension.key, {
+      score: 0,
+      answeredCount: 0,
+      questionIds: [],
+      selectedOptionIds: [],
+    });
+  }
+
+  for (const answer of answers) {
+    const question = getDiscoverQuestionDefinition(answer.questionId);
+    const calibration = question?.careerCalibration;
+    if (question?.type !== 'career-calibration-scale' || !calibration || typeof answer.value !== 'string') continue;
+    const rawScore = getCareerCalibrationOptionScore(answer.value);
+    if (!rawScore) continue;
+    const adjustedScore = calibration.scoringDirection === 'reverse' ? 6 - rawScore : rawScore;
+    const bucket = scoreBuckets.get(calibration.dimension);
+    if (!bucket) continue;
+    bucket.score += adjustedScore;
+    bucket.answeredCount += 1;
+    bucket.questionIds.push(question.id);
+    bucket.selectedOptionIds.push(answer.value);
+    answerIds.push(question.id);
+    selectedOptionIds.push(answer.value);
+  }
+
+  const dimensions = Object.fromEntries(
+    CAREER_CALIBRATION_DIMENSIONS.map((dimension) => {
+      const bucket = scoreBuckets.get(dimension.key) ?? {
+        score: 0,
+        answeredCount: 0,
+        questionIds: [],
+        selectedOptionIds: [],
+      };
+      const average = bucket.answeredCount > 0 ? bucket.score / bucket.answeredCount : 0;
+      const score = bucket.score;
+      const normalizedScore = Math.max(0, Math.min(100, Math.round(((score - 5) / 20) * 100)));
+      return [
+        dimension.key,
+        {
+          key: dimension.key,
+          label: dimension.label,
+          score,
+          maxScore: 25,
+          average: Math.round(average * 100) / 100,
+          normalizedScore,
+          level: getCareerCalibrationLevel(score),
+          answeredCount: bucket.answeredCount,
+          questionIds: bucket.questionIds,
+          selectedOptionIds: bucket.selectedOptionIds,
+          highMeaning: dimension.highMeaning,
+          lowMeaning: dimension.lowMeaning,
+        },
+      ];
+    }),
+  ) as Record<CareerCalibrationDimensionKey, CareerCalibrationDimensionScore>;
+
+  return {
+    version: 'final_career_calibration_v1',
+    sourcePath: FINAL_CAREER_CALIBRATION_SOURCE_PATH,
+    answeredCount: answerIds.length,
+    totalQuestions: FINAL_CAREER_CALIBRATION_QUESTION_IDS.length,
+    completed: answerIds.length >= FINAL_CAREER_CALIBRATION_QUESTION_IDS.length,
+    scale: CAREER_CALIBRATION_SCALE_OPTIONS.map((option, index) => ({
+      score: getCareerCalibrationOptionScore(option.id) ?? index + 1,
+      label: option.label,
+    })),
+    dimensions,
+    answerIds,
+    selectedOptionIds,
+  };
+}
+
+// Legacy aggregate for scoring audits. Product recommendations should use computeWeightedRiasecScores.
+export function computeRawScores(answers: Answer[]): RIASECScores {
+  const scores = createEmptyRiasecScores();
+
+  for (const answer of answers) {
+    const question = getDiscoverQuestionDefinition(answer.questionId);
     if (!question) continue;
 
     switch (question.type) {
       case 'profile-form': {
         for (const opt of collectProfileOptions(question, answer.value)) {
-          for (const [dim, weight] of Object.entries(opt.riasecWeights)) {
-            scores[dim as RIASECDimension] += weight;
-          }
+          addRiasecWeights(scores, opt.riasecWeights);
         }
         break;
       }
 
       case 'interest-tag-grid':
       case 'multi-select': {
-        const selectedIds = answer.value as string[];
+        const selectedIds = Array.isArray(answer.value) ? answer.value : [];
         for (const optId of selectedIds) {
           const opt = question.options?.find((o) => o.id === optId);
-          if (opt) {
-            for (const [dim, weight] of Object.entries(opt.riasecWeights)) {
-              scores[dim as RIASECDimension] += weight;
-            }
-          }
+          if (opt) addRiasecWeights(scores, opt.riasecWeights);
         }
         break;
       }
@@ -1806,9 +2803,7 @@ export function computeRawScores(answers: Answer[]): RIASECScores {
           if (rankWeight <= 0) return;
           const opt = question.options?.find((o) => o.id === optId);
           if (!opt) return;
-          for (const [dim, weight] of Object.entries(opt.riasecWeights)) {
-            scores[dim as RIASECDimension] += weight * rankWeight;
-          }
+          addRiasecWeights(scores, opt.riasecWeights, rankWeight);
         });
         break;
       }
@@ -1816,85 +2811,54 @@ export function computeRawScores(answers: Answer[]): RIASECScores {
       case 'career-scenario': {
         const careerValue = answer.value;
         if (!isCareerScenarioValue(careerValue)) break;
-        const scenario = question.careerScenario;
-        if (!scenario) break;
-
-        const firstOption = scenario.firstOptions.find((option) => option.id === careerValue.firstChoiceId);
-        if (firstOption) {
-          for (const [dim, weight] of Object.entries(firstOption.riasecWeights)) {
-            scores[dim as RIASECDimension] += weight;
-          }
-        }
-
-        for (const optId of careerValue.itemChoiceIds) {
-          const opt = scenario.itemOptions.find((option) => option.id === optId);
-          if (!opt) continue;
-          for (const [dim, weight] of Object.entries(opt.riasecWeights)) {
-            scores[dim as RIASECDimension] += weight;
-          }
-        }
-
-        const teamOption = scenario.teamOptions?.find((option) => option.id === careerValue.teamChoiceId);
-        if (teamOption) {
-          for (const [dim, weight] of Object.entries(teamOption.riasecWeights)) {
-            scores[dim as RIASECDimension] += weight;
-          }
-        }
+        addCareerScenarioClosedChoiceScores(scores, question, careerValue);
 
         if (isAiDialogueValue(careerValue.aiDialogue)) {
-          for (const [dim, weight] of Object.entries(careerValue.aiDialogue.scoringSummary.deltas)) {
-            scores[dim as RIASECDimension] += Number(weight);
-          }
+          addRiasecWeights(scores, careerValue.aiDialogue.scoringSummary.deltas);
         }
+        break;
+      }
+
+      case 'holland-fine-grained': {
+        addHollandFineClosedChoiceScores(scores, question, answer.value);
         break;
       }
 
       case 'card-select': {
-        const selectedId = answer.value as string;
+        const selectedId = typeof answer.value === 'string' ? answer.value : '';
         const opt = question.options?.find((o) => o.id === selectedId);
-        if (opt) {
-          for (const [dim, weight] of Object.entries(opt.riasecWeights)) {
-            scores[dim as RIASECDimension] += weight;
-          }
-        }
+        if (opt) addRiasecWeights(scores, opt.riasecWeights);
         break;
       }
 
       case 'scenario-pair': {
-        const selectedId = answer.value as string;
+        const selectedId = typeof answer.value === 'string' ? answer.value : '';
         const pair = question.scenarioPair;
         if (!pair) break;
         const chosen = selectedId === pair.optionA.id ? pair.optionA : pair.optionB;
-        for (const [dim, weight] of Object.entries(chosen.riasecWeights)) {
-          scores[dim as RIASECDimension] += weight;
-        }
+        addRiasecWeights(scores, chosen.riasecWeights);
         break;
       }
 
       case 'slider': {
-        const sliderValue = answer.value as number;
+        const sliderValue = typeof answer.value === 'number' && Number.isFinite(answer.value) ? answer.value : 50;
         const config = question.sliderConfig;
         if (!config) break;
         const leftFactor = (100 - sliderValue) / 100;
         const rightFactor = sliderValue / 100;
 
-        for (const [dim, weight] of Object.entries(config.leftWeights)) {
-          scores[dim as RIASECDimension] += weight * leftFactor;
-        }
-        for (const [dim, weight] of Object.entries(config.rightWeights)) {
-          scores[dim as RIASECDimension] += weight * rightFactor;
-        }
+        addRiasecWeights(scores, config.leftWeights, leftFactor);
+        addRiasecWeights(scores, config.rightWeights, rightFactor);
         break;
       }
 
       case 'free-text':
+      case 'career-calibration-scale':
         break;
 
       case 'ai-dialogue': {
         if (!isAiDialogueValue(answer.value)) break;
-        for (const [dim, weight] of Object.entries(answer.value.scoringSummary.deltas)) {
-          scores[dim as RIASECDimension] += weight;
-        }
+        addRiasecWeights(scores, answer.value.scoringSummary.deltas);
         break;
       }
     }
@@ -1907,7 +2871,7 @@ export function extractPersonalityTraits(answers: Answer[]): Record<string, numb
   const traits: Record<string, number> = {};
 
   for (const answer of answers) {
-    const question = ALL_QUESTIONS.find((q) => q.id === answer.questionId);
+    const question = getDiscoverQuestionDefinition(answer.questionId);
     if (!question) continue;
 
     const collectTags = (opt: QuestionOption) => {
@@ -1926,7 +2890,7 @@ export function extractPersonalityTraits(answers: Answer[]): Record<string, numb
       }
       case 'interest-tag-grid':
       case 'multi-select': {
-        const selectedIds = answer.value as string[];
+        const selectedIds = Array.isArray(answer.value) ? answer.value : [];
         for (const optId of selectedIds) {
           const opt = question.options?.find((o) => o.id === optId);
           if (opt) collectTags(opt);
@@ -1954,20 +2918,29 @@ export function extractPersonalityTraits(answers: Answer[]): Record<string, numb
         if (teamOption) collectTags(teamOption);
         break;
       }
+      case 'holland-fine-grained': {
+        for (const option of collectHollandFineOptions(question, answer.value)) {
+          collectTags(option);
+        }
+        break;
+      }
       case 'card-select': {
-        const opt = question.options?.find((o) => o.id === answer.value);
+        const selectedId = typeof answer.value === 'string' ? answer.value : '';
+        const opt = question.options?.find((o) => o.id === selectedId);
         if (opt) collectTags(opt);
         break;
       }
       case 'scenario-pair': {
         const pair = question.scenarioPair;
         if (!pair) break;
-        const chosen = answer.value === pair.optionA.id ? pair.optionA : pair.optionB;
+        const selectedId = typeof answer.value === 'string' ? answer.value : '';
+        const chosen = selectedId === pair.optionA.id ? pair.optionA : pair.optionB;
         collectTags(chosen);
         break;
       }
       case 'slider':
       case 'free-text':
+      case 'career-calibration-scale':
       case 'ai-dialogue':
         break;
     }
@@ -1976,11 +2949,143 @@ export function extractPersonalityTraits(answers: Answer[]): Record<string, numb
   return traits;
 }
 
+const MBTI_DIMENSIONS: Array<{
+  key: MbtiDimensionKey;
+  left: MbtiLetter;
+  right: MbtiLetter;
+  fallback: MbtiLetter;
+}> = [
+  { key: 'EI', left: 'E', right: 'I', fallback: 'E' },
+  { key: 'SN', left: 'S', right: 'N', fallback: 'S' },
+  { key: 'TF', left: 'T', right: 'F', fallback: 'T' },
+  { key: 'JP', left: 'J', right: 'P', fallback: 'J' },
+];
+
+const MBTI_DIMENSION_BY_LETTER = new Map<MbtiLetter, MbtiDimensionKey>(
+  MBTI_DIMENSIONS.flatMap(({ key, left, right }) => [
+    [left, key] as const,
+    [right, key] as const,
+  ]),
+);
+const MBTI_TYPE_RE = /^(E|I)(S|N)(T|F)(J|P)$/;
+
+function createEmptyMbtiScores(): Record<MbtiLetter, number> {
+  return { E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 };
+}
+
+function isMbtiLetter(value: string): value is MbtiLetter {
+  return ['E', 'I', 'S', 'N', 'T', 'F', 'J', 'P'].includes(value);
+}
+
+function buildMbtiDimensions(
+  scores: Record<MbtiLetter, number>,
+  lastSelectedByDimension: Partial<Record<MbtiDimensionKey, MbtiLetter>> = {},
+): MbtiDimensionScore[] {
+  return MBTI_DIMENSIONS.map(({ key, left, right, fallback }) => {
+    const leftScore = scores[left];
+    const rightScore = scores[right];
+    const selected = leftScore > rightScore
+      ? left
+      : rightScore > leftScore
+        ? right
+        : fallback;
+
+    return {
+      dimension: key,
+      left,
+      right,
+      leftScore,
+      rightScore,
+      selected,
+    };
+  });
+}
+
+function buildMbtiType(dimensions: MbtiDimensionScore[]) {
+  return dimensions.map((dimension) => dimension.selected).join('');
+}
+
+function extractMbtiLetter(option: QuestionOption): MbtiLetter | null {
+  for (const tag of option.personalityTags ?? []) {
+    if (!tag.startsWith('mbti:')) continue;
+    const letter = tag.slice('mbti:'.length);
+    if (isMbtiLetter(letter)) return letter;
+  }
+  return null;
+}
+
+export function computeMbtiProfile(answers: Answer[]): MbtiProfile | null {
+  const knownTypeAnswer = answers.find((answer) => answer.questionId === MBTI_KNOWN_QUESTION_ID);
+  if (knownTypeAnswer && typeof knownTypeAnswer.value === 'string') {
+    const type = knownTypeAnswer.value.trim().toUpperCase();
+    if (MBTI_TYPE_RE.test(type)) {
+      const scores = createEmptyMbtiScores();
+      for (const letter of type) {
+        if (isMbtiLetter(letter)) scores[letter] += 1;
+      }
+      const dimensions = buildMbtiDimensions(scores);
+      return {
+        type,
+        source: 'self-selected',
+        confidence: 100,
+        scores,
+        dimensions,
+        answerIds: [MBTI_KNOWN_QUESTION_ID],
+        selectedOptionIds: [],
+      };
+    }
+  }
+
+  const scores = createEmptyMbtiScores();
+  const answerIds: string[] = [];
+  const selectedOptionIds: string[] = [];
+  const lastSelectedByDimension: Partial<Record<MbtiDimensionKey, MbtiLetter>> = {};
+
+  const orderedAnswers = answers
+    .slice()
+    .sort((a, b) => a.timestamp - b.timestamp);
+
+  for (const answer of orderedAnswers) {
+    if (answer.questionId === MBTI_KNOWN_QUESTION_ID || typeof answer.value !== 'string') continue;
+    const question = getDiscoverQuestionDefinition(answer.questionId);
+    const option = question?.options?.find((item) => item.id === answer.value);
+    if (!question || !option) continue;
+
+    const letter = extractMbtiLetter(option);
+    if (!letter) continue;
+    const dimension = MBTI_DIMENSION_BY_LETTER.get(letter);
+    if (!dimension) continue;
+
+    scores[letter] += 1;
+    lastSelectedByDimension[dimension] = letter;
+    answerIds.push(question.id);
+    selectedOptionIds.push(option.id);
+  }
+
+  if (answerIds.length === 0) return null;
+
+  const dimensions = buildMbtiDimensions(scores, lastSelectedByDimension);
+  const margin = dimensions.reduce((total, dimension) => {
+    return total + Math.abs(dimension.leftScore - dimension.rightScore);
+  }, 0);
+  const confidence = Math.max(60, Math.min(92, 52 + answerIds.length * 5 + margin * 4));
+
+  return {
+    type: buildMbtiType(dimensions),
+    source: 'system-tested',
+    confidence,
+    scores,
+    dimensions,
+    answerIds,
+    selectedOptionIds,
+  };
+}
+
 export function extractOpenEndedAnswers(answers: Answer[]): Record<string, string> {
   const result: Record<string, string> = {};
 
   for (const answer of answers) {
-    const question = ALL_QUESTIONS.find((q) => q.id === answer.questionId);
+    const question = getDiscoverQuestionDefinition(answer.questionId);
     if (question?.type === 'free-text' && typeof answer.value === 'object' && 'text' in answer.value) {
       result[question.id] = answer.value.text;
     }
@@ -1993,6 +3098,14 @@ export function extractOpenEndedAnswers(answers: Answer[]): Record<string, strin
         .map((message) => message.content)
         .join('\n');
       if (userText) result[`${question.id}.agent`] = userText;
+    }
+    if (question?.type === 'holland-fine-grained' && isHollandFineAnswerValue(answer.value)) {
+      for (const item of question.hollandFine?.items ?? []) {
+        const answerItem = answer.value.items[item.id];
+        for (const [fieldId, text] of Object.entries(answerItem?.openResponses ?? {})) {
+          if (text.trim()) result[`${question.id}.${item.id}.${fieldId}`] = text;
+        }
+      }
     }
     if (question?.type === 'ai-dialogue' && isAiDialogueValue(answer.value)) {
       const userText = answer.value.messages

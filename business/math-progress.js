@@ -1,11 +1,11 @@
 const MATH_PROGRESS_KEY = 'uniprism.math.experience'
 
 export const MATH_STAGES = [
-  { key: 'overview', label: '概览' },
-  { key: 'intro', label: '介绍' },
-  { key: 'deep', label: '深入' },
-  { key: 'branching', label: '分流' },
-  { key: 'direction', label: '方向' },
+  { key: 'intro', label: '数学专业介绍' },
+  { key: 'foundation', label: '三门基础课程' },
+  { key: 'advanced', label: '三门进阶课程' },
+  { key: 'stream', label: '数学专业分流' },
+  { key: 'complete', label: '体验完成' },
 ]
 
 export function loadMathProgress() {
@@ -14,6 +14,7 @@ export function loadMathProgress() {
     if (!raw) {
       return {
         pageIndex: 0,
+        unlockedPageIndex: 0,
         selectedBranchId: 'basic',
         selectedBranchTitle: '基础数学',
         fitChoice: '',
@@ -25,6 +26,7 @@ export function loadMathProgress() {
     }
     return {
       pageIndex: typeof raw.pageIndex === 'number' ? raw.pageIndex : 0,
+      unlockedPageIndex: typeof raw.unlockedPageIndex === 'number' ? raw.unlockedPageIndex : (typeof raw.pageIndex === 'number' ? raw.pageIndex : 0),
       selectedBranchId: raw.selectedBranchId || 'basic',
       selectedBranchTitle: raw.selectedBranchTitle || '基础数学',
       fitChoice: raw.fitChoice || '',
@@ -37,6 +39,7 @@ export function loadMathProgress() {
     console.error('[math-progress] load failed', error)
     return {
       pageIndex: 0,
+      unlockedPageIndex: 0,
       selectedBranchId: 'basic',
       selectedBranchTitle: '基础数学',
       fitChoice: '',

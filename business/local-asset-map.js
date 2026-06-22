@@ -1,7 +1,6 @@
 /**
- * 小程序内置静态资源映射。
- * 当 uniprism.cn 远程 OSS 代理不可用时，优先使用 /static 下的本地文件。
- * 路径 key 与 mini-program-asset-urls.md 中的站内路径一致。
+ * 小程序离线兜底资源映射（仅 OSS 不可用时使用）。
+ * 业务配图默认走 OSS：见 utils/asset-map.ts → resolveAsset()
  */
 export const LOCAL_ASSET_MAP = {
   '/images/explore/discover/icons/atlas/university.png': '/static/assets/atlas/university.svg',
@@ -24,6 +23,31 @@ export const LOCAL_ASSET_MAP = {
   '/images/explore/discover/icons/generated/majors/major-mechanical.svg': '/static/assets/majors/major-mechanical.svg',
   '/images/explore/discover/icons/generated/majors/major-ee.svg': '/static/assets/majors/major-ee.svg',
   '/images/explore/discover/icons/generated/majors/major-ic.svg': '/static/assets/majors/major-ic.svg',
+  '/images/explore/discover/figma/profile-clipboard-figma-1-6962.svg': '/static/assets/discover/profile-clipboard-figma.svg',
+  '/images/explore/discover/figma/profile-clipboard-figma-1-6962-white-2x.png': '/static/assets/discover/profile-clipboard-figma.svg',
+  '/explore-static/discover/figma/profile-clipboard-figma-1-6962-white-2x.png': '/static/assets/discover/profile-clipboard-figma.svg',
+  '/explore-static/discover/figma/stage-deep-icon-figma-494-542.svg': '/static/assets/discover/stage-deep-icon.svg',
+  '/images/explore/discover/figma/stage-deep-icon-figma-494-542.svg': '/static/assets/discover/stage-deep-icon.svg',
+  '/explore-static/discover/figma/stage-deep-shadow-figma-494-379.svg': '/static/assets/discover/stage-deep-shadow.svg',
+  '/images/explore/discover/figma/stage-deep-shadow-figma-494-379.svg': '/static/assets/discover/stage-deep-shadow.svg',
+  '/explore-static/discover/figma/report-ready-shadow-figma-205-12205.svg': '/static/assets/discover/report-ready-shadow.svg',
+  '/images/explore/discover/figma/home-professional-assets/icon-engineering-494-3715.svg': '/static/assets/home-professional/icon-engineering-494-3715.svg',
+  '/images/explore/discover/figma/home-professional-assets/icon-computer-494-3820.svg': '/static/assets/home-professional/icon-computer-494-3820.svg',
+  '/images/explore/discover/figma/home-professional-assets/icon-law-494-3935.svg': '/static/assets/home-professional/icon-law-494-3935.svg',
+  '/images/explore/discover/figma/home-professional-assets/icon-medical-494-3924.svg': '/static/assets/home-professional/icon-medical-494-3924.svg',
+  '/images/explore/discover/figma/home-professional-assets/icon-literature-494-3911.svg': '/static/assets/home-professional/icon-literature-494-3911.svg',
+  '/images/explore/discover/figma/home-professional-assets/icon-science-base-494-3752.svg': '/static/assets/home-professional/icon-science-base-494-3752.svg',
+  '/images/explore/discover/figma/home-professional-assets/icon-science-paper-494-3796.svg': '/static/assets/home-professional/icon-science-paper-494-3796.svg',
+  '/images/explore/discover/figma/home-professional-assets/icon-science-flask-494-3817.svg': '/static/assets/home-professional/icon-science-flask-494-3817.svg',
+  '/images/explore/home/card-interest@4x.png': '/static/assets/auth/card-interest.svg',
+  '/images/explore/home/card-personality@4x.png': '/static/assets/auth/card-personality.svg',
+  '/images/explore/home/card-career@4x.png': '/static/assets/auth/card-career.svg',
+  '/images/explore/home/card-ability@4x.png': '/static/assets/auth/card-ability.svg',
+  '/images/explore/home/card-interest.svg': '/static/assets/auth/card-interest.svg',
+  '/images/explore/home/card-personality.svg': '/static/assets/auth/card-personality.svg',
+  '/images/explore/home/card-career.svg': '/static/assets/auth/card-career.svg',
+  '/images/explore/home/card-ability.svg': '/static/assets/auth/card-ability.svg',
+  '/images/explore/home/background-curves.svg': '/static/assets/auth/background-curves.svg',
 }
 
 export function getLocalAsset(path) {

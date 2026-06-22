@@ -3,7 +3,9 @@ import {
   AnswerValue,
   Question,
   createEmptyCareerScenarioAnswer,
+  createEmptyHollandFineAnswer,
   isCareerScenarioValue,
+  isHollandFineAnswerValue,
 } from './discover-questions';
 import {
   computeRawScores,
@@ -26,6 +28,7 @@ export type DiscoverPhase = 'intro' | 'chatting' | 'results';
 export type DiscoverSession = {
   phase: DiscoverPhase;
   currentQuestionIndex: number;
+  backNavigationFloorIndex: number | null;
   answers: Answer[];
   profile: RIASECProfile | null;
   recommendedMajors: MajorMatch[] | null;
@@ -36,6 +39,7 @@ export type DiscoverSession = {
 export const emptyDiscoverSession: DiscoverSession = {
   phase: 'intro',
   currentQuestionIndex: 0,
+  backNavigationFloorIndex: null,
   answers: [],
   profile: null,
   recommendedMajors: null,
@@ -44,7 +48,15 @@ export const emptyDiscoverSession: DiscoverSession = {
 };
 
 export function loadDiscoverSession(): DiscoverSession {
-  return readStorage<DiscoverSession>(DISCOVER_SESSION_KEY, emptyDiscoverSession);
+  const session = readStorage<DiscoverSession>(DISCOVER_SESSION_KEY, emptyDiscoverSession);
+  return {
+    ...emptyDiscoverSession,
+    ...session,
+    backNavigationFloorIndex:
+      typeof session.backNavigationFloorIndex === 'number' && Number.isFinite(session.backNavigationFloorIndex)
+        ? session.backNavigationFloorIndex
+        : null,
+  };
 }
 
 export function saveDiscoverSession(session: DiscoverSession) {
@@ -103,6 +115,9 @@ export function getInitialAnswerValue(question: Question, answers: Answer[]): An
   if (question.type === 'career-scenario') {
     return isCareerScenarioValue(stored) ? stored : createEmptyCareerScenarioAnswer();
   }
+  if (question.type === 'holland-fine-grained') {
+    return isHollandFineAnswerValue(stored) ? stored : createEmptyHollandFineAnswer(question);
+  }
   return '';
 }
 
@@ -151,6 +166,23 @@ export function isAnswerReady(question: Question, value: AnswerValue) {
       if ((value.openResponses[field.id] ?? '').trim().length < field.minLength) return false;
     }
     return true;
+  }
+  if (question.type === 'holland-fine-grained') {
+    if (!question.hollandFine || !isHollandFineAnswerValue(value)) return false;
+    return question.hollandFine.items.every((item) => {
+      const answerItem = value.items[item.id];
+      if (item.mode === 'open') {
+        return (item.openFields ?? []).every((field) => {
+          const minLength = field.minLength ?? 1;
+          const text = answerItem?.openResponses?.[field.id] ?? '';
+          return typeof text === 'string' && text.trim().length >= minLength;
+        });
+      }
+      const minSelections = item.minSelections ?? 1;
+      const maxSelections = item.maxSelections ?? minSelections;
+      const selectedCount = Array.isArray(answerItem?.selectedOptionIds) ? answerItem.selectedOptionIds.length : 0;
+      return selectedCount >= minSelections && selectedCount <= maxSelections;
+    });
   }
   return typeof value === 'string' && value.length > 0;
 }

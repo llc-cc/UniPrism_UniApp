@@ -46,6 +46,46 @@
 
       </view>
 
+      <scroll-view scroll-x class="stage-nav-scroll" :show-scrollbar="false" enable-flex>
+        <view class="stage-nav-row">
+          <view
+            v-for="item in topLevelNavItems"
+            :key="item.id"
+            class="stage-nav-pill"
+            :class="{
+              'stage-nav-pill-active': item.active,
+              'stage-nav-pill-locked': !item.unlocked,
+            }"
+            @tap="jumpToNavItem(item)"
+          >
+            <text class="stage-nav-pill-text">{{ item.label }}</text>
+          </view>
+        </view>
+      </scroll-view>
+
+      <scroll-view
+        v-if="showTertiaryNav"
+        scroll-x
+        class="stage-nav-scroll stage-nav-scroll-tertiary"
+        :show-scrollbar="false"
+        enable-flex
+      >
+        <view class="stage-nav-row">
+          <view
+            v-for="item in tertiaryNavItems"
+            :key="item.id"
+            class="stage-nav-pill stage-nav-pill-tertiary"
+            :class="{
+              'stage-nav-pill-active': item.active,
+              'stage-nav-pill-locked': !item.unlocked,
+            }"
+            @tap="jumpToFlowItem(item)"
+          >
+            <text class="stage-nav-pill-text">{{ item.label }}</text>
+          </view>
+        </view>
+      </scroll-view>
+
     </view>
 
 
@@ -212,6 +252,173 @@
             </view>
 
           </view>
+
+        </view>
+
+      </view>
+
+      <view v-else-if="currentPage.type === 'course-section' || currentPage.type === 'deep-section'" class="stage">
+
+        <image class="hero-image" :src="pageImage('course', currentPage.courseId)" mode="widthFix" />
+
+        <view class="article-panel">
+
+          <view class="article-header">
+
+            <text class="article-badge">{{ currentPage.level === 'foundation' ? '课程正文' : '深入正文' }}</text>
+
+            <text class="article-title">{{ currentPage.subtitle }}</text>
+
+            <text class="article-sub">{{ currentPage.title }}</text>
+
+          </view>
+
+          <text v-if="currentPage.section.formula" class="section-formula">{{ currentPage.section.formula }}</text>
+
+          <image
+            v-if="currentPage.section.imageSrc"
+            class="section-image"
+            :src="resolveAsset(currentPage.section.imageSrc)"
+            mode="widthFix"
+          />
+
+          <view v-else-if="currentPage.section.figureItems && currentPage.section.figureItems.length" class="figure-panel">
+            <text class="figure-kind">{{ visualKindLabel(currentPage.section.visualKind) }}</text>
+            <view v-if="currentPage.section.visualKind === 'method'" class="figure-method-list">
+              <view v-for="(item, fIdx) in currentPage.section.figureItems" :key="`${item}-${fIdx}`" class="figure-method-row">
+                <text class="figure-step" :style="{ background: fIdx === 0 ? template.accent : '#9fb0c4' }">{{ fIdx + 1 }}</text>
+                <text class="figure-item-text">{{ item }}</text>
+              </view>
+            </view>
+            <view v-else-if="currentPage.section.visualKind === 'concept'" class="figure-concept-grid">
+              <view v-for="(item, fIdx) in currentPage.section.figureItems" :key="`${item}-${fIdx}`" class="figure-concept-card">
+                <text class="figure-concept-label">对象 {{ fIdx + 1 }}</text>
+                <text class="figure-item-text">{{ item }}</text>
+              </view>
+            </view>
+            <view v-else-if="currentPage.section.visualKind === 'error'" class="figure-error-list">
+              <view v-for="(item, fIdx) in currentPage.section.figureItems" :key="`${item}-${fIdx}`" class="figure-error-row">
+                <text class="figure-error-tag">诊断 {{ fIdx + 1 }}</text>
+                <text class="figure-item-text">{{ item }}</text>
+              </view>
+            </view>
+            <view v-else class="figure-map-grid">
+              <view v-for="(item, fIdx) in currentPage.section.figureItems" :key="`${item}-${fIdx}`" class="figure-map-card">
+                <text class="figure-step" :style="{ background: fIdx === 0 ? template.accent : '#9fb0c4' }">{{ fIdx + 1 }}</text>
+                <text class="figure-item-text">{{ item }}</text>
+              </view>
+            </view>
+          </view>
+
+          <text
+            v-for="(paragraph, idx) in currentPage.section.paragraphs"
+            :key="`section-paragraph-${idx}`"
+            class="article-paragraph"
+          >{{ paragraph }}</text>
+
+        </view>
+
+      </view>
+
+      <view v-else-if="currentPage.type === 'course-challenge' || currentPage.type === 'deep-challenge'" class="stage">
+
+        <image class="hero-image" :src="pageImage('course', currentPage.courseId)" mode="widthFix" />
+
+        <view class="article-panel">
+
+          <view class="article-header">
+
+            <text class="article-badge article-badge-accent">{{ challengeLabel(currentPage.challengeTask) }}</text>
+
+            <text class="article-title">{{ currentPage.title }}</text>
+
+            <text class="article-sub">{{ currentPage.course.subtitle || currentPage.article.subtitle }}</text>
+
+          </view>
+
+          <text class="article-paragraph">{{ currentPage.course.summary || currentPage.article.summary }}</text>
+
+          <view class="interaction-panel" :class="{ 'interaction-panel-core': currentPage.type === 'deep-challenge' }">
+
+            <text class="interaction-title">{{ currentPage.challenge.interaction.title }}</text>
+
+            <text class="interaction-goal">{{ currentPage.challenge.interaction.goal }}</text>
+
+            <view class="interaction-group">
+
+              <text class="interaction-label">输入</text>
+
+              <view class="topic-row">
+
+                <text
+                  v-for="item in currentPage.challenge.interaction.inputs || []"
+                  :key="item"
+                  class="topic-chip topic-chip-soft"
+                >{{ item }}</text>
+
+              </view>
+
+            </view>
+
+            <view class="interaction-group">
+
+              <text class="interaction-label">动作</text>
+
+              <view class="topic-row">
+
+                <text
+                  v-for="item in currentPage.challenge.interaction.actions || []"
+                  :key="item"
+                  class="topic-chip topic-chip-action"
+                >{{ item }}</text>
+
+              </view>
+
+            </view>
+
+            <view v-if="(currentPage.challenge.interaction.feedback || []).length" class="interaction-group">
+
+              <text class="interaction-label">反馈</text>
+
+              <view class="topic-row">
+
+                <text
+                  v-for="item in currentPage.challenge.interaction.feedback"
+                  :key="item"
+                  class="topic-chip topic-chip-warn"
+                >{{ item }}</text>
+
+              </view>
+
+            </view>
+
+            <view v-if="(currentPage.challenge.errorTypes || []).length" class="interaction-group">
+
+              <text class="interaction-label">典型错误</text>
+
+              <view class="topic-row">
+
+                <text
+                  v-for="item in currentPage.challenge.errorTypes"
+                  :key="item"
+                  class="topic-chip topic-chip-warn"
+                >{{ item }}</text>
+
+              </view>
+
+            </view>
+
+            <text class="task-line">输出：{{ currentPage.challenge.interaction.output }}</text>
+
+          </view>
+
+          <view class="action-row">
+
+            <button class="btn-inline" :style="{ color: template.accent, borderColor: template.accent }" @tap="startMajorChallenge(currentPage)">开始挑战</button>
+
+          </view>
+
+          <view v-if="isChallengeDone(currentPage.courseId, currentPage.challengeTask)" class="visited-tag">已完成</view>
 
         </view>
 
@@ -595,7 +802,7 @@
 
       <!-- 方向专题 -->
 
-      <view v-else-if="currentPage.type === 'branch-topic'" class="stage">
+      <view v-else-if="currentPage.type === 'branch-topic-intro' || currentPage.type === 'branch-topic'" class="stage">
 
         <image class="hero-image" :src="pageImage('branch', currentPage.branchId)" mode="widthFix" />
 
@@ -605,16 +812,14 @@
 
           <text class="article-sub">{{ currentPage.topic.subtitle }}</text>
 
-          <view
-            v-for="(section, sIdx) in currentPage.topic.sections"
-            :key="`${section.title}-${sIdx}`"
-            class="article-section"
-          >
+          <text v-if="currentPage.topic.summary" class="article-paragraph">{{ currentPage.topic.summary }}</text>
 
-            <text class="article-section-title">{{ section.title }}</text>
-
-            <text v-for="(paragraph, idx) in section.paragraphs" :key="idx" class="article-paragraph">{{ paragraph }}</text>
-
+          <view class="topic-row">
+            <text
+              v-for="(section, sIdx) in currentPage.topic.sections"
+              :key="`${section.title}-${sIdx}`"
+              class="topic-chip topic-chip-soft"
+            >正文 {{ sIdx + 1 }} · {{ section.title }}</text>
           </view>
 
           <view class="interaction-panel">
@@ -627,33 +832,119 @@
 
           </view>
 
-          <view class="challenge-section">
+        </view>
 
-            <text class="challenge-section-title">{{ challengeLabel(currentPage.challengeTask) }}</text>
+      </view>
 
-            <view
+      <view v-else-if="currentPage.type === 'branch-topic-section'" class="stage">
 
-              class="challenge-entry-card"
+        <image class="hero-image" :src="pageImage('branch', currentPage.branchId)" mode="widthFix" />
 
-              :class="{ 'challenge-entry-done': isChallengeDone(currentPage.topic.id, currentPage.challengeTask) }"
+        <view class="article-panel">
 
-              @tap="startMajorChallenge(currentPage)"
+          <view class="article-header">
 
-            >
+            <text class="article-badge">专题正文</text>
 
-              <view class="challenge-entry-copy">
+            <text class="article-title">{{ currentPage.subtitle }}</text>
 
-                <text class="challenge-entry-title">{{ currentPage.topic.interaction.title }}</text>
+            <text class="article-sub">{{ currentPage.topic.title }}</text>
 
-                <text class="challenge-entry-body">{{ currentPage.topic.interaction.goal }}</text>
+          </view>
 
-                <text class="challenge-entry-action">{{ isChallengeDone(currentPage.topic.id, currentPage.challengeTask) ? '再次挑战' : '开始挑战' }}</text>
+          <text
+            v-for="(paragraph, idx) in currentPage.section.paragraphs"
+            :key="`branch-topic-section-${idx}`"
+            class="article-paragraph"
+          >{{ paragraph }}</text>
+
+        </view>
+
+      </view>
+
+      <view v-else-if="currentPage.type === 'branch-topic-challenge'" class="stage">
+
+        <image class="hero-image" :src="pageImage('branch', currentPage.branchId)" mode="widthFix" />
+
+        <view class="article-panel">
+
+          <view class="article-header">
+
+            <text class="article-badge article-badge-accent">{{ challengeLabel(currentPage.challengeTask) }}</text>
+
+            <text class="article-title">{{ currentPage.topic.title }}</text>
+
+            <text class="article-sub">{{ currentPage.topic.subtitle }}</text>
+
+          </view>
+
+          <text v-if="currentPage.topic.summary" class="article-paragraph">{{ currentPage.topic.summary }}</text>
+
+          <view class="interaction-panel">
+
+            <text class="interaction-title">{{ currentPage.topic.interaction.title }}</text>
+
+            <text class="interaction-goal">{{ currentPage.topic.interaction.goal }}</text>
+
+            <view class="interaction-group">
+
+              <text class="interaction-label">输入</text>
+
+              <view class="topic-row">
+
+                <text
+                  v-for="item in currentPage.topic.interaction.inputs || []"
+                  :key="item"
+                  class="topic-chip topic-chip-soft"
+                >{{ item }}</text>
 
               </view>
 
             </view>
 
+            <view class="interaction-group">
+
+              <text class="interaction-label">动作</text>
+
+              <view class="topic-row">
+
+                <text
+                  v-for="item in currentPage.topic.interaction.actions || []"
+                  :key="item"
+                  class="topic-chip topic-chip-action"
+                >{{ item }}</text>
+
+              </view>
+
+            </view>
+
+            <view class="interaction-group">
+
+              <text class="interaction-label">反馈</text>
+
+              <view class="topic-row">
+
+                <text
+                  v-for="item in currentPage.topic.interaction.feedback || []"
+                  :key="item"
+                  class="topic-chip topic-chip-warn"
+                >{{ item }}</text>
+
+              </view>
+
+            </view>
+
+            <text class="task-line">输出：{{ currentPage.topic.interaction.output }}</text>
+
           </view>
+
+          <view class="action-row">
+
+            <button class="btn-inline" :style="{ color: template.accent, borderColor: template.accent }" @tap="startMajorChallenge(currentPage)">开始挑战</button>
+
+          </view>
+
+          <view v-if="isChallengeDone(currentPage.topic.id, currentPage.challengeTask)" class="visited-tag">已完成</view>
 
         </view>
 
@@ -875,6 +1166,112 @@ export default {
       return shouldShowBranchHero(this.majorId)
     },
 
+    stageSections() {
+      if (!this.template) return []
+      const branch =
+        this.template.branchDirections.find((item) => item.id === this.selectedBranchId) ||
+        this.template.branchDirections[0] ||
+        null
+
+      return [
+        {
+          id: 'overview',
+          stageIndex: 0,
+          items: [
+            { id: 'catalog', label: `${this.template.label}概览`, pageId: 'catalog' },
+            { id: 'catalog-complete', label: '概览完成', pageId: 'catalog-complete' },
+          ],
+        },
+        {
+          id: 'foundation',
+          stageIndex: 1,
+          items: [
+            { id: 'courses', label: '课程总览', pageId: 'courses' },
+            ...(this.template.foundationArticles || []).map((course) => ({
+              id: `foundation-${course.id}`,
+              label: course.title,
+              matcher: (page) => page.flowId === `foundation-${course.id}`,
+            })),
+            { id: 'intro-complete', label: '介绍完成', pageId: 'intro-complete' },
+          ],
+        },
+        {
+          id: 'core',
+          stageIndex: 2,
+          items: [
+            { id: 'deep-start', label: '课程总览', pageId: 'deep-start' },
+            ...(this.template.deepDiveChallenges || []).map((challenge) => ({
+              id: `core-${challenge.id}`,
+              label: challenge.course,
+              matcher: (page) => page.flowId === `core-${challenge.id}`,
+            })),
+            { id: 'deep-complete', label: '深入完成', pageId: 'deep-complete' },
+          ],
+        },
+        {
+          id: 'branching',
+          stageIndex: 3,
+          items: [
+            { id: 'branching', label: '选择方向', pageId: 'branching' },
+          ],
+        },
+        {
+          id: 'branch',
+          stageIndex: 4,
+          items: [
+            { id: 'branch-overview', label: '方向概览', pageId: 'branch-overview' },
+            ...(((branch && branch.topics) || []).map((topic, index) => ({
+              id: `branch-topic-${index}`,
+              label: topic.title,
+              matcher: (page) => page.flowId === `branch-${branch.id}-topic-${index}`,
+            }))),
+            { id: 'done', label: '体验完成', pageId: 'done' },
+          ],
+        },
+      ]
+    },
+
+    activeStageSection() {
+      return this.stageSections.find((section) => section.stageIndex === this.activeStageIndex) || null
+    },
+
+    topLevelNavItems() {
+      const section = this.activeStageSection
+      if (!section) return []
+      return section.items.map((item) => {
+        const pageIndex = this.resolveNavTargetIndex(item)
+        return {
+          id: item.id,
+          label: item.label,
+          pageIndex,
+          active: this.isCurrentSecondary(item),
+          unlocked: pageIndex >= 0 && pageIndex <= this.pageIndex,
+        }
+      })
+    },
+
+    currentFlowId() {
+      return this.currentPage.flowId || ''
+    },
+
+    tertiaryNavItems() {
+      if (!this.currentFlowId) return []
+      return this.pages
+        .map((page, index) => ({ page, index }))
+        .filter((entry) => entry.page.flowId === this.currentFlowId)
+        .map((entry) => ({
+          id: entry.page.id,
+          label: entry.page.navTitle || entry.page.subtitle || entry.page.title,
+          pageIndex: entry.index,
+          active: this.currentPage.id === entry.page.id,
+          unlocked: entry.index <= this.pageIndex,
+        }))
+    },
+
+    showTertiaryNav() {
+      return this.tertiaryNavItems.length > 1
+    },
+
     visitedCourses() {
 
       return this.majorProgress.visitedCourses || []
@@ -1048,7 +1445,7 @@ export default {
 
     startMajorChallenge(page) {
 
-      const moduleId = page.type === 'branch-topic'
+      const moduleId = page.topic
 
         ? page.topic.id
 
@@ -1150,6 +1547,35 @@ export default {
 
       }
 
+    },
+
+    resolveNavTargetIndex(item) {
+      if (!item) return -1
+      if (item.pageId) return this.pages.findIndex((page) => page.id === item.pageId)
+      if (typeof item.matcher === 'function') return this.pages.findIndex((page) => item.matcher(page))
+      return -1
+    },
+
+    isCurrentSecondary(item) {
+      if (!item) return false
+      if (item.pageId) return this.currentPage.id === item.pageId
+      if (typeof item.matcher === 'function') return item.matcher(this.currentPage)
+      return false
+    },
+
+    jumpToNavItem(item) {
+      if (!item || item.pageIndex < 0) return
+      if (item.pageIndex > this.pageIndex) {
+        uni.showToast({ title: '请先按当前流程继续体验', icon: 'none' })
+        return
+      }
+      this.pageIndex = item.pageIndex
+      this.scrollToTop()
+      this.saveSnapshot()
+    },
+
+    jumpToFlowItem(item) {
+      this.jumpToNavItem(item)
     },
 
     jumpToStage(stageIndex) {
@@ -1320,6 +1746,24 @@ export default {
 
 .steps { display: flex; justify-content: space-between; margin-top: 18rpx; }
 
+.stage-nav-scroll { margin-top: 18rpx; white-space: nowrap; }
+
+.stage-nav-scroll-tertiary { margin-top: 12rpx; }
+
+.stage-nav-row { display: inline-flex; gap: 12rpx; padding-bottom: 4rpx; }
+
+.stage-nav-pill { flex-shrink: 0; padding: 10rpx 18rpx; border-radius: 999rpx; background: rgba(255,255,255,0.18); border: 2rpx solid transparent; }
+
+.stage-nav-pill-active { background: #fff; border-color: rgba(15,23,42,0.08); }
+
+.stage-nav-pill-locked { opacity: 0.45; }
+
+.stage-nav-pill-tertiary { background: rgba(255,255,255,0.12); }
+
+.stage-nav-pill-text { font-size: 20rpx; color: rgba(255,255,255,0.92); white-space: nowrap; }
+
+.stage-nav-pill-active .stage-nav-pill-text { color: #102033; font-weight: 700; }
+
 .step-dot { display: flex; flex-direction: column; align-items: center; gap: 8rpx; flex: 1; }
 
 .step-index { width: 44rpx; height: 44rpx; line-height: 44rpx; text-align: center; border-radius: 50%; font-size: 22rpx; font-weight: 700; background: rgba(255,255,255,0.28); color: #fff; }
@@ -1461,6 +1905,10 @@ export default {
 
 
 .article-header { margin-bottom: 18rpx; }
+
+.article-badge { display: inline-flex; align-items: center; justify-content: center; min-height: 42rpx; padding: 0 16rpx; border-radius: 999rpx; background: #eff6ff; color: #1d4ed8; font-size: 20rpx; font-weight: 700; }
+
+.article-badge-accent { background: #ecfdf5; color: #047857; }
 
 .article-title { display: block; font-size: 30rpx; font-weight: 700; color: #16233a; }
 

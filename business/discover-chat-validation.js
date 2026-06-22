@@ -1,4 +1,4 @@
-import { isCareerScenarioValue } from './discover-questions'
+import { isCareerScenarioValue, isHollandFineAnswerValue } from './discover-questions'
 
 function validationError(message, fieldErrors) {
   return { valid: false, message, fieldErrors }
@@ -49,9 +49,9 @@ export function validateAnswer(question, value) {
   }
 
   if (question.type === 'interest-tag-grid') {
-    return Array.isArray(value)
+    return Array.isArray(value) && value.length > 0
       ? { valid: true }
-      : validationError('请选择符合你的兴趣标签，或者直接确认本页都不符合。')
+      : validationError('请至少选择 1 个符合你的兴趣标签。')
   }
 
   if (question.type === 'multi-select') {
@@ -94,6 +94,44 @@ export function validateAnswer(question, value) {
     return { valid: true }
   }
 
+  if (question.type === 'holland-fine-grained') {
+    if (!question.hollandFine || !isHollandFineAnswerValue(value)) {
+      return validationError('请完成深度测评细分题。')
+    }
+
+    const fieldErrors = {}
+    for (const item of question.hollandFine.items || []) {
+      const itemValue = value.items[item.id] || {}
+      if (item.mode === 'open') {
+        for (const field of item.openFields || []) {
+          const minLength = field.minLength ?? 1
+          const text = itemValue.openResponses?.[field.id] ?? ''
+          if (typeof text !== 'string' || text.trim().length < minLength) {
+            fieldErrors[`${item.id}.${field.id}`] = `请至少写 ${minLength} 个字。`
+          }
+        }
+        continue
+      }
+
+      const minSelections = item.minSelections ?? 1
+      const maxSelections = item.maxSelections ?? minSelections
+      const selectedIds = Array.isArray(itemValue.selectedOptionIds) ? itemValue.selectedOptionIds : []
+      if (selectedIds.length < minSelections) {
+        fieldErrors[item.id] = item.mode === 'ranked' || item.mode === 'multi'
+          ? `请选择 ${minSelections} 项。`
+          : '请选择一个选项。'
+      } else if (selectedIds.length > maxSelections) {
+        fieldErrors[item.id] = `最多选择 ${maxSelections} 项。`
+      }
+    }
+
+    if (Object.keys(fieldErrors).length > 0) {
+      return validationError('还有深度测评细分题未完成，请补充标红的问题。', fieldErrors)
+    }
+
+    return { valid: true }
+  }
+
   if (question.type === 'free-text') {
     const minLength = question.minLength ?? 1
     return isTextAnswer(value) && value.text.trim().length >= minLength
@@ -116,8 +154,17 @@ export function getValidationAnchorId(question, fieldErrors) {
     if (fieldErrors.firstChoiceId) return 'anchor-career-first'
     if (fieldErrors.itemChoiceIds) return 'anchor-career-items'
     if (fieldErrors.teamChoiceId) return 'anchor-career-team'
-    const openFieldId = Object.keys(fieldErrors).find((id) => id.startsWith('open-') || id.includes('open'))
+    const openFieldId = Object.keys(fieldErrors).find((id) => (
+      id !== 'firstChoiceId'
+      && id !== 'itemChoiceIds'
+      && id !== 'teamChoiceId'
+    ))
     if (openFieldId) return `anchor-career-open-${openFieldId}`
+  }
+  if (question.type === 'holland-fine-grained' && fieldErrors) {
+    const firstFieldKey = Object.keys(fieldErrors)[0]
+    const firstItemId = firstFieldKey ? firstFieldKey.split('.')[0] : ''
+    if (firstItemId) return `anchor-hf-${firstItemId}`
   }
   return `anchor-q-${question.id}`
 }

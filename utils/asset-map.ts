@@ -1,34 +1,79 @@
 import { getLocalAsset } from '../business/local-asset-map'
 import { getImageFallback } from '../business/image-fallback-map'
-import { getDownloadedRemoteAsset, isVerifiedRemoteAsset, VERIFIED_REMOTE_ASSET_PATHS } from '../business/remote-asset-registry'
+import { getDownloadedRemoteAsset } from '../business/remote-asset-registry'
 import { isMdCatalogAsset } from '../business/md-asset-catalog'
-import { api } from './api'
 
-/** 生产环境默认域名，与 mini-program-asset-urls.md 一致 */
-export const DEFAULT_ASSET_HOST = 'https://uniprism.cn'
+/** 生产 OSS CDN，与 uniprism.cn 307 跳转目标一致 */
+export const DEFAULT_ASSET_HOST = 'https://assets.uniprism.cn'
+export const LEGACY_ASSET_HOST = 'https://uniprism.cn'
 
-/** 与 API 基地址共用配置（本地调试可改 uniprism.apiBaseUrl） */
+const REMOTE_CATALOG_PREFIXES = ['/images/', '/explore-static/', '/design/', '/videos/']
+
+/** 静态资源域名与 API 分离，避免开发态回落到 127.0.0.1 导致图片失效 */
 export function getAssetHost(): string {
-  try {
-    return api.getBaseUrl() || DEFAULT_ASSET_HOST
-  } catch {
-    return DEFAULT_ASSET_HOST
+  if (typeof process !== 'undefined' && process.env) {
+    const configured = (process.env.VUE_APP_ASSET_HOST || process.env.VITE_APP_ASSET_HOST || '').trim()
+    if (configured) return configured.replace(/\/$/, '')
   }
+  return DEFAULT_ASSET_HOST
 }
 
 /** @deprecated 请使用 getAssetHost() */
 export const ASSET_HOST = DEFAULT_ASSET_HOST
 
+function isDevBuild(): boolean {
+  try {
+    return typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'development'
+  } catch {
+    return false
+  }
+}
+
+function getEnvApiBase(): string {
+  if (typeof process === 'undefined' || !process.env) return ''
+  return (process.env.VUE_APP_API_BASE_URL || process.env.VITE_APP_API_BASE_URL || '').replace(/\/$/, '')
+}
+
+function getRuntimeDevApiBase(): string {
+  if (!isDevBuild()) return ''
+  try {
+    const uniApi = (globalThis as { uni?: { getStorageSync?: (key: string) => unknown } }).uni
+    const stored = uniApi?.getStorageSync?.('uniprism.apiBaseUrl')
+    if (typeof stored === 'string' && stored.trim()) {
+      return stored.trim().replace(/\/$/, '')
+    }
+  } catch {
+    // ignore storage access errors
+  }
+  return getEnvApiBase() || 'http://127.0.0.1:3000'
+}
+
+function isCatalogPath(objectPath: string): boolean {
+  return REMOTE_CATALOG_PREFIXES.some((prefix) => objectPath.startsWith(prefix)) || isMdCatalogAsset(objectPath)
+}
+
 function normalizePath(src: string): string | null {
   if (/^https?:\/\//i.test(src)) {
     try {
       const url = new URL(src)
-      const configuredHost = new URL(getAssetHost()).host
-      const defaultHost = new URL(DEFAULT_ASSET_HOST).host
-      if (url.host !== defaultHost && url.host !== configuredHost) {
-        return null
+      const host = url.hostname
+      const path = url.pathname.startsWith('/') ? url.pathname : `/${url.pathname}`
+
+      if (host === '127.0.0.1' || host === 'localhost') {
+        return isCatalogPath(path) ? path : null
       }
-      return url.pathname
+
+      const allowedHosts = new Set([
+        new URL(getAssetHost()).host,
+        new URL(DEFAULT_ASSET_HOST).host,
+        new URL(LEGACY_ASSET_HOST).host,
+        'assets.uniprism.cn',
+        'uniprism.cn',
+      ])
+      if (!allowedHosts.has(host)) {
+        return isCatalogPath(path) ? path : null
+      }
+      return path
     } catch {
       return null
     }
@@ -36,29 +81,71 @@ function normalizePath(src: string): string | null {
   return src.startsWith('/') ? src : `/${src}`
 }
 
-function buildRemoteUrl(objectPath: string): string {
-  const host = getAssetHost().replace(/\/$/, '')
-  // 优先走 OSS 代理；小程序不依赖 Next.js rewrite
-  return `${host}/api/oss-assets${objectPath}`
+function buildDirectUrl(host: string, objectPath: string): string {
+  return `${host.replace(/\/$/, '')}${objectPath}`
 }
 
-function buildDirectUrl(objectPath: string): string {
-  const host = getAssetHost().replace(/\/$/, '')
-  return `${host}${objectPath}`
+function isRemoteCatalogPath(objectPath: string): boolean {
+  return isCatalogPath(objectPath)
+}
+
+function buildRemoteAssetUrlCandidates(objectPath: string): string[] {
+  const candidates: string[] = []
+  const assetHost = getAssetHost().replace(/\/$/, '')
+
+  if (assetHost) {
+    candidates.push(buildDirectUrl(assetHost, objectPath))
+  }
+  if (assetHost !== DEFAULT_ASSET_HOST) {
+    candidates.push(buildDirectUrl(DEFAULT_ASSET_HOST, objectPath))
+  }
+  candidates.push(buildDirectUrl(LEGACY_ASSET_HOST, objectPath))
+  candidates.push(buildDirectUrl(LEGACY_ASSET_HOST, `/api/oss-assets${objectPath}`))
+
+  const devApiBase = getRuntimeDevApiBase()
+  if (devApiBase) {
+    candidates.push(buildDirectUrl(devApiBase, objectPath))
+    candidates.push(buildDirectUrl(devApiBase, `/api/oss-assets${objectPath}`))
+  }
+
+  return candidates
+}
+
+function appendLocalCandidates(objectPath: string, candidates: string[]): string[] {
+  const local = getLocalAsset(objectPath)
+  if (local) candidates.push(local)
+
+  const downloaded = getDownloadedRemoteAsset(objectPath)
+  if (downloaded) candidates.push(downloaded)
+
+  const fallback = getImageFallback(objectPath)
+  if (fallback) candidates.push(fallback)
+
+  if (objectPath.startsWith('/images/') || objectPath.startsWith('/explore-static/')) {
+    candidates.push('/static/assets/discover/icon-generic.svg')
+  }
+
+  return [...new Set(candidates.filter(Boolean))]
 }
 
 /**
  * 将相对或站内绝对路径转为可加载 URL。
- * 1. static/ 手工映射（local-asset-map）
- * 2. sync 脚本下载到本地的 PNG/JPG（remote-asset-registry）
- * 3. MD 收录且（未跑 sync 或已校验通过）→ 远程 direct URL
- * 4. sync 后仍失效的 /images/* → 本地 SVG fallback
+ * 1. /static/* 等小程序内置资源 → 原样使用
+ * 2. OSS 收录路径 → CDN direct URL（上线默认）
+ * 3. local-asset-map / remote-asset-registry → 仅作离线兜底
+ * 4. /images/* SVG fallback → 最后兜底
  */
 export function resolveAsset(src: string | undefined): string {
   if (!src) return ''
 
+  if (src.startsWith('/static/')) return src
+
   const objectPath = normalizePath(src)
-  if (!objectPath) return src
+  if (!objectPath) return ''
+
+  if (isRemoteCatalogPath(objectPath)) {
+    return buildRemoteAssetUrlCandidates(objectPath)[0] || ''
+  }
 
   const local = getLocalAsset(objectPath)
   if (local) return local
@@ -66,64 +153,28 @@ export function resolveAsset(src: string | undefined): string {
   const downloaded = getDownloadedRemoteAsset(objectPath)
   if (downloaded) return downloaded
 
-  const registryReady = VERIFIED_REMOTE_ASSET_PATHS.size > 0
-
-  if (isMdCatalogAsset(objectPath)) {
-    if (!registryReady || isVerifiedRemoteAsset(objectPath)) {
-      if (objectPath.startsWith('/design/') || objectPath.startsWith('/videos/')) {
-        return buildRemoteUrl(objectPath)
-      }
-      return buildDirectUrl(objectPath)
-    }
-  }
-
-  if (objectPath.startsWith('/images/')) {
-    const fallback = getImageFallback(objectPath)
-    if (fallback) return fallback
-    return buildDirectUrl(objectPath)
-  }
+  const fallback = getImageFallback(objectPath)
+  if (fallback) return fallback
 
   return ''
 }
 
-/** 返回候选 URL（local → direct → oss 代理 → /images fallback） */
+/** 返回候选 URL（CDN → 本地 API → local → SVG fallback） */
 export function resolveAssetCandidates(src: string | undefined): string[] {
   if (!src) return []
 
+  if (src.startsWith('/static/')) return [src]
+
   const objectPath = normalizePath(src)
-  if (!objectPath) return [src]
-
-  const local = getLocalAsset(objectPath)
-  if (local) return [local]
-
-  const downloaded = getDownloadedRemoteAsset(objectPath)
-  if (downloaded) return [downloaded]
+  if (!objectPath) return []
 
   const candidates: string[] = []
-  const registryReady = VERIFIED_REMOTE_ASSET_PATHS.size > 0
-  const allowRemote = isMdCatalogAsset(objectPath) && (!registryReady || isVerifiedRemoteAsset(objectPath))
 
-  if (allowRemote) {
-    if (objectPath.startsWith('/design/') || objectPath.startsWith('/videos/')) {
-      candidates.push(buildRemoteUrl(objectPath))
-      candidates.push(buildDirectUrl(objectPath))
-    } else {
-      candidates.push(buildDirectUrl(objectPath))
-      candidates.push(buildRemoteUrl(objectPath))
-    }
+  if (isRemoteCatalogPath(objectPath)) {
+    candidates.push(...buildRemoteAssetUrlCandidates(objectPath))
   }
 
-  if (objectPath.startsWith('/images/')) {
-    const fallback = getImageFallback(objectPath)
-    if (fallback) candidates.push(fallback)
-    candidates.push(buildDirectUrl(objectPath))
-    candidates.push(buildRemoteUrl(objectPath))
-    if (objectPath.includes('/icons/generated/discover-choice-icon-')) {
-      candidates.push('/static/assets/discover/icon-generic.svg')
-    }
-  }
-
-  return [...new Set(candidates.filter(Boolean))]
+  return appendLocalCandidates(objectPath, candidates)
 }
 
 /** resolveAsset 的别名 */

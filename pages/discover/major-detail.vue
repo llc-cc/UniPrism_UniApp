@@ -222,7 +222,7 @@ export default {
     },
     primaryActionLabel() {
       if (!this.major) return '开始体验'
-      if (this.major.route === '/pages/math/index') return this.explored ? '继续数学体验' : '进入数学体验'
+      if (this.major.id === 'math-u') return this.explored ? '继续数学探索' : '进入数学探索'
       if (this.speedTemplate) return this.explored ? '继续速体验' : '开始速体验'
       return '进入专业导览'
     },
@@ -245,7 +245,7 @@ export default {
     openNext() {
       if (!this.major) return
       if (this.major.route) {
-        if (this.major.route === '/pages/math/index') {
+        if (this.major.id === 'math-u') {
           uni.navigateTo({ url: this.major.route })
           return
         }

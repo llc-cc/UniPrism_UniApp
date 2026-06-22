@@ -1,0 +1,5342 @@
+{
+  "version": "holland_fine_grained_v4_20260615_md_sync",
+  "generatedAt": "2026-06-15T00:00:00.000Z",
+  "sourcePaths": {
+    "R": "docs/Zhiye_Huolande_Doc/现实型人格底层逻辑测评题目文档.md",
+    "I": "docs/Zhiye_Huolande_Doc/research_personality_assessment.md",
+    "A": "docs/Zhiye_Huolande_Doc/艺术型 A 深层测评题目扩展版.md",
+    "S": "docs/Zhiye_Huolande_Doc/社会型人格深度测评题目文档.md",
+    "E": "docs/Zhiye_Huolande_Doc/enterprise_personality_assessment.md",
+    "C": "docs/Zhiye_Huolande_Doc/conventional_assessment_deep_cn_v2.md"
+  },
+  "dimensions": {
+    "R": {
+      "code": "R",
+      "label": "现实型 R",
+      "sourcePath": "docs/Zhiye_Huolande_Doc/现实型人格底层逻辑测评题目文档.md",
+      "sections": [
+        {
+          "id": "holland-r-section-01",
+          "title": "维度1：现实价值来源",
+          "mode": "single",
+          "sectionIntro": "可依赖秩序 / 成形实现",
+          "axisKey": "r1",
+          "axisLabel": "现实价值来源",
+          "leftLabel": "可依赖秩序",
+          "rightLabel": "成形实现",
+          "items": [
+            {
+              "id": "holland-r-001",
+              "number": 1,
+              "prompt": "如果一场大雨后操场第二天还要办活动，你更愿意先处理什么？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "r1",
+              "axisLabel": "现实价值来源",
+              "scoring": {
+                "leftKey": "reliableOrder",
+                "leftLabel": "可依赖秩序",
+                "rightKey": "formedRealization",
+                "rightLabel": "成形实现"
+              },
+              "options": [
+                {
+                  "id": "holland-r-001-a",
+                  "key": "A",
+                  "label": "检查积水、电线、地面防滑、临时通道和搬运路线，标出进出、用电和器材移动的风险点",
+                  "riasecWeights": {
+                    "R": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:R:reliableOrder"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "R",
+                    "axisKey": "r1",
+                    "axisLabel": "现实价值来源",
+                    "side": "left",
+                    "sideKey": "reliableOrder",
+                    "sideLabel": "可依赖秩序"
+                  }
+                },
+                {
+                  "id": "holland-r-001-b",
+                  "key": "B",
+                  "label": "和同伴把倒下的棚架重新搭起来，修好展板、物资区和指示牌，调整现场摆放和动线",
+                  "riasecWeights": {
+                    "R": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:R:formedRealization"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "R",
+                    "axisKey": "r1",
+                    "axisLabel": "现实价值来源",
+                    "side": "right",
+                    "sideKey": "formedRealization",
+                    "sideLabel": "成形实现"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-r-002",
+              "number": 2,
+              "prompt": "如果你参与制作一个会自动分拣纸杯的小装置，展示前你更愿意先确认什么？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "r1",
+              "axisLabel": "现实价值来源",
+              "scoring": {
+                "leftKey": "reliableOrder",
+                "leftLabel": "可依赖秩序",
+                "rightKey": "formedRealization",
+                "rightLabel": "成形实现"
+              },
+              "options": [
+                {
+                  "id": "holland-r-002-a",
+                  "key": "A",
+                  "label": "电源、传感器、支架、备用纸杯和卡住时的处理方式，提前做一轮试运行",
+                  "riasecWeights": {
+                    "R": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:R:reliableOrder"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "R",
+                    "axisKey": "r1",
+                    "axisLabel": "现实价值来源",
+                    "side": "left",
+                    "sideKey": "reliableOrder",
+                    "sideLabel": "可依赖秩序"
+                  }
+                },
+                {
+                  "id": "holland-r-002-b",
+                  "key": "B",
+                  "label": "传送带、分拣口、透明外壳和操作按钮都装到位，现场能看到纸杯移动和落入不同盒子",
+                  "riasecWeights": {
+                    "R": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:R:formedRealization"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "R",
+                    "axisKey": "r1",
+                    "axisLabel": "现实价值来源",
+                    "side": "right",
+                    "sideKey": "formedRealization",
+                    "sideLabel": "成形实现"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-r-003",
+              "number": 3,
+              "prompt": "如果你接手一间长期闲置的旧活动室，第一天进去时你更愿意先看什么？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "r1",
+              "axisLabel": "现实价值来源",
+              "scoring": {
+                "leftKey": "reliableOrder",
+                "leftLabel": "可依赖秩序",
+                "rightKey": "formedRealization",
+                "rightLabel": "成形实现"
+              },
+              "options": [
+                {
+                  "id": "holland-r-003-a",
+                  "key": "A",
+                  "label": "先检查屋顶漏水、电线老化、地面承重和消防通道堆放情况",
+                  "riasecWeights": {
+                    "R": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:R:reliableOrder"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "R",
+                    "axisKey": "r1",
+                    "axisLabel": "现实价值来源",
+                    "side": "left",
+                    "sideKey": "reliableOrder",
+                    "sideLabel": "可依赖秩序"
+                  }
+                },
+                {
+                  "id": "holland-r-003-b",
+                  "key": "B",
+                  "label": "先画木工房、社团排练室、小展厅或实验模型空间的改造草图",
+                  "riasecWeights": {
+                    "R": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:R:formedRealization"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "R",
+                    "axisKey": "r1",
+                    "axisLabel": "现实价值来源",
+                    "side": "right",
+                    "sideKey": "formedRealization",
+                    "sideLabel": "成形实现"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-r-004",
+              "number": 4,
+              "prompt": "如果露天电影放映前只剩半小时，你更愿意补哪一块？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "r1",
+              "axisLabel": "现实价值来源",
+              "scoring": {
+                "leftKey": "reliableOrder",
+                "leftLabel": "可依赖秩序",
+                "rightKey": "formedRealization",
+                "rightLabel": "成形实现"
+              },
+              "options": [
+                {
+                  "id": "holland-r-004-a",
+                  "key": "A",
+                  "label": "检查电源线、投影支架、音箱连接、备用电池和观众通道",
+                  "riasecWeights": {
+                    "R": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:R:reliableOrder"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "R",
+                    "axisKey": "r1",
+                    "axisLabel": "现实价值来源",
+                    "side": "left",
+                    "sideKey": "reliableOrder",
+                    "sideLabel": "可依赖秩序"
+                  }
+                },
+                {
+                  "id": "holland-r-004-b",
+                  "key": "B",
+                  "label": "把幕布、座椅、入口牌、取票台和放映区调整到可以使用的状态",
+                  "riasecWeights": {
+                    "R": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:R:formedRealization"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "R",
+                    "axisKey": "r1",
+                    "axisLabel": "现实价值来源",
+                    "side": "right",
+                    "sideKey": "formedRealization",
+                    "sideLabel": "成形实现"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-r-005",
+              "number": 5,
+              "prompt": "如果你和同伴修好一批旧自行车，复盘时你更会先写哪类问题？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "r1",
+              "axisLabel": "现实价值来源",
+              "scoring": {
+                "leftKey": "reliableOrder",
+                "leftLabel": "可依赖秩序",
+                "rightKey": "formedRealization",
+                "rightLabel": "成形实现"
+              },
+              "options": [
+                {
+                  "id": "holland-r-005-a",
+                  "key": "A",
+                  "label": "刹车、链条、车灯、轮胎气压和最后检查表里漏掉的项目",
+                  "riasecWeights": {
+                    "R": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:R:reliableOrder"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "R",
+                    "axisKey": "r1",
+                    "axisLabel": "现实价值来源",
+                    "side": "left",
+                    "sideKey": "reliableOrder",
+                    "sideLabel": "可依赖秩序"
+                  }
+                },
+                {
+                  "id": "holland-r-005-b",
+                  "key": "B",
+                  "label": "车把、挡泥板、置物篮、车铃和整体装配顺序里的问题",
+                  "riasecWeights": {
+                    "R": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:R:formedRealization"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "R",
+                    "axisKey": "r1",
+                    "axisLabel": "现实价值来源",
+                    "side": "right",
+                    "sideKey": "formedRealization",
+                    "sideLabel": "成形实现"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "holland-r-section-02",
+          "title": "维度2：具体认知方式",
+          "mode": "single",
+          "sectionIntro": "身体校准 / 机制拆解",
+          "axisKey": "r2",
+          "axisLabel": "具体认知方式",
+          "leftLabel": "身体校准",
+          "rightLabel": "机制拆解",
+          "items": [
+            {
+              "id": "holland-r-006",
+              "number": 1,
+              "prompt": "如果你第一次使用封塑机、打孔器或小型切割机，你更自然的学习方式是什么？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "r2",
+              "axisLabel": "具体认知方式",
+              "scoring": {
+                "leftKey": "bodyCalibration",
+                "leftLabel": "身体校准",
+                "rightKey": "mechanismAnalysis",
+                "rightLabel": "机制拆解"
+              },
+              "options": [
+                {
+                  "id": "holland-r-006-a",
+                  "key": "A",
+                  "label": "先拿废料试几下，感受手要怎么用力、角度差一点会发生什么、机器声音哪里不对",
+                  "riasecWeights": {
+                    "R": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:R:bodyCalibration"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "R",
+                    "axisKey": "r2",
+                    "axisLabel": "具体认知方式",
+                    "side": "left",
+                    "sideKey": "bodyCalibration",
+                    "sideLabel": "身体校准"
+                  }
+                },
+                {
+                  "id": "holland-r-006-b",
+                  "key": "B",
+                  "label": "先看清刀头、开关、保护罩和说明书，弄懂每个部件为什么这样设计再动手",
+                  "riasecWeights": {
+                    "R": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:R:mechanismAnalysis"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "R",
+                    "axisKey": "r2",
+                    "axisLabel": "具体认知方式",
+                    "side": "right",
+                    "sideKey": "mechanismAnalysis",
+                    "sideLabel": "机制拆解"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-r-007",
+              "number": 2,
+              "prompt": "如果你是古代船匠，要判断一艘船能不能远航，你更愿意依据什么？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "r2",
+              "axisLabel": "具体认知方式",
+              "scoring": {
+                "leftKey": "bodyCalibration",
+                "leftLabel": "身体校准",
+                "rightKey": "mechanismAnalysis",
+                "rightLabel": "机制拆解"
+              },
+              "options": [
+                {
+                  "id": "holland-r-007-a",
+                  "key": "A",
+                  "label": "摸木料的湿度和硬度，看船下水后的摇晃、吃水线和老师傅试航时的反馈",
+                  "riasecWeights": {
+                    "R": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:R:bodyCalibration"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "R",
+                    "axisKey": "r2",
+                    "axisLabel": "具体认知方式",
+                    "side": "left",
+                    "sideKey": "bodyCalibration",
+                    "sideLabel": "身体校准"
+                  }
+                },
+                {
+                  "id": "holland-r-007-b",
+                  "key": "B",
+                  "label": "研究龙骨、船舱、桅杆和连接处怎样受力，标出问题最集中的结构位置",
+                  "riasecWeights": {
+                    "R": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:R:mechanismAnalysis"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "R",
+                    "axisKey": "r2",
+                    "axisLabel": "具体认知方式",
+                    "side": "right",
+                    "sideKey": "mechanismAnalysis",
+                    "sideLabel": "机制拆解"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-r-008",
+              "number": 3,
+              "prompt": "如果你学习滑雪、驾驶、烹饪或急救操作，你更愿意怎样进步？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "r2",
+              "axisLabel": "具体认知方式",
+              "scoring": {
+                "leftKey": "bodyCalibration",
+                "leftLabel": "身体校准",
+                "rightKey": "mechanismAnalysis",
+                "rightLabel": "机制拆解"
+              },
+              "options": [
+                {
+                  "id": "holland-r-008-a",
+                  "key": "A",
+                  "label": "请教练在旁边看着，反复调整姿势、节奏和力度，记录每次身体反馈",
+                  "riasecWeights": {
+                    "R": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:R:bodyCalibration"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "R",
+                    "axisKey": "r2",
+                    "axisLabel": "具体认知方式",
+                    "side": "left",
+                    "sideKey": "bodyCalibration",
+                    "sideLabel": "身体校准"
+                  }
+                },
+                {
+                  "id": "holland-r-008-b",
+                  "key": "B",
+                  "label": "先把动作步骤、风险点和常见错误写清楚，再按顺序练习和打勾",
+                  "riasecWeights": {
+                    "R": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:R:mechanismAnalysis"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "R",
+                    "axisKey": "r2",
+                    "axisLabel": "具体认知方式",
+                    "side": "right",
+                    "sideKey": "mechanismAnalysis",
+                    "sideLabel": "机制拆解"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-r-009",
+              "number": 4,
+              "prompt": "如果活动用的音响、灯架或打印机总出小故障，但每次表现不完全一样，你会怎么入手？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "r2",
+              "axisLabel": "具体认知方式",
+              "scoring": {
+                "leftKey": "bodyCalibration",
+                "leftLabel": "身体校准",
+                "rightKey": "mechanismAnalysis",
+                "rightLabel": "机制拆解"
+              },
+              "options": [
+                {
+                  "id": "holland-r-009-a",
+                  "key": "A",
+                  "label": "先听它什么时候响、哪里发烫、哪一步开始卡顿，靠这些现场细节判断问题",
+                  "riasecWeights": {
+                    "R": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:R:bodyCalibration"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "R",
+                    "axisKey": "r2",
+                    "axisLabel": "具体认知方式",
+                    "side": "left",
+                    "sideKey": "bodyCalibration",
+                    "sideLabel": "身体校准"
+                  }
+                },
+                {
+                  "id": "holland-r-009-b",
+                  "key": "B",
+                  "label": "画出电源、传动、按钮和零件之间的关系，一段一段排查哪个环节出了错",
+                  "riasecWeights": {
+                    "R": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:R:mechanismAnalysis"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "R",
+                    "axisKey": "r2",
+                    "axisLabel": "具体认知方式",
+                    "side": "right",
+                    "sideKey": "mechanismAnalysis",
+                    "sideLabel": "机制拆解"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-r-010",
+              "number": 5,
+              "prompt": "如果你要确认自己已经会用一件工具，哪种状态更接近你的判断？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "r2",
+              "axisLabel": "具体认知方式",
+              "scoring": {
+                "leftKey": "bodyCalibration",
+                "leftLabel": "身体校准",
+                "rightKey": "mechanismAnalysis",
+                "rightLabel": "机制拆解"
+              },
+              "options": [
+                {
+                  "id": "holland-r-010-a",
+                  "key": "A",
+                  "label": "拿起工具时先感受声音、重量、阻力和手部位置，再调整动作",
+                  "riasecWeights": {
+                    "R": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:R:bodyCalibration"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "R",
+                    "axisKey": "r2",
+                    "axisLabel": "具体认知方式",
+                    "side": "left",
+                    "sideKey": "bodyCalibration",
+                    "sideLabel": "身体校准"
+                  }
+                },
+                {
+                  "id": "holland-r-010-b",
+                  "key": "B",
+                  "label": "先说清楚它的运作方式，再标出零件、角度或步骤之间的关系",
+                  "riasecWeights": {
+                    "R": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:R:mechanismAnalysis"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "R",
+                    "axisKey": "r2",
+                    "axisLabel": "具体认知方式",
+                    "side": "right",
+                    "sideKey": "mechanismAnalysis",
+                    "sideLabel": "机制拆解"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "holland-r-section-03",
+          "title": "维度3：行动欲望",
+          "mode": "single",
+          "sectionIntro": "稳态承托 / 临界开路",
+          "axisKey": "r3",
+          "axisLabel": "行动欲望",
+          "leftLabel": "稳态承托",
+          "rightLabel": "临界开路",
+          "items": [
+            {
+              "id": "holland-r-011",
+              "number": 1,
+              "prompt": "如果队伍要在山里搭一个临时露营点，你更想承担哪类任务？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "r3",
+              "axisLabel": "行动欲望",
+              "scoring": {
+                "leftKey": "steadySupport",
+                "leftLabel": "稳态承托",
+                "rightKey": "frontierOpening",
+                "rightLabel": "临界开路"
+              },
+              "options": [
+                {
+                  "id": "holland-r-011-a",
+                  "key": "A",
+                  "label": "检查帐篷固定、饮水、照明、急救包和夜间路线，列出夜间值守表",
+                  "riasecWeights": {
+                    "R": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:R:steadySupport"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "R",
+                    "axisKey": "r3",
+                    "axisLabel": "行动欲望",
+                    "side": "left",
+                    "sideKey": "steadySupport",
+                    "sideLabel": "稳态承托"
+                  }
+                },
+                {
+                  "id": "holland-r-011-b",
+                  "key": "B",
+                  "label": "先去探路、清理地面、搭最先几顶帐篷和公共区，标出营地边界",
+                  "riasecWeights": {
+                    "R": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:R:frontierOpening"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "R",
+                    "axisKey": "r3",
+                    "axisLabel": "行动欲望",
+                    "side": "right",
+                    "sideKey": "frontierOpening",
+                    "sideLabel": "临界开路"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-r-012",
+              "number": 2,
+              "prompt": "如果校运会当天突然遇到器材损坏和场地调整，你更愿意站在哪个位置？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "r3",
+              "axisLabel": "行动欲望",
+              "scoring": {
+                "leftKey": "steadySupport",
+                "leftLabel": "稳态承托",
+                "rightKey": "frontierOpening",
+                "rightLabel": "临界开路"
+              },
+              "options": [
+                {
+                  "id": "holland-r-012-a",
+                  "key": "A",
+                  "label": "留在器材区确认备用电池、标志线、药品和替换方案，按项目重新摆放",
+                  "riasecWeights": {
+                    "R": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:R:steadySupport"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "R",
+                    "axisKey": "r3",
+                    "axisLabel": "行动欲望",
+                    "side": "left",
+                    "sideKey": "steadySupport",
+                    "sideLabel": "稳态承托"
+                  }
+                },
+                {
+                  "id": "holland-r-012-b",
+                  "key": "B",
+                  "label": "跟着老师去临时改跑道、搬器材、重新布置区域，处理当前卡住的比赛",
+                  "riasecWeights": {
+                    "R": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:R:frontierOpening"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "R",
+                    "axisKey": "r3",
+                    "axisLabel": "行动欲望",
+                    "side": "right",
+                    "sideKey": "frontierOpening",
+                    "sideLabel": "临界开路"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-r-013",
+              "number": 3,
+              "prompt": "如果一栋旧教学楼要重新开放，里面有很多老问题，你更想解决什么？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "r3",
+              "axisLabel": "行动欲望",
+              "scoring": {
+                "leftKey": "steadySupport",
+                "leftLabel": "稳态承托",
+                "rightKey": "frontierOpening",
+                "rightLabel": "临界开路"
+              },
+              "options": [
+                {
+                  "id": "holland-r-013-a",
+                  "key": "A",
+                  "label": "记录门窗、电路、水管和消防通道的检查结果，标出漏水、断电和堵塞位置",
+                  "riasecWeights": {
+                    "R": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:R:steadySupport"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "R",
+                    "axisKey": "r3",
+                    "axisLabel": "行动欲望",
+                    "side": "left",
+                    "sideKey": "steadySupport",
+                    "sideLabel": "稳态承托"
+                  }
+                },
+                {
+                  "id": "holland-r-013-b",
+                  "key": "B",
+                  "label": "参与改造一间旧教室、清理堆满杂物的通道，重新布置桌椅和工具",
+                  "riasecWeights": {
+                    "R": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:R:frontierOpening"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "R",
+                    "axisKey": "r3",
+                    "axisLabel": "行动欲望",
+                    "side": "right",
+                    "sideKey": "frontierOpening",
+                    "sideLabel": "临界开路"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-r-014",
+              "number": 4,
+              "prompt": "如果一个社区工坊要从空房间变成可使用的工作间，你更愿意负责哪种状态？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "r3",
+              "axisLabel": "行动欲望",
+              "scoring": {
+                "leftKey": "steadySupport",
+                "leftLabel": "稳态承托",
+                "rightKey": "frontierOpening",
+                "rightLabel": "临界开路"
+              },
+              "options": [
+                {
+                  "id": "holland-r-014-a",
+                  "key": "A",
+                  "label": "每天检查电源、工具、护目镜、材料柜和归位记录，保证开放时设备能正常使用",
+                  "riasecWeights": {
+                    "R": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:R:steadySupport"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "R",
+                    "axisKey": "r3",
+                    "axisLabel": "行动欲望",
+                    "side": "left",
+                    "sideKey": "steadySupport",
+                    "sideLabel": "稳态承托"
+                  }
+                },
+                {
+                  "id": "holland-r-014-b",
+                  "key": "B",
+                  "label": "参与第一次测量、搬运、装工作台、接照明和试用工具，把空房间搭成工作间",
+                  "riasecWeights": {
+                    "R": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:R:frontierOpening"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "R",
+                    "axisKey": "r3",
+                    "axisLabel": "行动欲望",
+                    "side": "right",
+                    "sideKey": "frontierOpening",
+                    "sideLabel": "临界开路"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-r-015",
+              "number": 5,
+              "prompt": "如果一次应急演练需要两类现场人员，你更愿意承担哪一类？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "r3",
+              "axisLabel": "行动欲望",
+              "scoring": {
+                "leftKey": "steadySupport",
+                "leftLabel": "稳态承托",
+                "rightKey": "frontierOpening",
+                "rightLabel": "临界开路"
+              },
+              "options": [
+                {
+                  "id": "holland-r-015-a",
+                  "key": "A",
+                  "label": "留在保障点检查通讯、电源、急救包、备用工具和返程路线，随时处理故障记录",
+                  "riasecWeights": {
+                    "R": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:R:steadySupport"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "R",
+                    "axisKey": "r3",
+                    "axisLabel": "行动欲望",
+                    "side": "left",
+                    "sideKey": "steadySupport",
+                    "sideLabel": "稳态承托"
+                  }
+                },
+                {
+                  "id": "holland-r-015-b",
+                  "key": "B",
+                  "label": "跟着先遣小组进入被封锁的路段，清理障碍、架临时标记、确认第一条可通行路线",
+                  "riasecWeights": {
+                    "R": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:R:frontierOpening"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "R",
+                    "axisKey": "r3",
+                    "axisLabel": "行动欲望",
+                    "side": "right",
+                    "sideKey": "frontierOpening",
+                    "sideLabel": "临界开路"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "I": {
+      "code": "I",
+      "label": "研究型 I",
+      "sourcePath": "docs/Zhiye_Huolande_Doc/research_personality_assessment.md",
+      "sections": [
+        {
+          "id": "holland-i-section-01",
+          "title": "维度1：认知入口",
+          "mode": "single",
+          "sectionIntro": "经验现象 / 规律模型",
+          "axisKey": "i1",
+          "axisLabel": "认知入口",
+          "leftLabel": "经验现象",
+          "rightLabel": "规律模型",
+          "items": [
+            {
+              "id": "holland-i-001",
+              "number": 1,
+              "prompt": "如果你是 18 世纪一名研究飞行器的科学家，你更愿意从哪个角度展开对飞行的研究？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "i1",
+              "axisLabel": "认知入口",
+              "scoring": {
+                "leftKey": "phenomenon",
+                "leftLabel": "经验现象",
+                "rightKey": "model",
+                "rightLabel": "规律模型"
+              },
+              "options": [
+                {
+                  "id": "holland-i-001-a",
+                  "key": "A",
+                  "label": "先做大量滑翔实验，观察风、纸鸢、滑翔翼和鸟类下落时的轨迹，反复调整翼面、重量和角度",
+                  "riasecWeights": {
+                    "I": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:I:phenomenon",
+                    "research:phenomenon"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "I",
+                    "axisKey": "i1",
+                    "axisLabel": "认知入口",
+                    "side": "left",
+                    "sideKey": "phenomenon",
+                    "sideLabel": "经验现象"
+                  }
+                },
+                {
+                  "id": "holland-i-001-b",
+                  "key": "B",
+                  "label": "先研究飞行背后的基本条件，例如空气流动、升力来源、重心位置和稳定结构",
+                  "riasecWeights": {
+                    "I": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:I:model",
+                    "research:model"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "I",
+                    "axisKey": "i1",
+                    "axisLabel": "认知入口",
+                    "side": "right",
+                    "sideKey": "model",
+                    "sideLabel": "规律模型"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-i-002",
+              "number": 2,
+              "prompt": "如果你是大航海时期一名准备远航北美洲的船长，你更愿意在笔记中留下哪些内容？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "i1",
+              "axisLabel": "认知入口",
+              "scoring": {
+                "leftKey": "phenomenon",
+                "leftLabel": "经验现象",
+                "rightKey": "model",
+                "rightLabel": "规律模型"
+              },
+              "options": [
+                {
+                  "id": "holland-i-002-a",
+                  "key": "A",
+                  "label": "老水手们留下的经验提醒：哪几段海域风向最顺，哪里常有暗流，看到哪些云层和海鸟时应当转向",
+                  "riasecWeights": {
+                    "I": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:I:phenomenon",
+                    "research:phenomenon"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "I",
+                    "axisKey": "i1",
+                    "axisLabel": "认知入口",
+                    "side": "left",
+                    "sideKey": "phenomenon",
+                    "sideLabel": "经验现象"
+                  }
+                },
+                {
+                  "id": "holland-i-002-b",
+                  "key": "B",
+                  "label": "船上科学家使用的定位方法：如何根据太阳高度、北极星位置、罗盘读数和时间差推算船只方位",
+                  "riasecWeights": {
+                    "I": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:I:model",
+                    "research:model"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "I",
+                    "axisKey": "i1",
+                    "axisLabel": "认知入口",
+                    "side": "right",
+                    "sideKey": "model",
+                    "sideLabel": "规律模型"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-i-003",
+              "number": 3,
+              "prompt": "如果你是古代医生，面对一种反复出现的怪病，你更自然的第一步是什么？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "i1",
+              "axisLabel": "认知入口",
+              "scoring": {
+                "leftKey": "phenomenon",
+                "leftLabel": "经验现象",
+                "rightKey": "model",
+                "rightLabel": "规律模型"
+              },
+              "options": [
+                {
+                  "id": "holland-i-003-a",
+                  "key": "A",
+                  "label": "先翻看先辈医案，观察眼前病人与哪些记录相似，再根据饮食、季节、体质和治疗反应慢慢调整判断",
+                  "riasecWeights": {
+                    "I": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:I:phenomenon",
+                    "research:phenomenon"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "I",
+                    "axisKey": "i1",
+                    "axisLabel": "认知入口",
+                    "side": "left",
+                    "sideKey": "phenomenon",
+                    "sideLabel": "经验现象"
+                  }
+                },
+                {
+                  "id": "holland-i-003-b",
+                  "key": "B",
+                  "label": "先比较症状、发病时间、年龄、接触史和生活环境，尝试找出这一类病背后的共同原因",
+                  "riasecWeights": {
+                    "I": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:I:model",
+                    "research:model"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "I",
+                    "axisKey": "i1",
+                    "axisLabel": "认知入口",
+                    "side": "right",
+                    "sideKey": "model",
+                    "sideLabel": "规律模型"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-i-004",
+              "number": 4,
+              "prompt": "如果你要同时学习几门欧洲外语，哪种方式让你感到更舒适？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "i1",
+              "axisLabel": "认知入口",
+              "scoring": {
+                "leftKey": "phenomenon",
+                "leftLabel": "经验现象",
+                "rightKey": "model",
+                "rightLabel": "规律模型"
+              },
+              "options": [
+                {
+                  "id": "holland-i-004-a",
+                  "key": "A",
+                  "label": "先大量听、读，或是和母语者聊天，凭语感、使用场景和相似词形慢慢熟悉",
+                  "riasecWeights": {
+                    "I": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:I:phenomenon",
+                    "research:phenomenon"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "I",
+                    "axisKey": "i1",
+                    "axisLabel": "认知入口",
+                    "side": "left",
+                    "sideKey": "phenomenon",
+                    "sideLabel": "经验现象"
+                  }
+                },
+                {
+                  "id": "holland-i-004-b",
+                  "key": "B",
+                  "label": "总结几类外语共同的词根、形态、语法和发音规则，再把规律迁移到新单词和新句子里",
+                  "riasecWeights": {
+                    "I": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:I:model",
+                    "research:model"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "I",
+                    "axisKey": "i1",
+                    "axisLabel": "认知入口",
+                    "side": "right",
+                    "sideKey": "model",
+                    "sideLabel": "规律模型"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-i-005",
+              "number": 5,
+              "prompt": "你准备买一款号称能提高英语成绩的 AI 学习 App，哪类说明更能帮助你判断它的效果？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "i1",
+              "axisLabel": "认知入口",
+              "scoring": {
+                "leftKey": "phenomenon",
+                "leftLabel": "经验现象",
+                "rightKey": "model",
+                "rightLabel": "规律模型"
+              },
+              "options": [
+                {
+                  "id": "holland-i-005-a",
+                  "key": "A",
+                  "label": "很多学生和老师的真实使用记录：他们在哪些学习场景里用、遇到什么问题、使用过程怎样变化",
+                  "riasecWeights": {
+                    "I": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:I:phenomenon",
+                    "research:phenomenon"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "I",
+                    "axisKey": "i1",
+                    "axisLabel": "认知入口",
+                    "side": "left",
+                    "sideKey": "phenomenon",
+                    "sideLabel": "经验现象"
+                  }
+                },
+                {
+                  "id": "holland-i-005-b",
+                  "key": "B",
+                  "label": "研发团队公开的测试方法、练习前后对比和错误率变化，以及这些变化怎样被记录",
+                  "riasecWeights": {
+                    "I": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:I:model",
+                    "research:model"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "I",
+                    "axisKey": "i1",
+                    "axisLabel": "认知入口",
+                    "side": "right",
+                    "sideKey": "model",
+                    "sideLabel": "规律模型"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "holland-i-section-02",
+          "title": "维度2：探究目标",
+          "mode": "single",
+          "sectionIntro": "基础原创 / 应用求解",
+          "axisKey": "i2",
+          "axisLabel": "探究目标",
+          "leftLabel": "基础原创",
+          "rightLabel": "应用求解",
+          "items": [
+            {
+              "id": "holland-i-006",
+              "number": 1,
+              "prompt": "你在实验室里观察到一种透明塑料遇冷会变硬、变色，但暂时没人知道它有什么用途。你更愿意怎么推进？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "i2",
+              "axisLabel": "探究目标",
+              "scoring": {
+                "leftKey": "original",
+                "leftLabel": "基础原创",
+                "rightKey": "application",
+                "rightLabel": "应用求解"
+              },
+              "options": [
+                {
+                  "id": "holland-i-006-a",
+                  "key": "A",
+                  "label": "把它当成一种异常现象，先追问温度、结构和颜色变化之间的关系",
+                  "riasecWeights": {
+                    "I": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:I:original",
+                    "research:original"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "I",
+                    "axisKey": "i2",
+                    "axisLabel": "探究目标",
+                    "side": "left",
+                    "sideKey": "original",
+                    "sideLabel": "基础原创"
+                  }
+                },
+                {
+                  "id": "holland-i-006-b",
+                  "key": "B",
+                  "label": "尝试控制这个反应，制作低温提醒贴、保鲜包装或课堂实验材料的小样",
+                  "riasecWeights": {
+                    "I": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:I:application",
+                    "research:application"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "I",
+                    "axisKey": "i2",
+                    "axisLabel": "探究目标",
+                    "side": "right",
+                    "sideKey": "application",
+                    "sideLabel": "应用求解"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-i-007",
+              "number": 2,
+              "prompt": "如果你参与一个关于老人记忆力下降的研究项目，哪条路线更吸引你？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "i2",
+              "axisLabel": "探究目标",
+              "scoring": {
+                "leftKey": "original",
+                "leftLabel": "基础原创",
+                "rightKey": "application",
+                "rightLabel": "应用求解"
+              },
+              "options": [
+                {
+                  "id": "holland-i-007-a",
+                  "key": "A",
+                  "label": "研究大脑为什么会逐渐记不住熟悉的人和事，整理记忆变化背后的相关原因",
+                  "riasecWeights": {
+                    "I": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:I:original",
+                    "research:original"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "I",
+                    "axisKey": "i2",
+                    "axisLabel": "探究目标",
+                    "side": "left",
+                    "sideKey": "original",
+                    "sideLabel": "基础原创"
+                  }
+                },
+                {
+                  "id": "holland-i-007-b",
+                  "key": "B",
+                  "label": "改进早期提醒问卷、日常训练步骤和家庭照护工具，记录它们在家里的使用过程",
+                  "riasecWeights": {
+                    "I": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:I:application",
+                    "research:application"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "I",
+                    "axisKey": "i2",
+                    "axisLabel": "探究目标",
+                    "side": "right",
+                    "sideKey": "application",
+                    "sideLabel": "应用求解"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-i-008",
+              "number": 3,
+              "prompt": "当一个 AI 作业批改工具总把某类几何题判错时，你更想先解决哪件事？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "i2",
+              "axisLabel": "探究目标",
+              "scoring": {
+                "leftKey": "original",
+                "leftLabel": "基础原创",
+                "rightKey": "application",
+                "rightLabel": "应用求解"
+              },
+              "options": [
+                {
+                  "id": "holland-i-008-a",
+                  "key": "A",
+                  "label": "追问它为什么会错：是没看懂图形关系、没理解解题步骤，还是评分标准一开始就设得不合适",
+                  "riasecWeights": {
+                    "I": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:I:original",
+                    "research:original"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "I",
+                    "axisKey": "i2",
+                    "axisLabel": "探究目标",
+                    "side": "left",
+                    "sideKey": "original",
+                    "sideLabel": "基础原创"
+                  }
+                },
+                {
+                  "id": "holland-i-008-b",
+                  "key": "B",
+                  "label": "增加同类例题、修改评分规则和提示语，再记录批改前后的差异",
+                  "riasecWeights": {
+                    "I": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:I:application",
+                    "research:application"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "I",
+                    "axisKey": "i2",
+                    "axisLabel": "探究目标",
+                    "side": "right",
+                    "sideKey": "application",
+                    "sideLabel": "应用求解"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-i-009",
+              "number": 4,
+              "prompt": "如果学校附近的小区总在暴雨后积水，你更想把研究重点放在哪里？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "i2",
+              "axisLabel": "探究目标",
+              "scoring": {
+                "leftKey": "original",
+                "leftLabel": "基础原创",
+                "rightKey": "application",
+                "rightLabel": "应用求解"
+              },
+              "options": [
+                {
+                  "id": "holland-i-009-a",
+                  "key": "A",
+                  "label": "研究地面坡度、排水口位置、路面材料和雨量怎样一起造成积水",
+                  "riasecWeights": {
+                    "I": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:I:original",
+                    "research:original"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "I",
+                    "axisKey": "i2",
+                    "axisLabel": "探究目标",
+                    "side": "left",
+                    "sideKey": "original",
+                    "sideLabel": "基础原创"
+                  }
+                },
+                {
+                  "id": "holland-i-009-b",
+                  "key": "B",
+                  "label": "画出清淤路线、积水提醒图和排水口改造草图，列出暴雨前后的检查步骤",
+                  "riasecWeights": {
+                    "I": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:I:application",
+                    "research:application"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "I",
+                    "axisKey": "i2",
+                    "axisLabel": "探究目标",
+                    "side": "right",
+                    "sideKey": "application",
+                    "sideLabel": "应用求解"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-i-010",
+              "number": 5,
+              "prompt": "如果你有三年时间认真追一个问题，哪种结果更接近你想长期投入的方向？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "i2",
+              "axisLabel": "探究目标",
+              "scoring": {
+                "leftKey": "original",
+                "leftLabel": "基础原创",
+                "rightKey": "application",
+                "rightLabel": "应用求解"
+              },
+              "options": [
+                {
+                  "id": "holland-i-010-a",
+                  "key": "A",
+                  "label": "提出一个新概念、新解释或新模型，写清它和旧解释之间的差别",
+                  "riasecWeights": {
+                    "I": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:I:original",
+                    "research:original"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "I",
+                    "axisKey": "i2",
+                    "axisLabel": "探究目标",
+                    "side": "left",
+                    "sideKey": "original",
+                    "sideLabel": "基础原创"
+                  }
+                },
+                {
+                  "id": "holland-i-010-b",
+                  "key": "B",
+                  "label": "把方法整理成面向医生、工程师、老师、企业或公共部门的试用流程和材料",
+                  "riasecWeights": {
+                    "I": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:I:application",
+                    "research:application"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "I",
+                    "axisKey": "i2",
+                    "axisLabel": "探究目标",
+                    "side": "right",
+                    "sideKey": "application",
+                    "sideLabel": "应用求解"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "holland-i-section-03",
+          "title": "维度3：研究承载方式",
+          "mode": "single",
+          "sectionIntro": "深度专精 / 跨域转化",
+          "axisKey": "i3",
+          "axisLabel": "研究承载方式",
+          "leftLabel": "深度专精",
+          "rightLabel": "跨域转化",
+          "items": [
+            {
+              "id": "holland-i-011",
+              "number": 1,
+              "prompt": "大学里有两个长期项目摆在你面前，你更想选哪一个？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "i3",
+              "axisLabel": "研究承载方式",
+              "scoring": {
+                "leftKey": "specialization",
+                "leftLabel": "深度专精",
+                "rightKey": "transfer",
+                "rightLabel": "跨域转化"
+              },
+              "options": [
+                {
+                  "id": "holland-i-011-a",
+                  "key": "A",
+                  "label": "加入一个很专门的小组，几年里围绕同一种材料、数学问题、疾病现象或实验方法不断深挖",
+                  "riasecWeights": {
+                    "I": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:I:specialization",
+                    "research:specialization"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "I",
+                    "axisKey": "i3",
+                    "axisLabel": "研究承载方式",
+                    "side": "left",
+                    "sideKey": "specialization",
+                    "sideLabel": "深度专精"
+                  }
+                },
+                {
+                  "id": "holland-i-011-b",
+                  "key": "B",
+                  "label": "加入一个跨方向项目，和工程、医学、设计或公共事务团队一起整理试用场景和协作清单",
+                  "riasecWeights": {
+                    "I": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:I:transfer",
+                    "research:transfer"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "I",
+                    "axisKey": "i3",
+                    "axisLabel": "研究承载方式",
+                    "side": "right",
+                    "sideKey": "transfer",
+                    "sideLabel": "跨域转化"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-i-012",
+              "number": 2,
+              "prompt": "面对一个很大的难题，比如让 AI 更可靠、让新药更安全、让新能源设备更稳定，你更希望自己扮演什么角色？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "i3",
+              "axisLabel": "研究承载方式",
+              "scoring": {
+                "leftKey": "specialization",
+                "leftLabel": "深度专精",
+                "rightKey": "transfer",
+                "rightLabel": "跨域转化"
+              },
+              "options": [
+                {
+                  "id": "holland-i-012-a",
+                  "key": "A",
+                  "label": "深入其中一个关键小问题，例如 AI 出错原因、药物作用方式、电力设备失灵原因",
+                  "riasecWeights": {
+                    "I": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:I:specialization",
+                    "research:specialization"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "I",
+                    "axisKey": "i3",
+                    "axisLabel": "研究承载方式",
+                    "side": "left",
+                    "sideKey": "specialization",
+                    "sideLabel": "深度专精"
+                  }
+                },
+                {
+                  "id": "holland-i-012-b",
+                  "key": "B",
+                  "label": "把研究人员、工程师、医生、产品团队和使用者放进同一张问题表，安排测试和使用记录",
+                  "riasecWeights": {
+                    "I": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:I:transfer",
+                    "research:transfer"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "I",
+                    "axisKey": "i3",
+                    "axisLabel": "研究承载方式",
+                    "side": "right",
+                    "sideKey": "transfer",
+                    "sideLabel": "跨域转化"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-i-013",
+              "number": 3,
+              "prompt": "如果你读到一篇关于“用电子设备帮助失去行动能力的人重新控制假肢”的长文，最容易让你继续追下去的是什么？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "i3",
+              "axisLabel": "研究承载方式",
+              "scoring": {
+                "leftKey": "specialization",
+                "leftLabel": "深度专精",
+                "rightKey": "transfer",
+                "rightLabel": "跨域转化"
+              },
+              "options": [
+                {
+                  "id": "holland-i-013-a",
+                  "key": "A",
+                  "label": "其中一个技术细节：身体信号的记录方式、错误信号的排除方式、假肢跟随意图移动的过程",
+                  "riasecWeights": {
+                    "I": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:I:specialization",
+                    "research:specialization"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "I",
+                    "axisKey": "i3",
+                    "axisLabel": "研究承载方式",
+                    "side": "left",
+                    "sideKey": "specialization",
+                    "sideLabel": "深度专精"
+                  }
+                },
+                {
+                  "id": "holland-i-013-b",
+                  "key": "B",
+                  "label": "它会怎样进入康复训练、医院使用、产品设计和普通家庭的真实生活",
+                  "riasecWeights": {
+                    "I": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:I:transfer",
+                    "research:transfer"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "I",
+                    "axisKey": "i3",
+                    "axisLabel": "研究承载方式",
+                    "side": "right",
+                    "sideKey": "transfer",
+                    "sideLabel": "跨域转化"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-i-014",
+              "number": 4,
+              "prompt": "如果未来十年都投入一件难事，你理想中的日常更接近哪一种？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "i3",
+              "axisLabel": "研究承载方式",
+              "scoring": {
+                "leftKey": "specialization",
+                "leftLabel": "深度专精",
+                "rightKey": "transfer",
+                "rightLabel": "跨域转化"
+              },
+              "options": [
+                {
+                  "id": "holland-i-014-a",
+                  "key": "A",
+                  "label": "大量阅读资料、做实验、计算、写作和参加讨论，围绕一个方向一点点积累专业判断",
+                  "riasecWeights": {
+                    "I": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:I:specialization",
+                    "research:specialization"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "I",
+                    "axisKey": "i3",
+                    "axisLabel": "研究承载方式",
+                    "side": "left",
+                    "sideKey": "specialization",
+                    "sideLabel": "深度专精"
+                  }
+                },
+                {
+                  "id": "holland-i-014-b",
+                  "key": "B",
+                  "label": "在资料、产品、公共议题、医学、工程或运营团队之间来回翻译问题，整理术语、需求和协作方案",
+                  "riasecWeights": {
+                    "I": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:I:transfer",
+                    "research:transfer"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "I",
+                    "axisKey": "i3",
+                    "axisLabel": "研究承载方式",
+                    "side": "right",
+                    "sideKey": "transfer",
+                    "sideLabel": "跨域转化"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-i-015",
+              "number": 5,
+              "prompt": "当一个新发现要走出实验室时，你更想负责哪一段？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "i3",
+              "axisLabel": "研究承载方式",
+              "scoring": {
+                "leftKey": "specialization",
+                "leftLabel": "深度专精",
+                "rightKey": "transfer",
+                "rightLabel": "跨域转化"
+              },
+              "options": [
+                {
+                  "id": "holland-i-015-a",
+                  "key": "A",
+                  "label": "复核关键实验、计算过程、资料证据和不同解释，整理专业讨论中需要回应的问题",
+                  "riasecWeights": {
+                    "I": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:I:specialization",
+                    "research:specialization"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "I",
+                    "axisKey": "i3",
+                    "axisLabel": "研究承载方式",
+                    "side": "left",
+                    "sideKey": "specialization",
+                    "sideLabel": "深度专精"
+                  }
+                },
+                {
+                  "id": "holland-i-015-b",
+                  "key": "B",
+                  "label": "和工程师、医生、产品经理、政策制定者或用户沟通，改写说明、流程和试用材料",
+                  "riasecWeights": {
+                    "I": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:I:transfer",
+                    "research:transfer"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "I",
+                    "axisKey": "i3",
+                    "axisLabel": "研究承载方式",
+                    "side": "right",
+                    "sideKey": "transfer",
+                    "sideLabel": "跨域转化"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "A": {
+      "code": "A",
+      "label": "艺术型 A",
+      "sourcePath": "docs/Zhiye_Huolande_Doc/艺术型 A 深层测评题目扩展版.md",
+      "sections": [
+        {
+          "id": "holland-a-section-01",
+          "title": "维度1：创作动机",
+          "mode": "single",
+          "sectionIntro": "自我表达 / 共鸣影响",
+          "axisKey": "a1",
+          "axisLabel": "创作动机",
+          "leftLabel": "自我表达",
+          "rightLabel": "共鸣影响",
+          "items": [
+            {
+              "id": "holland-a-001",
+              "number": 1,
+              "prompt": "如果你要拍一段关于“搬家前最后一个晚上”的短片，你更愿意先准备什么？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "a1",
+              "axisLabel": "创作动机",
+              "scoring": {
+                "leftKey": "selfExpression",
+                "leftLabel": "自我表达",
+                "rightKey": "resonanceImpact",
+                "rightLabel": "共鸣影响"
+              },
+              "options": [
+                {
+                  "id": "holland-a-001-a",
+                  "key": "A",
+                  "label": "房间里哪些声音、物品、光线和话没说出口的细节最接近你的感受，再决定哪些放进镜头",
+                  "riasecWeights": {
+                    "A": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:A:selfExpression"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "A",
+                    "axisKey": "a1",
+                    "axisLabel": "创作动机",
+                    "side": "left",
+                    "sideKey": "selfExpression",
+                    "sideLabel": "自我表达"
+                  }
+                },
+                {
+                  "id": "holland-a-001-b",
+                  "key": "B",
+                  "label": "前十秒出现什么画面、标题怎么写、观众先知道什么，以及发布时配哪段介绍文字",
+                  "riasecWeights": {
+                    "A": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:A:resonanceImpact"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "A",
+                    "axisKey": "a1",
+                    "axisLabel": "创作动机",
+                    "side": "right",
+                    "sideKey": "resonanceImpact",
+                    "sideLabel": "共鸣影响"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-a-002",
+              "number": 2,
+              "prompt": "如果你要做一本关于自己常走路线的小册子，第一版你更愿意先保留什么？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "a1",
+              "axisLabel": "创作动机",
+              "scoring": {
+                "leftKey": "selfExpression",
+                "leftLabel": "自我表达",
+                "rightKey": "resonanceImpact",
+                "rightLabel": "共鸣影响"
+              },
+              "options": [
+                {
+                  "id": "holland-a-002-a",
+                  "key": "A",
+                  "label": "路上反复看到的店招、树影、转角、气味和当时写下的几句原话",
+                  "riasecWeights": {
+                    "A": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:A:selfExpression"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "A",
+                    "axisKey": "a1",
+                    "axisLabel": "创作动机",
+                    "side": "left",
+                    "sideKey": "selfExpression",
+                    "sideLabel": "自我表达"
+                  }
+                },
+                {
+                  "id": "holland-a-002-b",
+                  "key": "B",
+                  "label": "封面标题、翻页顺序、每一页的停留点和读者可以留言的位置",
+                  "riasecWeights": {
+                    "A": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:A:resonanceImpact"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "A",
+                    "axisKey": "a1",
+                    "axisLabel": "创作动机",
+                    "side": "right",
+                    "sideKey": "resonanceImpact",
+                    "sideLabel": "共鸣影响"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-a-003",
+              "number": 3,
+              "prompt": "如果你要为一个漫画或游戏设计主角，最先让你动笔的通常是什么？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "a1",
+              "axisLabel": "创作动机",
+              "scoring": {
+                "leftKey": "selfExpression",
+                "leftLabel": "自我表达",
+                "rightKey": "resonanceImpact",
+                "rightLabel": "共鸣影响"
+              },
+              "options": [
+                {
+                  "id": "holland-a-003-a",
+                  "key": "A",
+                  "label": "这个角色反复藏起来的情绪、说话方式、习惯动作和你想保留的生活细节",
+                  "riasecWeights": {
+                    "A": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:A:selfExpression"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "A",
+                    "axisKey": "a1",
+                    "axisLabel": "创作动机",
+                    "side": "left",
+                    "sideKey": "selfExpression",
+                    "sideLabel": "自我表达"
+                  }
+                },
+                {
+                  "id": "holland-a-003-b",
+                  "key": "B",
+                  "label": "读者第一次看到他时的画面、第一句台词、人物介绍页和后续出场顺序",
+                  "riasecWeights": {
+                    "A": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:A:resonanceImpact"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "A",
+                    "axisKey": "a1",
+                    "axisLabel": "创作动机",
+                    "side": "right",
+                    "sideKey": "resonanceImpact",
+                    "sideLabel": "共鸣影响"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-a-004",
+              "number": 4,
+              "prompt": "如果你要做一期关于一首旧歌的播客节目，你更愿意先写哪类内容？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "a1",
+              "axisLabel": "创作动机",
+              "scoring": {
+                "leftKey": "selfExpression",
+                "leftLabel": "自我表达",
+                "rightKey": "resonanceImpact",
+                "rightLabel": "共鸣影响"
+              },
+              "options": [
+                {
+                  "id": "holland-a-004-a",
+                  "key": "A",
+                  "label": "这首歌和哪段记忆、哪种天气、哪次离别或哪一句歌词连在一起",
+                  "riasecWeights": {
+                    "A": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:A:selfExpression"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "A",
+                    "axisKey": "a1",
+                    "axisLabel": "创作动机",
+                    "side": "left",
+                    "sideKey": "selfExpression",
+                    "sideLabel": "自我表达"
+                  }
+                },
+                {
+                  "id": "holland-a-004-b",
+                  "key": "B",
+                  "label": "开场音效、第一段介绍、听众提问、节目标题和发布后的讨论入口",
+                  "riasecWeights": {
+                    "A": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:A:resonanceImpact"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "A",
+                    "axisKey": "a1",
+                    "axisLabel": "创作动机",
+                    "side": "right",
+                    "sideKey": "resonanceImpact",
+                    "sideLabel": "共鸣影响"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-a-005",
+              "number": 5,
+              "prompt": "如果你把一组作品发给朋友看，第一轮反馈你更想收集哪类内容？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "a1",
+              "axisLabel": "创作动机",
+              "scoring": {
+                "leftKey": "selfExpression",
+                "leftLabel": "自我表达",
+                "rightKey": "resonanceImpact",
+                "rightLabel": "共鸣影响"
+              },
+              "options": [
+                {
+                  "id": "holland-a-005-a",
+                  "key": "A",
+                  "label": "对方标出哪些画面、句子、语气和细节让他认出这是你的表达",
+                  "riasecWeights": {
+                    "A": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:A:selfExpression"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "A",
+                    "axisKey": "a1",
+                    "axisLabel": "创作动机",
+                    "side": "left",
+                    "sideKey": "selfExpression",
+                    "sideLabel": "自我表达"
+                  }
+                },
+                {
+                  "id": "holland-a-005-b",
+                  "key": "B",
+                  "label": "对方标出停留最久的位置、转发时会摘哪一句、还想问哪些问题",
+                  "riasecWeights": {
+                    "A": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:A:resonanceImpact"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "A",
+                    "axisKey": "a1",
+                    "axisLabel": "创作动机",
+                    "side": "right",
+                    "sideKey": "resonanceImpact",
+                    "sideLabel": "共鸣影响"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "holland-a-section-02",
+          "title": "维度2：创作方式",
+          "mode": "single",
+          "sectionIntro": "直觉探索 / 结构建构",
+          "axisKey": "a2",
+          "axisLabel": "创作方式",
+          "leftLabel": "直觉探索",
+          "rightLabel": "结构建构",
+          "items": [
+            {
+              "id": "holland-a-006",
+              "number": 1,
+              "prompt": "如果你要做一段城市声音作品，第一天你更愿意怎么开始？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "a2",
+              "axisLabel": "创作方式",
+              "scoring": {
+                "leftKey": "intuitiveExploration",
+                "leftLabel": "直觉探索",
+                "rightKey": "structureBuilding",
+                "rightLabel": "结构建构"
+              },
+              "options": [
+                {
+                  "id": "holland-a-006-a",
+                  "key": "A",
+                  "label": "带着录音设备去地铁口、菜场、天桥和雨棚下试录，边听边剪出几个片段",
+                  "riasecWeights": {
+                    "A": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:A:intuitiveExploration"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "A",
+                    "axisKey": "a2",
+                    "axisLabel": "创作方式",
+                    "side": "left",
+                    "sideKey": "intuitiveExploration",
+                    "sideLabel": "直觉探索"
+                  }
+                },
+                {
+                  "id": "holland-a-006-b",
+                  "key": "B",
+                  "label": "先写清主题、声音类型、采集地点、时长结构、剪辑顺序和完成标准",
+                  "riasecWeights": {
+                    "A": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:A:structureBuilding"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "A",
+                    "axisKey": "a2",
+                    "axisLabel": "创作方式",
+                    "side": "right",
+                    "sideKey": "structureBuilding",
+                    "sideLabel": "结构建构"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-a-007",
+              "number": 2,
+              "prompt": "如果剪片子剪到一半，突然发现一个镜头可以换掉原来的结尾，你更倾向于什么？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "a2",
+              "axisLabel": "创作方式",
+              "scoring": {
+                "leftKey": "intuitiveExploration",
+                "leftLabel": "直觉探索",
+                "rightKey": "structureBuilding",
+                "rightLabel": "结构建构"
+              },
+              "options": [
+                {
+                  "id": "holland-a-007-a",
+                  "key": "A",
+                  "label": "先把这个镜头接进去试一版，记录画面、转折和声音变化",
+                  "riasecWeights": {
+                    "A": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:A:intuitiveExploration"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "A",
+                    "axisKey": "a2",
+                    "axisLabel": "创作方式",
+                    "side": "left",
+                    "sideKey": "intuitiveExploration",
+                    "sideLabel": "直觉探索"
+                  }
+                },
+                {
+                  "id": "holland-a-007-b",
+                  "key": "B",
+                  "label": "先检查故事节奏、视觉风格和交付时间，再决定是否调整结尾",
+                  "riasecWeights": {
+                    "A": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:A:structureBuilding"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "A",
+                    "axisKey": "a2",
+                    "axisLabel": "创作方式",
+                    "side": "right",
+                    "sideKey": "structureBuilding",
+                    "sideLabel": "结构建构"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-a-008",
+              "number": 3,
+              "prompt": "如果你要设计一张桌游地图，第一轮你更愿意怎么推进？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "a2",
+              "axisLabel": "创作方式",
+              "scoring": {
+                "leftKey": "intuitiveExploration",
+                "leftLabel": "直觉探索",
+                "rightKey": "structureBuilding",
+                "rightLabel": "结构建构"
+              },
+              "options": [
+                {
+                  "id": "holland-a-008-a",
+                  "key": "A",
+                  "label": "先用纸片、彩笔和临时标记摆出几种路线，边玩边改山谷、港口和关卡的位置",
+                  "riasecWeights": {
+                    "A": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:A:intuitiveExploration"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "A",
+                    "axisKey": "a2",
+                    "axisLabel": "创作方式",
+                    "side": "left",
+                    "sideKey": "intuitiveExploration",
+                    "sideLabel": "直觉探索"
+                  }
+                },
+                {
+                  "id": "holland-a-008-b",
+                  "key": "B",
+                  "label": "先画格子结构、行动规则、资源点、回合顺序和玩家能看到的信息层级",
+                  "riasecWeights": {
+                    "A": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:A:structureBuilding"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "A",
+                    "axisKey": "a2",
+                    "axisLabel": "创作方式",
+                    "side": "right",
+                    "sideKey": "structureBuilding",
+                    "sideLabel": "结构建构"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-a-009",
+              "number": 4,
+              "prompt": "如果你要学动画分镜，第一周你更愿意怎样练习？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "a2",
+              "axisLabel": "创作方式",
+              "scoring": {
+                "leftKey": "intuitiveExploration",
+                "leftLabel": "直觉探索",
+                "rightKey": "structureBuilding",
+                "rightLabel": "结构建构"
+              },
+              "options": [
+                {
+                  "id": "holland-a-009-a",
+                  "key": "A",
+                  "label": "先临摹几个喜欢的镜头，再改动作、角度和停顿，从很多粗糙版本里找手感",
+                  "riasecWeights": {
+                    "A": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:A:intuitiveExploration"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "A",
+                    "axisKey": "a2",
+                    "axisLabel": "创作方式",
+                    "side": "left",
+                    "sideKey": "intuitiveExploration",
+                    "sideLabel": "直觉探索"
+                  }
+                },
+                {
+                  "id": "holland-a-009-b",
+                  "key": "B",
+                  "label": "先整理镜头景别、运动方向、节奏表和画面转场，再按顺序做完整分镜",
+                  "riasecWeights": {
+                    "A": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:A:structureBuilding"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "A",
+                    "axisKey": "a2",
+                    "axisLabel": "创作方式",
+                    "side": "right",
+                    "sideKey": "structureBuilding",
+                    "sideLabel": "结构建构"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-a-010",
+              "number": 5,
+              "prompt": "如果一个小组要在两周内完成主题展页，你更愿意负责哪种推进方式？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "a2",
+              "axisLabel": "创作方式",
+              "scoring": {
+                "leftKey": "intuitiveExploration",
+                "leftLabel": "直觉探索",
+                "rightKey": "structureBuilding",
+                "rightLabel": "结构建构"
+              },
+              "options": [
+                {
+                  "id": "holland-a-010-a",
+                  "key": "A",
+                  "label": "先做气氛板、色彩试验和几段开场文字，试出这一页的感觉再合并材料",
+                  "riasecWeights": {
+                    "A": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:A:intuitiveExploration"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "A",
+                    "axisKey": "a2",
+                    "axisLabel": "创作方式",
+                    "side": "left",
+                    "sideKey": "intuitiveExploration",
+                    "sideLabel": "直觉探索"
+                  }
+                },
+                {
+                  "id": "holland-a-010-b",
+                  "key": "B",
+                  "label": "先定页面结构、视觉规范、素材清单、分工时间表和每版修改记录",
+                  "riasecWeights": {
+                    "A": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:A:structureBuilding"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "A",
+                    "axisKey": "a2",
+                    "axisLabel": "创作方式",
+                    "side": "right",
+                    "sideKey": "structureBuilding",
+                    "sideLabel": "结构建构"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "holland-a-section-03",
+          "title": "维度3：表达重心",
+          "mode": "single",
+          "sectionIntro": "意义叙事 / 感官体验",
+          "axisKey": "a3",
+          "axisLabel": "表达重心",
+          "leftLabel": "意义叙事",
+          "rightLabel": "感官体验",
+          "items": [
+            {
+              "id": "holland-a-011",
+              "number": 1,
+              "prompt": "如果要表达“一个人放学后不想马上回家”，你更自然的方式是什么？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "a3",
+              "axisLabel": "表达重心",
+              "scoring": {
+                "leftKey": "meaningNarrative",
+                "leftLabel": "意义叙事",
+                "rightKey": "sensoryExperience",
+                "rightLabel": "感官体验"
+              },
+              "options": [
+                {
+                  "id": "holland-a-011-a",
+                  "key": "A",
+                  "label": "写一个迟迟坐在楼梯口的角色、一个没发出去的消息和他回家前发生的几件事",
+                  "riasecWeights": {
+                    "A": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:A:meaningNarrative"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "A",
+                    "axisKey": "a3",
+                    "axisLabel": "表达重心",
+                    "side": "left",
+                    "sideKey": "meaningNarrative",
+                    "sideLabel": "意义叙事"
+                  }
+                },
+                {
+                  "id": "holland-a-011-b",
+                  "key": "B",
+                  "label": "布置冷色灯光、空走廊、远处噪声和缓慢镜头，再调整观看时的停顿",
+                  "riasecWeights": {
+                    "A": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:A:sensoryExperience"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "A",
+                    "axisKey": "a3",
+                    "axisLabel": "表达重心",
+                    "side": "right",
+                    "sideKey": "sensoryExperience",
+                    "sideLabel": "感官体验"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-a-012",
+              "number": 2,
+              "prompt": "如果你要做一个“雨夜车站”的小展区，你更愿意把中心放在哪里？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "a3",
+              "axisLabel": "表达重心",
+              "scoring": {
+                "leftKey": "meaningNarrative",
+                "leftLabel": "意义叙事",
+                "rightKey": "sensoryExperience",
+                "rightLabel": "感官体验"
+              },
+              "options": [
+                {
+                  "id": "holland-a-012-a",
+                  "key": "A",
+                  "label": "车站里谁在等谁、为什么错过、留言纸条写了什么，以及几段关系怎样串起来",
+                  "riasecWeights": {
+                    "A": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:A:meaningNarrative"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "A",
+                    "axisKey": "a3",
+                    "axisLabel": "表达重心",
+                    "side": "left",
+                    "sideKey": "meaningNarrative",
+                    "sideLabel": "意义叙事"
+                  }
+                },
+                {
+                  "id": "holland-a-012-b",
+                  "key": "B",
+                  "label": "湿地面的反光、广播声、雨伞材质、座椅温度、灯光距离和观众行走路线",
+                  "riasecWeights": {
+                    "A": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:A:sensoryExperience"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "A",
+                    "axisKey": "a3",
+                    "axisLabel": "表达重心",
+                    "side": "right",
+                    "sideKey": "sensoryExperience",
+                    "sideLabel": "感官体验"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-a-013",
+              "number": 3,
+              "prompt": "如果你参与设计一个游戏关卡，你最想负责哪一部分？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "a3",
+              "axisLabel": "表达重心",
+              "scoring": {
+                "leftKey": "meaningNarrative",
+                "leftLabel": "意义叙事",
+                "rightKey": "sensoryExperience",
+                "rightLabel": "感官体验"
+              },
+              "options": [
+                {
+                  "id": "holland-a-013-a",
+                  "key": "A",
+                  "label": "负责关卡背景、角色目标、线索文本和玩家为什么走到这里",
+                  "riasecWeights": {
+                    "A": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:A:meaningNarrative"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "A",
+                    "axisKey": "a3",
+                    "axisLabel": "表达重心",
+                    "side": "left",
+                    "sideKey": "meaningNarrative",
+                    "sideLabel": "意义叙事"
+                  }
+                },
+                {
+                  "id": "holland-a-013-b",
+                  "key": "B",
+                  "label": "负责场景颜色、镜头距离、脚步声、机关反馈和玩家触碰物体时的感觉",
+                  "riasecWeights": {
+                    "A": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:A:sensoryExperience"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "A",
+                    "axisKey": "a3",
+                    "axisLabel": "表达重心",
+                    "side": "right",
+                    "sideKey": "sensoryExperience",
+                    "sideLabel": "感官体验"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-a-014",
+              "number": 4,
+              "prompt": "如果观众看完你的作品后写反馈，你更想收集哪一类记录？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "a3",
+              "axisLabel": "表达重心",
+              "scoring": {
+                "leftKey": "meaningNarrative",
+                "leftLabel": "意义叙事",
+                "rightKey": "sensoryExperience",
+                "rightLabel": "感官体验"
+              },
+              "options": [
+                {
+                  "id": "holland-a-014-a",
+                  "key": "A",
+                  "label": "他们怎样复述主题、关系和观点，以及标出的关键段落",
+                  "riasecWeights": {
+                    "A": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:A:meaningNarrative"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "A",
+                    "axisKey": "a3",
+                    "axisLabel": "表达重心",
+                    "side": "left",
+                    "sideKey": "meaningNarrative",
+                    "sideLabel": "意义叙事"
+                  }
+                },
+                {
+                  "id": "holland-a-014-b",
+                  "key": "B",
+                  "label": "他们怎样描述颜色、声音、空间和细节，以及停留最久的位置",
+                  "riasecWeights": {
+                    "A": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:A:sensoryExperience"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "A",
+                    "axisKey": "a3",
+                    "axisLabel": "表达重心",
+                    "side": "right",
+                    "sideKey": "sensoryExperience",
+                    "sideLabel": "感官体验"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-a-015",
+              "number": 5,
+              "prompt": "如果给你一年时间认真做一件完整作品，你更想做什么？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "a3",
+              "axisLabel": "表达重心",
+              "scoring": {
+                "leftKey": "meaningNarrative",
+                "leftLabel": "意义叙事",
+                "rightKey": "sensoryExperience",
+                "rightLabel": "感官体验"
+              },
+              "options": [
+                {
+                  "id": "holland-a-015-a",
+                  "key": "A",
+                  "label": "做一个有主题、角色、文本和世界观的长项目，反复修改里面的关系线索和结尾",
+                  "riasecWeights": {
+                    "A": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:A:meaningNarrative"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "A",
+                    "axisKey": "a3",
+                    "axisLabel": "表达重心",
+                    "side": "left",
+                    "sideKey": "meaningNarrative",
+                    "sideLabel": "意义叙事"
+                  }
+                },
+                {
+                  "id": "holland-a-015-b",
+                  "key": "B",
+                  "label": "做一个包含视觉、空间、声音、交互或材质的体验，反复调整进入、停留和离开的感受",
+                  "riasecWeights": {
+                    "A": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:A:sensoryExperience"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "A",
+                    "axisKey": "a3",
+                    "axisLabel": "表达重心",
+                    "side": "right",
+                    "sideKey": "sensoryExperience",
+                    "sideLabel": "感官体验"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "S": {
+      "code": "S",
+      "label": "社会型 S",
+      "sourcePath": "docs/Zhiye_Huolande_Doc/社会型人格深度测评题目文档.md",
+      "sections": [
+        {
+          "id": "holland-s-section-01",
+          "title": "维度1：底层目的",
+          "mode": "single",
+          "sectionIntro": "人本关怀 / 社会影响",
+          "axisKey": "s1",
+          "axisLabel": "底层目的",
+          "leftLabel": "人本关怀",
+          "rightLabel": "社会影响",
+          "items": [
+            {
+              "id": "holland-s-001",
+              "number": 1,
+              "prompt": "如果暴雨后车站临时滞留了很多学生和家长，你更愿意先做什么？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "s1",
+              "axisLabel": "底层目的",
+              "scoring": {
+                "leftKey": "humanCare",
+                "leftLabel": "人本关怀",
+                "rightKey": "socialImpact",
+                "rightLabel": "社会影响"
+              },
+              "options": [
+                {
+                  "id": "holland-s-001-a",
+                  "key": "A",
+                  "label": "留意一个一直不说话、脸色发白的同学，坐到旁边问他冷不冷、有没有联系到家里、现在最担心什么",
+                  "riasecWeights": {
+                    "S": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:S:humanCare"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "S",
+                    "axisKey": "s1",
+                    "axisLabel": "底层目的",
+                    "side": "left",
+                    "sideKey": "humanCare",
+                    "sideLabel": "人本关怀"
+                  }
+                },
+                {
+                  "id": "holland-s-001-b",
+                  "key": "B",
+                  "label": "整理滞留人数、车次变化、雨具位置和家长通知，把临时等候区和离站方式写成一条清楚信息",
+                  "riasecWeights": {
+                    "S": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:S:socialImpact"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "S",
+                    "axisKey": "s1",
+                    "axisLabel": "底层目的",
+                    "side": "right",
+                    "sideKey": "socialImpact",
+                    "sideLabel": "社会影响"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-s-002",
+              "number": 2,
+              "prompt": "如果班里新转来几位同学，班主任请你参与适应支持，你更愿意先记录什么？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "s1",
+              "axisLabel": "底层目的",
+              "scoring": {
+                "leftKey": "humanCare",
+                "leftLabel": "人本关怀",
+                "rightKey": "socialImpact",
+                "rightLabel": "社会影响"
+              },
+              "options": [
+                {
+                  "id": "holland-s-002-a",
+                  "key": "A",
+                  "label": "其中一两位同学什么时候躲在人群外、午饭坐在哪里、哪些课跟不上、最近有没有主动开口",
+                  "riasecWeights": {
+                    "S": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:S:humanCare"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "S",
+                    "axisKey": "s1",
+                    "axisLabel": "底层目的",
+                    "side": "left",
+                    "sideKey": "humanCare",
+                    "sideLabel": "人本关怀"
+                  }
+                },
+                {
+                  "id": "holland-s-002-b",
+                  "key": "B",
+                  "label": "转学生常问的问题、班级资料入口、同伴结对名单、每周答疑时间和可以求助的联系人",
+                  "riasecWeights": {
+                    "S": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:S:socialImpact"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "S",
+                    "axisKey": "s1",
+                    "axisLabel": "底层目的",
+                    "side": "right",
+                    "sideKey": "socialImpact",
+                    "sideLabel": "社会影响"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-s-003",
+              "number": 3,
+              "prompt": "如果社区想了解老人去医院路上最不方便的地方，你更愿意先收集哪类材料？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "s1",
+              "axisLabel": "底层目的",
+              "scoring": {
+                "leftKey": "humanCare",
+                "leftLabel": "人本关怀",
+                "rightKey": "socialImpact",
+                "rightLabel": "社会影响"
+              },
+              "options": [
+                {
+                  "id": "holland-s-003-a",
+                  "key": "A",
+                  "label": "几位老人从出门、等车、挂号到回家时分别卡在哪里，当时身边有没有人可以问",
+                  "riasecWeights": {
+                    "S": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:S:humanCare"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "S",
+                    "axisKey": "s1",
+                    "axisLabel": "底层目的",
+                    "side": "left",
+                    "sideKey": "humanCare",
+                    "sideLabel": "人本关怀"
+                  }
+                },
+                {
+                  "id": "holland-s-003-b",
+                  "key": "B",
+                  "label": "常见路线、等车时间、挂号入口、无障碍位置和反复出现的提醒缺口",
+                  "riasecWeights": {
+                    "S": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:S:socialImpact"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "S",
+                    "axisKey": "s1",
+                    "axisLabel": "底层目的",
+                    "side": "right",
+                    "sideKey": "socialImpact",
+                    "sideLabel": "社会影响"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-s-004",
+              "number": 4,
+              "prompt": "如果一个临时安置点里来了几户刚转移出来的家庭，你更愿意先看什么？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "s1",
+              "axisLabel": "底层目的",
+              "scoring": {
+                "leftKey": "humanCare",
+                "leftLabel": "人本关怀",
+                "rightKey": "socialImpact",
+                "rightLabel": "社会影响"
+              },
+              "options": [
+                {
+                  "id": "holland-s-004-a",
+                  "key": "A",
+                  "label": "哪个孩子一直抱着书包、哪位老人反复问同一个问题、哪户家庭还没有找到熟人",
+                  "riasecWeights": {
+                    "S": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:S:humanCare"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "S",
+                    "axisKey": "s1",
+                    "axisLabel": "底层目的",
+                    "side": "left",
+                    "sideKey": "humanCare",
+                    "sideLabel": "人本关怀"
+                  }
+                },
+                {
+                  "id": "holland-s-004-b",
+                  "key": "B",
+                  "label": "登记入口、物资领取、休息区、咨询台和特殊需求标记是否能覆盖每户家庭",
+                  "riasecWeights": {
+                    "S": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:S:socialImpact"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "S",
+                    "axisKey": "s1",
+                    "axisLabel": "底层目的",
+                    "side": "right",
+                    "sideKey": "socialImpact",
+                    "sideLabel": "社会影响"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-s-005",
+              "number": 5,
+              "prompt": "如果你用一学期改善一件身边的小事，你更愿意把时间放在哪里？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "s1",
+              "axisLabel": "底层目的",
+              "scoring": {
+                "leftKey": "humanCare",
+                "leftLabel": "人本关怀",
+                "rightKey": "socialImpact",
+                "rightLabel": "社会影响"
+              },
+              "options": [
+                {
+                  "id": "holland-s-005-a",
+                  "key": "A",
+                  "label": "每周固定跟两三个适应困难的同学聊天，记录他们在上课、午饭、社交和回家路上的具体卡点",
+                  "riasecWeights": {
+                    "S": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:S:humanCare"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "S",
+                    "axisKey": "s1",
+                    "axisLabel": "底层目的",
+                    "side": "left",
+                    "sideKey": "humanCare",
+                    "sideLabel": "人本关怀"
+                  }
+                },
+                {
+                  "id": "holland-s-005-b",
+                  "key": "B",
+                  "label": "建一个同伴答疑入口、资料共享页和新生结对安排，记录哪些问题反复出现",
+                  "riasecWeights": {
+                    "S": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:S:socialImpact"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "S",
+                    "axisKey": "s1",
+                    "axisLabel": "底层目的",
+                    "side": "right",
+                    "sideKey": "socialImpact",
+                    "sideLabel": "社会影响"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "holland-s-section-02",
+          "title": "维度2：介入方式",
+          "mode": "single",
+          "sectionIntro": "共情陪伴 / 结构化建构",
+          "axisKey": "s2",
+          "axisLabel": "介入方式",
+          "leftLabel": "共情陪伴",
+          "rightLabel": "结构化建构",
+          "items": [
+            {
+              "id": "holland-s-006",
+              "number": 1,
+              "prompt": "如果好朋友比赛失利后一直说“我太差了”，你更自然的反应是什么？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "s2",
+              "axisLabel": "介入方式",
+              "scoring": {
+                "leftKey": "empathicCompanion",
+                "leftLabel": "共情陪伴",
+                "rightKey": "structuredConstruction",
+                "rightLabel": "结构化建构"
+              },
+              "options": [
+                {
+                  "id": "holland-s-006-a",
+                  "key": "A",
+                  "label": "先听他把委屈和不甘慢慢说完，不急着纠正，再复述你听到的几个重点",
+                  "riasecWeights": {
+                    "S": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:S:empathicCompanion"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "S",
+                    "axisKey": "s2",
+                    "axisLabel": "介入方式",
+                    "side": "left",
+                    "sideKey": "empathicCompanion",
+                    "sideLabel": "共情陪伴"
+                  }
+                },
+                {
+                  "id": "holland-s-006-b",
+                  "key": "B",
+                  "label": "陪他把复盘、请教、练习和下一场报名拆成几步，写下明天要做的一件事",
+                  "riasecWeights": {
+                    "S": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:S:structuredConstruction"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "S",
+                    "axisKey": "s2",
+                    "axisLabel": "介入方式",
+                    "side": "right",
+                    "sideKey": "structuredConstruction",
+                    "sideLabel": "结构化建构"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-s-007",
+              "number": 2,
+              "prompt": "如果同桌最近作业总是拖到很晚，成绩也往下掉，你会先做什么？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "s2",
+              "axisLabel": "介入方式",
+              "scoring": {
+                "leftKey": "empathicCompanion",
+                "leftLabel": "共情陪伴",
+                "rightKey": "structuredConstruction",
+                "rightLabel": "结构化建构"
+              },
+              "options": [
+                {
+                  "id": "holland-s-007-a",
+                  "key": "A",
+                  "label": "找个不被打扰的时间聊聊，看看他是不是睡不好、心里有事，还是不敢说自己已经跟不上",
+                  "riasecWeights": {
+                    "S": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:S:empathicCompanion"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "S",
+                    "axisKey": "s2",
+                    "axisLabel": "介入方式",
+                    "side": "left",
+                    "sideKey": "empathicCompanion",
+                    "sideLabel": "共情陪伴"
+                  }
+                },
+                {
+                  "id": "holland-s-007-b",
+                  "key": "B",
+                  "label": "跟他一起翻错题、作业和复习时间，排一张一周小计划",
+                  "riasecWeights": {
+                    "S": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:S:structuredConstruction"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "S",
+                    "axisKey": "s2",
+                    "axisLabel": "介入方式",
+                    "side": "right",
+                    "sideKey": "structuredConstruction",
+                    "sideLabel": "结构化建构"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-s-008",
+              "number": 3,
+              "prompt": "如果你参加一门沟通训练课，老师要求每个人做一次模拟谈话，你更愿意练哪类动作？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "s2",
+              "axisLabel": "介入方式",
+              "scoring": {
+                "leftKey": "empathicCompanion",
+                "leftLabel": "共情陪伴",
+                "rightKey": "structuredConstruction",
+                "rightLabel": "结构化建构"
+              },
+              "options": [
+                {
+                  "id": "holland-s-008-a",
+                  "key": "A",
+                  "label": "练习怎样听出对方卡住的地方，什么时候停顿、复述、追问，怎样回应对方的情绪词",
+                  "riasecWeights": {
+                    "S": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:S:empathicCompanion"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "S",
+                    "axisKey": "s2",
+                    "axisLabel": "介入方式",
+                    "side": "left",
+                    "sideKey": "empathicCompanion",
+                    "sideLabel": "共情陪伴"
+                  }
+                },
+                {
+                  "id": "holland-s-008-b",
+                  "key": "B",
+                  "label": "设计谈话提问顺序、练习任务、反馈表和复盘方式，再写出谈话后的行动清单",
+                  "riasecWeights": {
+                    "S": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:S:structuredConstruction"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "S",
+                    "axisKey": "s2",
+                    "axisLabel": "介入方式",
+                    "side": "right",
+                    "sideKey": "structuredConstruction",
+                    "sideLabel": "结构化建构"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-s-009",
+              "number": 4,
+              "prompt": "如果家里为假期安排吵起来了，每个人都觉得自己没被听见，你会更想先做哪件事？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "s2",
+              "axisLabel": "介入方式",
+              "scoring": {
+                "leftKey": "empathicCompanion",
+                "leftLabel": "共情陪伴",
+                "rightKey": "structuredConstruction",
+                "rightLabel": "结构化建构"
+              },
+              "options": [
+                {
+                  "id": "holland-s-009-a",
+                  "key": "A",
+                  "label": "安排每个人轮流说最在意、最委屈的地方，记录重复出现的分歧",
+                  "riasecWeights": {
+                    "S": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:S:empathicCompanion"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "S",
+                    "axisKey": "s2",
+                    "axisLabel": "介入方式",
+                    "side": "left",
+                    "sideKey": "empathicCompanion",
+                    "sideLabel": "共情陪伴"
+                  }
+                },
+                {
+                  "id": "holland-s-009-b",
+                  "key": "B",
+                  "label": "把预算、时间、分工和决定规则列清楚，约好之后怎么改、谁来确认",
+                  "riasecWeights": {
+                    "S": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:S:structuredConstruction"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "S",
+                    "axisKey": "s2",
+                    "axisLabel": "介入方式",
+                    "side": "right",
+                    "sideKey": "structuredConstruction",
+                    "sideLabel": "结构化建构"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-s-010",
+              "number": 5,
+              "prompt": "如果社团来了很多新人，但第一次开会时大家都不太说话，你更愿意先做什么？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "s2",
+              "axisLabel": "介入方式",
+              "scoring": {
+                "leftKey": "empathicCompanion",
+                "leftLabel": "共情陪伴",
+                "rightKey": "structuredConstruction",
+                "rightLabel": "结构化建构"
+              },
+              "options": [
+                {
+                  "id": "holland-s-010-a",
+                  "key": "A",
+                  "label": "先安排小组聊天、轻松提问和轮流分享，记录新人提到的兴趣和顾虑",
+                  "riasecWeights": {
+                    "S": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:S:empathicCompanion"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "S",
+                    "axisKey": "s2",
+                    "axisLabel": "介入方式",
+                    "side": "left",
+                    "sideKey": "empathicCompanion",
+                    "sideLabel": "共情陪伴"
+                  }
+                },
+                {
+                  "id": "holland-s-010-b",
+                  "key": "B",
+                  "label": "把事情拆成任务：谁联系场地、谁整理意见、谁做海报、什么时候同步进度",
+                  "riasecWeights": {
+                    "S": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:S:structuredConstruction"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "S",
+                    "axisKey": "s2",
+                    "axisLabel": "介入方式",
+                    "side": "right",
+                    "sideKey": "structuredConstruction",
+                    "sideLabel": "结构化建构"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "holland-s-section-03",
+          "title": "维度3：工作半径",
+          "mode": "single",
+          "sectionIntro": "个体深度 / 群体系统",
+          "axisKey": "s3",
+          "axisLabel": "工作半径",
+          "leftLabel": "个体深度",
+          "rightLabel": "群体系统",
+          "items": [
+            {
+              "id": "holland-s-011",
+              "number": 1,
+              "prompt": "如果学校想做一个新生适应计划，你更愿意负责哪一部分？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "s3",
+              "axisLabel": "工作半径",
+              "scoring": {
+                "leftKey": "individualDepth",
+                "leftLabel": "个体深度",
+                "rightKey": "groupSystem",
+                "rightLabel": "群体系统"
+              },
+              "options": [
+                {
+                  "id": "holland-s-011-a",
+                  "key": "A",
+                  "label": "长期跟进一两个特别不适应的新同学，记录他们的节奏、关系和每周变化",
+                  "riasecWeights": {
+                    "S": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:S:individualDepth"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "S",
+                    "axisKey": "s3",
+                    "axisLabel": "工作半径",
+                    "side": "left",
+                    "sideKey": "individualDepth",
+                    "sideLabel": "个体深度"
+                  }
+                },
+                {
+                  "id": "holland-s-011-b",
+                  "key": "B",
+                  "label": "设计提问入口、同伴互助、主题活动和信息整理方式，再做一张入口说明图",
+                  "riasecWeights": {
+                    "S": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:S:groupSystem"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "S",
+                    "axisKey": "s3",
+                    "axisLabel": "工作半径",
+                    "side": "right",
+                    "sideKey": "groupSystem",
+                    "sideLabel": "群体系统"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-s-012",
+              "number": 2,
+              "prompt": "如果一所社区图书室想把周末阅读活动固定下来，你更愿意承担哪类角色？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "s3",
+              "axisLabel": "工作半径",
+              "scoring": {
+                "leftKey": "individualDepth",
+                "leftLabel": "个体深度",
+                "rightKey": "groupSystem",
+                "rightLabel": "群体系统"
+              },
+              "options": [
+                {
+                  "id": "holland-s-012-a",
+                  "key": "A",
+                  "label": "长期陪几个不太敢开口的孩子读书，记录他们选书、朗读和提问时的变化",
+                  "riasecWeights": {
+                    "S": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:S:individualDepth"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "S",
+                    "axisKey": "s3",
+                    "axisLabel": "工作半径",
+                    "side": "left",
+                    "sideKey": "individualDepth",
+                    "sideLabel": "个体深度"
+                  }
+                },
+                {
+                  "id": "holland-s-012-b",
+                  "key": "B",
+                  "label": "设计报名入口、志愿者轮值、借书记录、家长通知和每月阅读主题表",
+                  "riasecWeights": {
+                    "S": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:S:groupSystem"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "S",
+                    "axisKey": "s3",
+                    "axisLabel": "工作半径",
+                    "side": "right",
+                    "sideKey": "groupSystem",
+                    "sideLabel": "群体系统"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-s-013",
+              "number": 3,
+              "prompt": "如果家里长辈和邻居老人总觉得手机办事很难，你更想做什么？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "s3",
+              "axisLabel": "工作半径",
+              "scoring": {
+                "leftKey": "individualDepth",
+                "leftLabel": "个体深度",
+                "rightKey": "groupSystem",
+                "rightLabel": "群体系统"
+              },
+              "options": [
+                {
+                  "id": "holland-s-013-a",
+                  "key": "A",
+                  "label": "固定教几位老人怎么挂号、看消息、付车费，记下他们各自最怕出错的步骤",
+                  "riasecWeights": {
+                    "S": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:S:individualDepth"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "S",
+                    "axisKey": "s3",
+                    "axisLabel": "工作半径",
+                    "side": "left",
+                    "sideKey": "individualDepth",
+                    "sideLabel": "个体深度"
+                  }
+                },
+                {
+                  "id": "holland-s-013-b",
+                  "key": "B",
+                  "label": "做一份大字版步骤卡、答疑时间表和互助联系人名单，贴在楼道公告栏",
+                  "riasecWeights": {
+                    "S": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:S:groupSystem"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "S",
+                    "axisKey": "s3",
+                    "axisLabel": "工作半径",
+                    "side": "right",
+                    "sideKey": "groupSystem",
+                    "sideLabel": "群体系统"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-s-014",
+              "number": 4,
+              "prompt": "如果你参与一个课后学习支持项目，你更愿意把精力放在哪里？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "s3",
+              "axisLabel": "工作半径",
+              "scoring": {
+                "leftKey": "individualDepth",
+                "leftLabel": "个体深度",
+                "rightKey": "groupSystem",
+                "rightLabel": "群体系统"
+              },
+              "options": [
+                {
+                  "id": "holland-s-014-a",
+                  "key": "A",
+                  "label": "长期跟一个原本不敢开口问问题的人练习，把每次卡住的地方和开口方式写下来",
+                  "riasecWeights": {
+                    "S": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:S:individualDepth"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "S",
+                    "axisKey": "s3",
+                    "axisLabel": "工作半径",
+                    "side": "left",
+                    "sideKey": "individualDepth",
+                    "sideLabel": "个体深度"
+                  }
+                },
+                {
+                  "id": "holland-s-014-b",
+                  "key": "B",
+                  "label": "整理错题分类、学习小组安排、提问入口和每周反馈节奏，按表格持续更新",
+                  "riasecWeights": {
+                    "S": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:S:groupSystem"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "S",
+                    "axisKey": "s3",
+                    "axisLabel": "工作半径",
+                    "side": "right",
+                    "sideKey": "groupSystem",
+                    "sideLabel": "群体系统"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-s-015",
+              "number": 5,
+              "prompt": "如果外出比赛当天，队伍遇到证件遗失、天气变化和家长催问，你更愿意做什么？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "s3",
+              "axisLabel": "工作半径",
+              "scoring": {
+                "leftKey": "individualDepth",
+                "leftLabel": "个体深度",
+                "rightKey": "groupSystem",
+                "rightLabel": "群体系统"
+              },
+              "options": [
+                {
+                  "id": "holland-s-015-a",
+                  "key": "A",
+                  "label": "陪那个最慌的人先坐下来，帮他回想证件出现过的位置、联系对象和查找顺序",
+                  "riasecWeights": {
+                    "S": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:S:individualDepth"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "S",
+                    "axisKey": "s3",
+                    "axisLabel": "工作半径",
+                    "side": "left",
+                    "sideKey": "individualDepth",
+                    "sideLabel": "个体深度"
+                  }
+                },
+                {
+                  "id": "holland-s-015-b",
+                  "key": "B",
+                  "label": "整理名单、时间、备用路线和通知口径，按新的安排重新分组",
+                  "riasecWeights": {
+                    "S": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:S:groupSystem"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "S",
+                    "axisKey": "s3",
+                    "axisLabel": "工作半径",
+                    "side": "right",
+                    "sideKey": "groupSystem",
+                    "sideLabel": "群体系统"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "E": {
+      "code": "E",
+      "label": "企业型 E",
+      "sourcePath": "docs/Zhiye_Huolande_Doc/enterprise_personality_assessment.md",
+      "sections": [
+        {
+          "id": "holland-e-section-01",
+          "title": "维度1：影响方式",
+          "mode": "single",
+          "sectionIntro": "资源掌控 / 愿景动员",
+          "axisKey": "e1",
+          "axisLabel": "影响方式",
+          "leftLabel": "资源掌控",
+          "rightLabel": "愿景动员",
+          "items": [
+            {
+              "id": "holland-e-001",
+              "number": 1,
+              "prompt": "如果你负责把一座废弃灯塔开放成周末参观点，试运行只有两周，你更愿意先准备什么？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "e1",
+              "axisLabel": "影响方式",
+              "scoring": {
+                "leftKey": "resourceControl",
+                "leftLabel": "资源掌控",
+                "rightKey": "visionMobilization",
+                "rightLabel": "愿景动员"
+              },
+              "options": [
+                {
+                  "id": "holland-e-001-a",
+                  "key": "A",
+                  "label": "港口管理处联系人、保险联系人、值守志愿者、急救点位置，以及开放时段、登塔人数、收费方式和安全责任表",
+                  "riasecWeights": {
+                    "E": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:E:resourceControl"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "E",
+                    "axisKey": "e1",
+                    "axisLabel": "影响方式",
+                    "side": "left",
+                    "sideKey": "resourceControl",
+                    "sideLabel": "资源掌控"
+                  }
+                },
+                {
+                  "id": "holland-e-001-b",
+                  "key": "B",
+                  "label": "灯塔参观路线、第一段讲解词、志愿者招募文案、游客进门前听到的说明和离开时看到的留言板",
+                  "riasecWeights": {
+                    "E": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:E:visionMobilization"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "E",
+                    "axisKey": "e1",
+                    "axisLabel": "影响方式",
+                    "side": "right",
+                    "sideKey": "visionMobilization",
+                    "sideLabel": "愿景动员"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-e-002",
+              "number": 2,
+              "prompt": "如果你参与一场小陨石夜间导览，展品只借来三天，第一版方案你更愿意先写什么？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "e1",
+              "axisLabel": "影响方式",
+              "scoring": {
+                "leftKey": "resourceControl",
+                "leftLabel": "资源掌控",
+                "rightKey": "visionMobilization",
+                "rightLabel": "愿景动员"
+              },
+              "options": [
+                {
+                  "id": "holland-e-002-a",
+                  "key": "A",
+                  "label": "展柜要求、保管责任、讲解员名单、预约人数、入场批次和闭馆后的物品交接方式",
+                  "riasecWeights": {
+                    "E": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:E:resourceControl"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "E",
+                    "axisKey": "e1",
+                    "axisLabel": "影响方式",
+                    "side": "left",
+                    "sideKey": "resourceControl",
+                    "sideLabel": "资源掌控"
+                  }
+                },
+                {
+                  "id": "holland-e-002-b",
+                  "key": "B",
+                  "label": "导览主题、观众进入展厅后的第一句话、三段讲解顺序和最后邀请提问的方式",
+                  "riasecWeights": {
+                    "E": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:E:visionMobilization"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "E",
+                    "axisKey": "e1",
+                    "axisLabel": "影响方式",
+                    "side": "right",
+                    "sideKey": "visionMobilization",
+                    "sideLabel": "愿景动员"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-e-003",
+              "number": 3,
+              "prompt": "如果你是丝绸之路上一名准备重启冬季商队的队长，你更愿意在出发前留下哪些安排？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "e1",
+              "axisLabel": "影响方式",
+              "scoring": {
+                "leftKey": "resourceControl",
+                "leftLabel": "资源掌控",
+                "rightKey": "visionMobilization",
+                "rightLabel": "愿景动员"
+              },
+              "options": [
+                {
+                  "id": "holland-e-003-a",
+                  "key": "A",
+                  "label": "马车数量、粮草存量、可借仓库、通行文书、护送人手、沿路补给点和抵达后的货物交接人",
+                  "riasecWeights": {
+                    "E": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:E:resourceControl"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "E",
+                    "axisKey": "e1",
+                    "axisLabel": "影响方式",
+                    "side": "left",
+                    "sideKey": "resourceControl",
+                    "sideLabel": "资源掌控"
+                  }
+                },
+                {
+                  "id": "holland-e-003-b",
+                  "key": "B",
+                  "label": "商队告示、出发前讲话、路线故事、旅人须知、集合说明和给新成员的任务介绍",
+                  "riasecWeights": {
+                    "E": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:E:visionMobilization"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "E",
+                    "axisKey": "e1",
+                    "axisLabel": "影响方式",
+                    "side": "right",
+                    "sideKey": "visionMobilization",
+                    "sideLabel": "愿景动员"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-e-004",
+              "number": 4,
+              "prompt": "如果你要向公益基金会介绍一个城市降温项目，而对方只给十分钟，你更愿意先讲哪类内容？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "e1",
+              "axisLabel": "影响方式",
+              "scoring": {
+                "leftKey": "resourceControl",
+                "leftLabel": "资源掌控",
+                "rightKey": "visionMobilization",
+                "rightLabel": "愿景动员"
+              },
+              "options": [
+                {
+                  "id": "holland-e-004-a",
+                  "key": "A",
+                  "label": "说明已有成员、合作社区、预算缺口、树荫测量点、志愿者时段和基金会可以提供的资源项",
+                  "riasecWeights": {
+                    "E": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:E:resourceControl"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "E",
+                    "axisKey": "e1",
+                    "axisLabel": "影响方式",
+                    "side": "left",
+                    "sideKey": "resourceControl",
+                    "sideLabel": "资源掌控"
+                  }
+                },
+                {
+                  "id": "holland-e-004-b",
+                  "key": "B",
+                  "label": "说明热浪中的老人、骑车学生和户外摊主会遇到什么处境，再讲项目名称、参与角色和第一次街区行动",
+                  "riasecWeights": {
+                    "E": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:E:visionMobilization"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "E",
+                    "axisKey": "e1",
+                    "axisLabel": "影响方式",
+                    "side": "right",
+                    "sideKey": "visionMobilization",
+                    "sideLabel": "愿景动员"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-e-005",
+              "number": 5,
+              "prompt": "如果你接手一个很多同学都在用的线上知识地图，而原作者已经毕业，你更愿意先整理什么？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "e1",
+              "axisLabel": "影响方式",
+              "scoring": {
+                "leftKey": "resourceControl",
+                "leftLabel": "资源掌控",
+                "rightKey": "visionMobilization",
+                "rightLabel": "愿景动员"
+              },
+              "options": [
+                {
+                  "id": "holland-e-005-a",
+                  "key": "A",
+                  "label": "查清账号权限、资料来源、可编辑成员、更新频率、留言入口和下一次发布审核人",
+                  "riasecWeights": {
+                    "E": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:E:resourceControl"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "E",
+                    "axisKey": "e1",
+                    "axisLabel": "影响方式",
+                    "side": "left",
+                    "sideKey": "resourceControl",
+                    "sideLabel": "资源掌控"
+                  }
+                },
+                {
+                  "id": "holland-e-005-b",
+                  "key": "B",
+                  "label": "写新版地图名称、首页说明、第一条学习路线、招募说明和给新使用者的进入引导",
+                  "riasecWeights": {
+                    "E": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:E:visionMobilization"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "E",
+                    "axisKey": "e1",
+                    "axisLabel": "影响方式",
+                    "side": "right",
+                    "sideKey": "visionMobilization",
+                    "sideLabel": "愿景动员"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "holland-e-section-02",
+          "title": "维度2：推进方式",
+          "mode": "single",
+          "sectionIntro": "竞争突破 / 组织经营",
+          "axisKey": "e2",
+          "axisLabel": "推进方式",
+          "leftLabel": "竞争突破",
+          "rightLabel": "组织经营",
+          "items": [
+            {
+              "id": "holland-e-006",
+              "number": 1,
+              "prompt": "如果雨季里一个旧公交站可以试办一天“雨伞借还”，开放前你更愿意先做什么？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "e2",
+              "axisLabel": "推进方式",
+              "scoring": {
+                "leftKey": "competitiveBreakthrough",
+                "leftLabel": "竞争突破",
+                "rightKey": "organizationalOperation",
+                "rightLabel": "组织经营"
+              },
+              "options": [
+                {
+                  "id": "holland-e-006-a",
+                  "key": "A",
+                  "label": "找三十名路人试借，摆出第一批雨伞、二维码和归还箱，记录当天借出、归还和丢失数量",
+                  "riasecWeights": {
+                    "E": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:E:competitiveBreakthrough"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "E",
+                    "axisKey": "e2",
+                    "axisLabel": "推进方式",
+                    "side": "left",
+                    "sideKey": "competitiveBreakthrough",
+                    "sideLabel": "竞争突破"
+                  }
+                },
+                {
+                  "id": "holland-e-006-b",
+                  "key": "B",
+                  "label": "写借还流程、押金规则、雨伞编号、值班表、异常登记和一周后的补伞方式",
+                  "riasecWeights": {
+                    "E": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:E:organizationalOperation"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "E",
+                    "axisKey": "e2",
+                    "axisLabel": "推进方式",
+                    "side": "right",
+                    "sideKey": "organizationalOperation",
+                    "sideLabel": "组织经营"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-e-007",
+              "number": 2,
+              "prompt": "如果你手里有一批街区旧照片，而短视频平台上正在出现“老照片里的城市变化”话题，你更愿意先安排哪一步？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "e2",
+              "axisLabel": "推进方式",
+              "scoring": {
+                "leftKey": "competitiveBreakthrough",
+                "leftLabel": "竞争突破",
+                "rightKey": "organizationalOperation",
+                "rightLabel": "组织经营"
+              },
+              "options": [
+                {
+                  "id": "holland-e-007-a",
+                  "key": "A",
+                  "label": "当天剪出第一条视频，配上两张旧照和同一地点的新画面，发布后记录评论和转发路径",
+                  "riasecWeights": {
+                    "E": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:E:competitiveBreakthrough"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "E",
+                    "axisKey": "e2",
+                    "axisLabel": "推进方式",
+                    "side": "left",
+                    "sideKey": "competitiveBreakthrough",
+                    "sideLabel": "竞争突破"
+                  }
+                },
+                {
+                  "id": "holland-e-007-b",
+                  "key": "B",
+                  "label": "排四周选题表、授权清单、字幕格式、发布节奏、审核流程和素材归档方式",
+                  "riasecWeights": {
+                    "E": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:E:organizationalOperation"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "E",
+                    "axisKey": "e2",
+                    "axisLabel": "推进方式",
+                    "side": "right",
+                    "sideKey": "organizationalOperation",
+                    "sideLabel": "组织经营"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-e-008",
+              "number": 3,
+              "prompt": "如果你参加一场沙漠商队经营模拟，下一轮集市二十分钟后开市，水源价格会不断变化，你更愿意先做什么？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "e2",
+              "axisLabel": "推进方式",
+              "scoring": {
+                "leftKey": "competitiveBreakthrough",
+                "leftLabel": "竞争突破",
+                "rightKey": "organizationalOperation",
+                "rightLabel": "组织经营"
+              },
+              "options": [
+                {
+                  "id": "holland-e-008-a",
+                  "key": "A",
+                  "label": "派两名队员去最近水井询价，拿出一部分货物完成一次小额交换，并记录价格、路程和剩余水量",
+                  "riasecWeights": {
+                    "E": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:E:competitiveBreakthrough"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "E",
+                    "axisKey": "e2",
+                    "axisLabel": "推进方式",
+                    "side": "left",
+                    "sideKey": "competitiveBreakthrough",
+                    "sideLabel": "竞争突破"
+                  }
+                },
+                {
+                  "id": "holland-e-008-b",
+                  "key": "B",
+                  "label": "建一张库存账、每日配水规则、交易权限、路线更新时间和每轮结束后的复盘表",
+                  "riasecWeights": {
+                    "E": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:E:organizationalOperation"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "E",
+                    "axisKey": "e2",
+                    "axisLabel": "推进方式",
+                    "side": "right",
+                    "sideKey": "organizationalOperation",
+                    "sideLabel": "组织经营"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-e-009",
+              "number": 4,
+              "prompt": "如果节日前的早市想试用可重复餐具，但摊主只同意先试一个周末，你更愿意先做哪件事？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "e2",
+              "axisLabel": "推进方式",
+              "scoring": {
+                "leftKey": "competitiveBreakthrough",
+                "leftLabel": "竞争突破",
+                "rightKey": "organizationalOperation",
+                "rightLabel": "组织经营"
+              },
+              "options": [
+                {
+                  "id": "holland-e-009-a",
+                  "key": "A",
+                  "label": "选两个早餐摊试用押金碗，安排回收箱和提醒牌，记录周六上午借出、归还和排队时间",
+                  "riasecWeights": {
+                    "E": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:E:competitiveBreakthrough"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "E",
+                    "axisKey": "e2",
+                    "axisLabel": "推进方式",
+                    "side": "left",
+                    "sideKey": "competitiveBreakthrough",
+                    "sideLabel": "竞争突破"
+                  }
+                },
+                {
+                  "id": "holland-e-009-b",
+                  "key": "B",
+                  "label": "设计餐具编号、押金记录、清洗流程、摊位分工、顾客说明和每晚盘点表",
+                  "riasecWeights": {
+                    "E": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:E:organizationalOperation"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "E",
+                    "axisKey": "e2",
+                    "axisLabel": "推进方式",
+                    "side": "right",
+                    "sideKey": "organizationalOperation",
+                    "sideLabel": "组织经营"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-e-010",
+              "number": 5,
+              "prompt": "如果你运营一个线上读书挑战，第一个月报名很多，第二个月打卡人数明显减少，你更愿意先处理什么？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "e2",
+              "axisLabel": "推进方式",
+              "scoring": {
+                "leftKey": "competitiveBreakthrough",
+                "leftLabel": "竞争突破",
+                "rightKey": "organizationalOperation",
+                "rightLabel": "组织经营"
+              },
+              "options": [
+                {
+                  "id": "holland-e-010-a",
+                  "key": "A",
+                  "label": "邀请还在打卡的用户参加下一周公开挑战，选一本短书，发布新的限时任务和排行榜",
+                  "riasecWeights": {
+                    "E": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:E:competitiveBreakthrough"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "E",
+                    "axisKey": "e2",
+                    "axisLabel": "推进方式",
+                    "side": "left",
+                    "sideKey": "competitiveBreakthrough",
+                    "sideLabel": "竞争突破"
+                  }
+                },
+                {
+                  "id": "holland-e-010-b",
+                  "key": "B",
+                  "label": "重写会员分组、打卡规则、提醒时间、主持人轮值、退出原因记录和每月复盘表",
+                  "riasecWeights": {
+                    "E": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:E:organizationalOperation"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "E",
+                    "axisKey": "e2",
+                    "axisLabel": "推进方式",
+                    "side": "right",
+                    "sideKey": "organizationalOperation",
+                    "sideLabel": "组织经营"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "holland-e-section-03",
+          "title": "维度3：成就动机",
+          "mode": "single",
+          "sectionIntro": "外显回报 / 事业影响",
+          "axisKey": "e3",
+          "axisLabel": "成就动机",
+          "leftLabel": "外显回报",
+          "rightLabel": "事业影响",
+          "items": [
+            {
+              "id": "holland-e-011",
+              "number": 1,
+              "prompt": "如果你们做的社区避暑地图被街道办采用，桌上有两份后续材料，你更愿意先打开哪一份？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "e3",
+              "axisLabel": "成就动机",
+              "scoring": {
+                "leftKey": "explicitReward",
+                "leftLabel": "外显回报",
+                "rightKey": "missionImpact",
+                "rightLabel": "事业影响"
+              },
+              "options": [
+                {
+                  "id": "holland-e-011-a",
+                  "key": "A",
+                  "label": "媒体报道链接、区级展示邀请、项目奖项申报表、合作单位名单和公开演示时间",
+                  "riasecWeights": {
+                    "E": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:E:explicitReward"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "E",
+                    "axisKey": "e3",
+                    "axisLabel": "成就动机",
+                    "side": "left",
+                    "sideKey": "explicitReward",
+                    "sideLabel": "外显回报"
+                  }
+                },
+                {
+                  "id": "holland-e-011-b",
+                  "key": "B",
+                  "label": "老人使用记录、阴凉点新增表、未覆盖街区、回访问题和下一次测温安排",
+                  "riasecWeights": {
+                    "E": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:E:missionImpact"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "E",
+                    "axisKey": "e3",
+                    "axisLabel": "成就动机",
+                    "side": "right",
+                    "sideKey": "missionImpact",
+                    "sideLabel": "事业影响"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-e-012",
+              "number": 2,
+              "prompt": "如果你做的一条科普视频播放量很高，但评论区里有学生说看完仍然不会做题，你更愿意先整理哪类材料？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "e3",
+              "axisLabel": "成就动机",
+              "scoring": {
+                "leftKey": "explicitReward",
+                "leftLabel": "外显回报",
+                "rightKey": "missionImpact",
+                "rightLabel": "事业影响"
+              },
+              "options": [
+                {
+                  "id": "holland-e-012-a",
+                  "key": "A",
+                  "label": "播放量曲线、平台推荐截图、合作邀约、创作者活动报名表和公开分享邀请",
+                  "riasecWeights": {
+                    "E": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:E:explicitReward"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "E",
+                    "axisKey": "e3",
+                    "axisLabel": "成就动机",
+                    "side": "left",
+                    "sideKey": "explicitReward",
+                    "sideLabel": "外显回报"
+                  }
+                },
+                {
+                  "id": "holland-e-012-b",
+                  "key": "B",
+                  "label": "评论原话、卡住的题型、误解位置、补充讲解脚本和二次发布后的提问记录",
+                  "riasecWeights": {
+                    "E": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:E:missionImpact"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "E",
+                    "axisKey": "e3",
+                    "axisLabel": "成就动机",
+                    "side": "right",
+                    "sideKey": "missionImpact",
+                    "sideLabel": "事业影响"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-e-013",
+              "number": 3,
+              "prompt": "如果你参与做的电梯故障报修小程序在第一栋老旧小区试用后，物业准备把它推荐给其他小区，你更愿意先保存哪些材料？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "e3",
+              "axisLabel": "成就动机",
+              "scoring": {
+                "leftKey": "explicitReward",
+                "leftLabel": "外显回报",
+                "rightKey": "missionImpact",
+                "rightLabel": "事业影响"
+              },
+              "options": [
+                {
+                  "id": "holland-e-013-a",
+                  "key": "A",
+                  "label": "物业推荐函、社区展示邀请、居民感谢截图、项目介绍页、合作方名单和下一次汇报时间",
+                  "riasecWeights": {
+                    "E": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:E:explicitReward"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "E",
+                    "axisKey": "e3",
+                    "axisLabel": "成就动机",
+                    "side": "left",
+                    "sideKey": "explicitReward",
+                    "sideLabel": "外显回报"
+                  }
+                },
+                {
+                  "id": "holland-e-013-b",
+                  "key": "B",
+                  "label": "报修次数、响应时间、未解决故障、维修师傅反馈、下月值班表和下一栋楼试用名单",
+                  "riasecWeights": {
+                    "E": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:E:missionImpact"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "E",
+                    "axisKey": "e3",
+                    "axisLabel": "成就动机",
+                    "side": "right",
+                    "sideKey": "missionImpact",
+                    "sideLabel": "事业影响"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-e-014",
+              "number": 4,
+              "prompt": "如果你参与设计一套给老人看病挂号用的简易翻译卡，医院愿意继续试用，你更愿意先归档哪一组材料？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "e3",
+              "axisLabel": "成就动机",
+              "scoring": {
+                "leftKey": "explicitReward",
+                "leftLabel": "外显回报",
+                "rightKey": "missionImpact",
+                "rightLabel": "事业影响"
+              },
+              "options": [
+                {
+                  "id": "holland-e-014-a",
+                  "key": "A",
+                  "label": "展示会邀请、医生合影、评审意见、媒体截图、合作邮件和项目介绍页",
+                  "riasecWeights": {
+                    "E": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:E:explicitReward"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "E",
+                    "axisKey": "e3",
+                    "axisLabel": "成就动机",
+                    "side": "left",
+                    "sideKey": "explicitReward",
+                    "sideLabel": "外显回报"
+                  }
+                },
+                {
+                  "id": "holland-e-014-b",
+                  "key": "B",
+                  "label": "老人挂号过程记录、听不懂的词、护士修改建议、志愿者培训表和下月试用排班",
+                  "riasecWeights": {
+                    "E": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:E:missionImpact"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "E",
+                    "axisKey": "e3",
+                    "axisLabel": "成就动机",
+                    "side": "right",
+                    "sideKey": "missionImpact",
+                    "sideLabel": "事业影响"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-e-015",
+              "number": 5,
+              "prompt": "如果你要把一个持续一年的项目交给下一届成员，封箱前你更愿意先整理哪一个盒子？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "e3",
+              "axisLabel": "成就动机",
+              "scoring": {
+                "leftKey": "explicitReward",
+                "leftLabel": "外显回报",
+                "rightKey": "missionImpact",
+                "rightLabel": "事业影响"
+              },
+              "options": [
+                {
+                  "id": "holland-e-015-a",
+                  "key": "A",
+                  "label": "奖杯照片、赞助合同、公开展示海报、媒体记录、合作名单和下一次路演报名入口",
+                  "riasecWeights": {
+                    "E": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:E:explicitReward"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "E",
+                    "axisKey": "e3",
+                    "axisLabel": "成就动机",
+                    "side": "left",
+                    "sideKey": "explicitReward",
+                    "sideLabel": "外显回报"
+                  }
+                },
+                {
+                  "id": "holland-e-015-b",
+                  "key": "B",
+                  "label": "使用者来信、服务日志、未完成清单、培训材料、交接人名单和下一年度固定节奏",
+                  "riasecWeights": {
+                    "E": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:E:missionImpact"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "E",
+                    "axisKey": "e3",
+                    "axisLabel": "成就动机",
+                    "side": "right",
+                    "sideKey": "missionImpact",
+                    "sideLabel": "事业影响"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "C": {
+      "code": "C",
+      "label": "常规型 C",
+      "sourcePath": "docs/Zhiye_Huolande_Doc/conventional_assessment_deep_cn_v2.md",
+      "sections": [
+        {
+          "id": "holland-c-section-01",
+          "title": "维度1：秩序来源",
+          "mode": "single",
+          "sectionIntro": "标准规则 / 证据记录",
+          "axisKey": "c1",
+          "axisLabel": "秩序来源",
+          "leftLabel": "标准规则",
+          "rightLabel": "证据记录",
+          "items": [
+            {
+              "id": "holland-c-001",
+              "number": 1,
+              "prompt": "如果社团刚换了一届负责人，很多做法都靠“以前的人记得”，你最想先补上什么？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "c1",
+              "axisLabel": "秩序来源",
+              "scoring": {
+                "leftKey": "standardRules",
+                "leftLabel": "标准规则",
+                "rightKey": "evidenceRecord",
+                "rightLabel": "证据记录"
+              },
+              "options": [
+                {
+                  "id": "holland-c-001-a",
+                  "key": "A",
+                  "label": "决定人、负责人、必须保留的步骤、提前确认的事项和不能临时改动的环节",
+                  "riasecWeights": {
+                    "C": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:C:standardRules"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "C",
+                    "axisKey": "c1",
+                    "axisLabel": "秩序来源",
+                    "side": "left",
+                    "sideKey": "standardRules",
+                    "sideLabel": "标准规则"
+                  }
+                },
+                {
+                  "id": "holland-c-001-b",
+                  "key": "B",
+                  "label": "过去的报名表、费用记录、群聊确认、文件版本和每次活动留下的原始材料",
+                  "riasecWeights": {
+                    "C": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:C:evidenceRecord"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "C",
+                    "axisKey": "c1",
+                    "axisLabel": "秩序来源",
+                    "side": "right",
+                    "sideKey": "evidenceRecord",
+                    "sideLabel": "证据记录"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-c-002",
+              "number": 2,
+              "prompt": "如果你接手一个活动，学长只说“之前一直这么办”，你会优先确认什么？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "c1",
+              "axisLabel": "秩序来源",
+              "scoring": {
+                "leftKey": "standardRules",
+                "leftLabel": "标准规则",
+                "rightKey": "evidenceRecord",
+                "rightLabel": "证据记录"
+              },
+              "options": [
+                {
+                  "id": "holland-c-002-a",
+                  "key": "A",
+                  "label": "费用用途、确认人、参加资格、问题联系人和哪些情况必须重新报批",
+                  "riasecWeights": {
+                    "C": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:C:standardRules"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "C",
+                    "axisKey": "c1",
+                    "axisLabel": "秩序来源",
+                    "side": "left",
+                    "sideKey": "standardRules",
+                    "sideLabel": "标准规则"
+                  }
+                },
+                {
+                  "id": "holland-c-002-b",
+                  "key": "B",
+                  "label": "去年花费、剩余物资、报名名单、付款截图和最新版本的活动文档",
+                  "riasecWeights": {
+                    "C": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:C:evidenceRecord"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "C",
+                    "axisKey": "c1",
+                    "axisLabel": "秩序来源",
+                    "side": "right",
+                    "sideKey": "evidenceRecord",
+                    "sideLabel": "证据记录"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-c-003",
+              "number": 3,
+              "prompt": "如果班级要找一家店做文化衫，你更愿意先确认哪一点？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "c1",
+              "axisLabel": "秩序来源",
+              "scoring": {
+                "leftKey": "standardRules",
+                "leftLabel": "标准规则",
+                "rightKey": "evidenceRecord",
+                "rightLabel": "证据记录"
+              },
+              "options": [
+                {
+                  "id": "holland-c-003-a",
+                  "key": "A",
+                  "label": "写清尺码、交货时间、退款方式和改版次数，把口头约定整理成文字",
+                  "riasecWeights": {
+                    "C": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:C:standardRules"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "C",
+                    "axisKey": "c1",
+                    "axisLabel": "秩序来源",
+                    "side": "left",
+                    "sideKey": "standardRules",
+                    "sideLabel": "标准规则"
+                  }
+                },
+                {
+                  "id": "holland-c-003-b",
+                  "key": "B",
+                  "label": "对照做过的照片、价格记录、付款截图和交付时间，逐项核对",
+                  "riasecWeights": {
+                    "C": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:C:evidenceRecord"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "C",
+                    "axisKey": "c1",
+                    "axisLabel": "秩序来源",
+                    "side": "right",
+                    "sideKey": "evidenceRecord",
+                    "sideLabel": "证据记录"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-c-004",
+              "number": 4,
+              "prompt": "如果队友临时说海报要改，却只在群里随口提了一句，你第一反应更接近哪一种？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "c1",
+              "axisLabel": "秩序来源",
+              "scoring": {
+                "leftKey": "standardRules",
+                "leftLabel": "标准规则",
+                "rightKey": "evidenceRecord",
+                "rightLabel": "证据记录"
+              },
+              "options": [
+                {
+                  "id": "holland-c-004-a",
+                  "key": "A",
+                  "label": "确认这次修改的拍板人、确认时间和后续赶工的负责人",
+                  "riasecWeights": {
+                    "C": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:C:standardRules"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "C",
+                    "axisKey": "c1",
+                    "axisLabel": "秩序来源",
+                    "side": "left",
+                    "sideKey": "standardRules",
+                    "sideLabel": "标准规则"
+                  }
+                },
+                {
+                  "id": "holland-c-004-b",
+                  "key": "B",
+                  "label": "对照新旧两版差异、修改理由、群消息和文件版本",
+                  "riasecWeights": {
+                    "C": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:C:evidenceRecord"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "C",
+                    "axisKey": "c1",
+                    "axisLabel": "秩序来源",
+                    "side": "right",
+                    "sideKey": "evidenceRecord",
+                    "sideLabel": "证据记录"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-c-005",
+              "number": 5,
+              "prompt": "如果你要管理一批比赛报名表、照片、证明和作品文件，你会先搭建什么？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "c1",
+              "axisLabel": "秩序来源",
+              "scoring": {
+                "leftKey": "standardRules",
+                "leftLabel": "标准规则",
+                "rightKey": "evidenceRecord",
+                "rightLabel": "证据记录"
+              },
+              "options": [
+                {
+                  "id": "holland-c-005-a",
+                  "key": "A",
+                  "label": "文件怎么命名、查看人名单、外传限制、借用和删除前的确认人",
+                  "riasecWeights": {
+                    "C": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:C:standardRules"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "C",
+                    "axisKey": "c1",
+                    "axisLabel": "秩序来源",
+                    "side": "left",
+                    "sideKey": "standardRules",
+                    "sideLabel": "标准规则"
+                  }
+                },
+                {
+                  "id": "holland-c-005-b",
+                  "key": "B",
+                  "label": "每份资料来自哪里、编号是什么、有没有原始版本、谁改过、怎么核对",
+                  "riasecWeights": {
+                    "C": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:C:evidenceRecord"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "C",
+                    "axisKey": "c1",
+                    "axisLabel": "秩序来源",
+                    "side": "right",
+                    "sideKey": "evidenceRecord",
+                    "sideLabel": "证据记录"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "holland-c-section-02",
+          "title": "维度2：风险控制方式",
+          "mode": "single",
+          "sectionIntro": "边界定责 / 闭环校验",
+          "axisKey": "c2",
+          "axisLabel": "风险控制方式",
+          "leftLabel": "边界定责",
+          "rightLabel": "闭环校验",
+          "items": [
+            {
+              "id": "holland-c-006",
+              "number": 1,
+              "prompt": "如果老师让你“帮忙把这个活动理顺”，但只给了一个很模糊的目标，你会先做什么？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "c2",
+              "axisLabel": "风险控制方式",
+              "scoring": {
+                "leftKey": "boundaryResponsibility",
+                "leftLabel": "边界定责",
+                "rightKey": "closedLoopCheck",
+                "rightLabel": "闭环校验"
+              },
+              "options": [
+                {
+                  "id": "holland-c-006-a",
+                  "key": "A",
+                  "label": "先问清最后到底要交出什么、哪些不归我们做、谁来拍板、每个人负责哪块",
+                  "riasecWeights": {
+                    "C": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:C:boundaryResponsibility"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "C",
+                    "axisKey": "c2",
+                    "axisLabel": "风险控制方式",
+                    "side": "left",
+                    "sideKey": "boundaryResponsibility",
+                    "sideLabel": "边界定责"
+                  }
+                },
+                {
+                  "id": "holland-c-006-b",
+                  "key": "B",
+                  "label": "先设置每周检查、阶段确认、问题反馈和返工方式，把发现的问题写进返工单",
+                  "riasecWeights": {
+                    "C": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:C:closedLoopCheck"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "C",
+                    "axisKey": "c2",
+                    "axisLabel": "风险控制方式",
+                    "side": "right",
+                    "sideKey": "closedLoopCheck",
+                    "sideLabel": "闭环校验"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-c-007",
+              "number": 2,
+              "prompt": "如果班级统计表里有一组数字明显不对，你更倾向于先从哪里入手？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "c2",
+              "axisLabel": "风险控制方式",
+              "scoring": {
+                "leftKey": "boundaryResponsibility",
+                "leftLabel": "边界定责",
+                "rightKey": "closedLoopCheck",
+                "rightLabel": "闭环校验"
+              },
+              "options": [
+                {
+                  "id": "holland-c-007-a",
+                  "key": "A",
+                  "label": "先确认“人数”“费用”“完成率”这些词到底怎么算，谁提供原始信息，谁负责汇总",
+                  "riasecWeights": {
+                    "C": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:C:boundaryResponsibility"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "C",
+                    "axisKey": "c2",
+                    "axisLabel": "风险控制方式",
+                    "side": "left",
+                    "sideKey": "boundaryResponsibility",
+                    "sideLabel": "边界定责"
+                  }
+                },
+                {
+                  "id": "holland-c-007-b",
+                  "key": "B",
+                  "label": "先回到原始表格、公式、复制粘贴和导入过程，一步步找是哪一处出了错",
+                  "riasecWeights": {
+                    "C": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:C:closedLoopCheck"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "C",
+                    "axisKey": "c2",
+                    "axisLabel": "风险控制方式",
+                    "side": "right",
+                    "sideKey": "closedLoopCheck",
+                    "sideLabel": "闭环校验"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-c-008",
+              "number": 3,
+              "prompt": "如果活动中途又加了一个新环节，你会先补哪类确认？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "c2",
+              "axisLabel": "风险控制方式",
+              "scoring": {
+                "leftKey": "boundaryResponsibility",
+                "leftLabel": "边界定责",
+                "rightKey": "closedLoopCheck",
+                "rightLabel": "闭环校验"
+              },
+              "options": [
+                {
+                  "id": "holland-c-008-a",
+                  "key": "A",
+                  "label": "原来说好的范围、负责人、时间、新增部分的确认人和不归本组处理的内容",
+                  "riasecWeights": {
+                    "C": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:C:boundaryResponsibility"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "C",
+                    "axisKey": "c2",
+                    "axisLabel": "风险控制方式",
+                    "side": "left",
+                    "sideKey": "boundaryResponsibility",
+                    "sideLabel": "边界定责"
+                  }
+                },
+                {
+                  "id": "holland-c-008-b",
+                  "key": "B",
+                  "label": "新环节检查清单、最终确认表、格式、人数、物资核对项和返修入口",
+                  "riasecWeights": {
+                    "C": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:C:closedLoopCheck"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "C",
+                    "axisKey": "c2",
+                    "axisLabel": "风险控制方式",
+                    "side": "right",
+                    "sideKey": "closedLoopCheck",
+                    "sideLabel": "闭环校验"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-c-009",
+              "number": 4,
+              "prompt": "如果几百份报名表和作品材料需要集中处理，你会先设计什么？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "c2",
+              "axisLabel": "风险控制方式",
+              "scoring": {
+                "leftKey": "boundaryResponsibility",
+                "leftLabel": "边界定责",
+                "rightKey": "closedLoopCheck",
+                "rightLabel": "闭环校验"
+              },
+              "options": [
+                {
+                  "id": "holland-c-009-a",
+                  "key": "A",
+                  "label": "先规定提交时间、文件格式、必填项、命名方式和每个班级/小组的联系人",
+                  "riasecWeights": {
+                    "C": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:C:boundaryResponsibility"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "C",
+                    "axisKey": "c2",
+                    "axisLabel": "风险控制方式",
+                    "side": "left",
+                    "sideKey": "boundaryResponsibility",
+                    "sideLabel": "边界定责"
+                  }
+                },
+                {
+                  "id": "holland-c-009-b",
+                  "key": "B",
+                  "label": "先设计抽查比例、复核清单、退回修改方式和最终确认表",
+                  "riasecWeights": {
+                    "C": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:C:closedLoopCheck"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "C",
+                    "axisKey": "c2",
+                    "axisLabel": "风险控制方式",
+                    "side": "right",
+                    "sideKey": "closedLoopCheck",
+                    "sideLabel": "闭环校验"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-c-010",
+              "number": 5,
+              "prompt": "如果小组想尝试一种还在试行的新做法，你比较支持哪种推进方式？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "c2",
+              "axisLabel": "风险控制方式",
+              "scoring": {
+                "leftKey": "boundaryResponsibility",
+                "leftLabel": "边界定责",
+                "rightKey": "closedLoopCheck",
+                "rightLabel": "闭环校验"
+              },
+              "options": [
+                {
+                  "id": "holland-c-010-a",
+                  "key": "A",
+                  "label": "先规定只在哪个小范围试、失败后谁处理、什么时候停下、哪些关键任务单独保留",
+                  "riasecWeights": {
+                    "C": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:C:boundaryResponsibility"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "C",
+                    "axisKey": "c2",
+                    "axisLabel": "风险控制方式",
+                    "side": "left",
+                    "sideKey": "boundaryResponsibility",
+                    "sideLabel": "边界定责"
+                  }
+                },
+                {
+                  "id": "holland-c-010-b",
+                  "key": "B",
+                  "label": "先找一小组试运行，记录问题和反馈，改好流程后再逐步扩大",
+                  "riasecWeights": {
+                    "C": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:C:closedLoopCheck"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "C",
+                    "axisKey": "c2",
+                    "axisLabel": "风险控制方式",
+                    "side": "right",
+                    "sideKey": "closedLoopCheck",
+                    "sideLabel": "闭环校验"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "holland-c-section-03",
+          "title": "维度3：秩序价值动机",
+          "mode": "single",
+          "sectionIntro": "安全稳定 / 效率支撑",
+          "axisKey": "c3",
+          "axisLabel": "秩序价值动机",
+          "leftLabel": "安全稳定",
+          "rightLabel": "效率支撑",
+          "items": [
+            {
+              "id": "holland-c-011",
+              "number": 1,
+              "prompt": "如果班级要组织一次跨城参观，报名结束后你更愿意先补哪一类材料？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "c3",
+              "axisLabel": "秩序价值动机",
+              "scoring": {
+                "leftKey": "safetyStability",
+                "leftLabel": "安全稳定",
+                "rightKey": "efficiencySupport",
+                "rightLabel": "效率支撑"
+              },
+              "options": [
+                {
+                  "id": "holland-c-011-a",
+                  "key": "A",
+                  "label": "紧急联系人、过敏信息、证件检查、集合点、禁止单独离队事项和带队老师确认表",
+                  "riasecWeights": {
+                    "C": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:C:safetyStability"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "C",
+                    "axisKey": "c3",
+                    "axisLabel": "秩序价值动机",
+                    "side": "left",
+                    "sideKey": "safetyStability",
+                    "sideLabel": "安全稳定"
+                  }
+                },
+                {
+                  "id": "holland-c-011-b",
+                  "key": "B",
+                  "label": "分车名单、到站提醒、签到二维码、常见问题回复和各小组同步时间表",
+                  "riasecWeights": {
+                    "C": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:C:efficiencySupport"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "C",
+                    "axisKey": "c3",
+                    "axisLabel": "秩序价值动机",
+                    "side": "right",
+                    "sideKey": "efficiencySupport",
+                    "sideLabel": "效率支撑"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-c-012",
+              "number": 2,
+              "prompt": "如果图书馆开放摄影设备借用，你更愿意先整理哪类材料？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "c3",
+              "axisLabel": "秩序价值动机",
+              "scoring": {
+                "leftKey": "safetyStability",
+                "leftLabel": "安全稳定",
+                "rightKey": "efficiencySupport",
+                "rightLabel": "效率支撑"
+              },
+              "options": [
+                {
+                  "id": "holland-c-012-a",
+                  "key": "A",
+                  "label": "押金记录、设备编号、损坏检查、归还确认和逾期处理说明",
+                  "riasecWeights": {
+                    "C": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:C:safetyStability"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "C",
+                    "axisKey": "c3",
+                    "axisLabel": "秩序价值动机",
+                    "side": "left",
+                    "sideKey": "safetyStability",
+                    "sideLabel": "安全稳定"
+                  }
+                },
+                {
+                  "id": "holland-c-012-b",
+                  "key": "B",
+                  "label": "预约入口、借还步骤、可用时段、交接话术和常见问题模板",
+                  "riasecWeights": {
+                    "C": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:C:efficiencySupport"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "C",
+                    "axisKey": "c3",
+                    "axisLabel": "秩序价值动机",
+                    "side": "right",
+                    "sideKey": "efficiencySupport",
+                    "sideLabel": "效率支撑"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-c-013",
+              "number": 3,
+              "prompt": "如果一次讲座入场总是排很久，你最想先改哪一块？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "c3",
+              "axisLabel": "秩序价值动机",
+              "scoring": {
+                "leftKey": "safetyStability",
+                "leftLabel": "安全稳定",
+                "rightKey": "efficiencySupport",
+                "rightLabel": "效率支撑"
+              },
+              "options": [
+                {
+                  "id": "holland-c-013-a",
+                  "key": "A",
+                  "label": "核对报名名单、入场凭证、消防人数上限、迟到处理和现场异常登记",
+                  "riasecWeights": {
+                    "C": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:C:safetyStability"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "C",
+                    "axisKey": "c3",
+                    "axisLabel": "秩序价值动机",
+                    "side": "left",
+                    "sideKey": "safetyStability",
+                    "sideLabel": "安全稳定"
+                  }
+                },
+                {
+                  "id": "holland-c-013-b",
+                  "key": "B",
+                  "label": "合并签到问题、固定咨询入口、分批入场时间和志愿者交接口径",
+                  "riasecWeights": {
+                    "C": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:C:efficiencySupport"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "C",
+                    "axisKey": "c3",
+                    "axisLabel": "秩序价值动机",
+                    "side": "right",
+                    "sideKey": "efficiencySupport",
+                    "sideLabel": "效率支撑"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-c-014",
+              "number": 4,
+              "prompt": "如果学校要求集中提交竞赛证明、身份证明和作品文件，你更愿意先做哪件事？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "c3",
+              "axisLabel": "秩序价值动机",
+              "scoring": {
+                "leftKey": "safetyStability",
+                "leftLabel": "安全稳定",
+                "rightKey": "efficiencySupport",
+                "rightLabel": "效率支撑"
+              },
+              "options": [
+                {
+                  "id": "holland-c-014-a",
+                  "key": "A",
+                  "label": "对照证书要求、报名条件、材料清单、截止时间和缺件处理方式",
+                  "riasecWeights": {
+                    "C": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:C:safetyStability"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "C",
+                    "axisKey": "c3",
+                    "axisLabel": "秩序价值动机",
+                    "side": "left",
+                    "sideKey": "safetyStability",
+                    "sideLabel": "安全稳定"
+                  }
+                },
+                {
+                  "id": "holland-c-014-b",
+                  "key": "B",
+                  "label": "建提交模板、自动命名规则、批量提醒表、分组进度看板和交接说明",
+                  "riasecWeights": {
+                    "C": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:C:efficiencySupport"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "C",
+                    "axisKey": "c3",
+                    "axisLabel": "秩序价值动机",
+                    "side": "right",
+                    "sideKey": "efficiencySupport",
+                    "sideLabel": "效率支撑"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "holland-c-015",
+              "number": 5,
+              "prompt": "如果一个开放日同时有实验演示、参观路线和咨询摊位，你更愿意先补哪类安排？",
+              "mode": "single",
+              "minSelections": 1,
+              "maxSelections": 1,
+              "axisKey": "c3",
+              "axisLabel": "秩序价值动机",
+              "scoring": {
+                "leftKey": "safetyStability",
+                "leftLabel": "安全稳定",
+                "rightKey": "efficiencySupport",
+                "rightLabel": "效率支撑"
+              },
+              "options": [
+                {
+                  "id": "holland-c-015-a",
+                  "key": "A",
+                  "label": "实验安全边界、禁止触碰物品、紧急联系人、人数上限和每个区域的检查点",
+                  "riasecWeights": {
+                    "C": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:C:safetyStability"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "C",
+                    "axisKey": "c3",
+                    "axisLabel": "秩序价值动机",
+                    "side": "left",
+                    "sideKey": "safetyStability",
+                    "sideLabel": "安全稳定"
+                  }
+                },
+                {
+                  "id": "holland-c-015-b",
+                  "key": "B",
+                  "label": "参观批次、岗位轮换、问题转接、物资补给和结束后的交接步骤",
+                  "riasecWeights": {
+                    "C": 1
+                  },
+                  "personalityTags": [
+                    "holland-fine:C:efficiencySupport"
+                  ],
+                  "hollandFineAxis": {
+                    "dimension": "C",
+                    "axisKey": "c3",
+                    "axisLabel": "秩序价值动机",
+                    "side": "right",
+                    "sideKey": "efficiencySupport",
+                    "sideLabel": "效率支撑"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

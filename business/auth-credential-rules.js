@@ -11,6 +11,31 @@ export const INVITE_PIN_RULE_TEXT =
 
 const LOGIN_ID_PATTERN = /^[A-Za-z][A-Za-z0-9_-]*$/
 const PIN_ALLOWED_PATTERN = /^[A-Za-z0-9_!@#-]+$/
+const PHONE_RE = /^1[3-9]\d{9}$/
+
+export function normalizePhone(input) {
+  const digits = String(input || '').replace(/\D/g, '')
+  if (digits.length === 11 && PHONE_RE.test(digits)) return digits
+  if (digits.length === 13 && digits.startsWith('86')) {
+    const local = digits.slice(2)
+    return PHONE_RE.test(local) ? local : null
+  }
+  return null
+}
+
+export function getPhoneIssue(phone) {
+  const raw = String(phone || '').trim()
+  if (!raw) return '请填写手机号'
+  if (!normalizePhone(raw)) return '请输入有效的中国大陆手机号'
+  return null
+}
+
+export function getSmsCodeIssue(code) {
+  const value = String(code || '').trim()
+  if (!value) return '请填写验证码'
+  if (!/^\d{6}$/.test(value)) return '请输入 6 位数字验证码'
+  return null
+}
 
 export function getInviteLoginIdIssue(loginId) {
   const value = String(loginId || '').trim()

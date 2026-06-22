@@ -7,7 +7,7 @@
         <text class="title">{{ currentModule.shortTitle }}</text>
         <text class="progress-text">{{ moduleIndex + 1 }}/{{ calcModules.length }} · {{ stageLabel }}</text>
       </view>
-      <scroll-view class="content" scroll-y>
+      <scroll-view class="content" scroll-y :scroll-into-view="scrollIntoView" scroll-with-animation>
         <!-- principle 原理 -->
         <view v-if="stage === 'principle' || stage === 'principle-rules'" class="card">
           <text class="section-title">{{ currentModule.principleTitle }}</text>
@@ -46,7 +46,7 @@
         <view v-else-if="stage === 'practice'" class="card">
           <text class="section-title">{{ currentModule.practice.title }}</text>
           <text class="section-sub">{{ currentModule.practice.subtitle }}</text>
-          <view class="question-area">
+          <view id="anchor-practice" class="question-area">
             <text v-if="currentQuestion.intro" class="q-intro">{{ currentQuestion.intro }}</text>
             <text class="q-prompt">{{ currentQuestion.prompt }}</text>
             <text class="q-hint">提示：{{ currentQuestion.hint }}</text>
@@ -62,12 +62,15 @@
               <text class="solution-title">解析</text>
               <text class="solution-seg">{{ currentQuestion.solutionText }}</text>
             </view>
+            <view v-if="practiceValidationError" class="inline-validation">
+              <text class="inline-validation__text">请先选择一个答案。</text>
+            </view>
           </view>
         </view>
       </scroll-view>
       <view class="bottom-bar">
         <button class="btn-ghost" @tap="prevStep">{{ isFirstStep ? '返回目录' : '上一步' }}</button>
-        <button class="btn-primary" :disabled="stage === 'practice' && selectedOpt === null" @tap="nextStep">
+        <button class="btn-primary" @tap="nextStep">
           {{ isLastStep ? '完成' : '下一步' }}
         </button>
       </view>
@@ -80,7 +83,7 @@
         <text class="title">{{ sortModule.shortTitle }}</text>
         <text class="progress-text">{{ sortModuleIndex + 1 }}/{{ sortModules.length }}</text>
       </view>
-      <scroll-view class="content" scroll-y>
+      <scroll-view class="content" scroll-y :scroll-into-view="scrollIntoView" scroll-with-animation>
         <view class="card">
           <text class="section-title">{{ sortModule.challenge.title }}</text>
           <text class="copy">{{ sortModule.challenge.prompt }}</text>
@@ -94,7 +97,7 @@
           <text class="section-title">排列证明步骤</text>
           <text class="sort-hint">点击步骤卡片依次选择正确顺序</text>
           <!-- 已选区域 -->
-          <view class="sort-zone">
+          <view id="anchor-sort" class="sort-zone">
             <view v-for="(stepId, i) in sortSelected" :key="stepId" class="sort-placed" @tap="removeStep(i)">
               <text class="sort-idx">{{ i + 1 }}</text>
               <view class="sort-step-body">
@@ -111,6 +114,9 @@
               <text class="sort-chip-title">{{ getStep(stepId).title }}</text>
             </view>
           </view>
+          <view v-if="sortValidationError" class="inline-validation">
+            <text class="inline-validation__text">请先完成全部步骤排序。</text>
+          </view>
           <view v-if="sortResult !== null" :class="'sort-feedback ' + (sortResult ? 'fb-ok' : 'fb-bad')">
             <text>{{ sortResult ? sortModule.challenge.successMessage : '顺序有误，请重新排列。' }}</text>
           </view>
@@ -118,7 +124,7 @@
       </scroll-view>
       <view class="bottom-bar">
         <button class="btn-ghost" @tap="prevSortModule">{{ sortModuleIndex === 0 ? '返回目录' : '上一个' }}</button>
-        <button v-if="!sortResult" class="btn-primary" :disabled="sortSelected.length < sortModule.challenge.steps.length" @tap="checkSort">检查顺序</button>
+        <button v-if="!sortResult" class="btn-primary" @tap="checkSort">检查顺序</button>
         <button v-else class="btn-primary" @tap="nextSortModule">{{ sortModuleIndex >= sortModules.length - 1 ? '完成' : '下一个' }}</button>
       </view>
     </view>
@@ -213,6 +219,9 @@ export default {
       selectedFacts: [],
       interResult: false,
       interError: '',
+      scrollIntoView: '',
+      practiceValidationError: false,
+      sortValidationError: false,
     }
   },
   onLoad(options) {
@@ -250,6 +259,12 @@ export default {
   },
   methods: {
     goBack() { uni.navigateBack() },
+    scrollToAnchor(anchorId) {
+      this.scrollIntoView = ''
+      this.$nextTick(() => {
+        this.scrollIntoView = anchorId
+      })
+    },
     finishChallenge() {
       markAnalysisChallengeTaskCompleted(this.taskId)
       markMathChallengeVisited(this.taskId)
@@ -261,11 +276,16 @@ export default {
     selectOption(i, opt) {
       if (this.selectedOpt !== null) return
       this.selectedOpt = i
+      this.practiceValidationError = false
     },
     nextStep() {
       const stages = this.stages
       if (this.stage === 'practice') {
-        if (this.selectedOpt === null) return
+        if (this.selectedOpt === null) {
+          this.practiceValidationError = true
+          this.scrollToAnchor('anchor-practice')
+          return
+        }
         const opt = (this.currentQuestion.options || [])[this.selectedOpt]
         if (opt && !opt.correct) {
           uni.showToast({ title: '答案不正确，请再试', icon: 'none' })
@@ -273,24 +293,24 @@ export default {
         }
         const questions = this.currentModule.practice.questions
         if (this.practiceIndex < questions.length - 1) {
-          this.practiceIndex++; this.selectedOpt = null; return
+          this.practiceIndex++; this.selectedOpt = null; this.practiceValidationError = false; return
         }
       }
       if (this.stageIndex < stages.length - 1) {
-        this.stageIndex++; this.selectedOpt = null; this.practiceIndex = 0; return
+        this.stageIndex++; this.selectedOpt = null; this.practiceIndex = 0; this.practiceValidationError = false; return
       }
       if (this.moduleIndex < this.calcModules.length - 1) {
-        this.moduleIndex++; this.stageIndex = 0; this.practiceIndex = 0; this.selectedOpt = null; return
+        this.moduleIndex++; this.stageIndex = 0; this.practiceIndex = 0; this.selectedOpt = null; this.practiceValidationError = false; return
       }
       this.finishChallenge()
     },
     prevStep() {
       if (this.isFirstStep) { this.goBack(); return }
       if (this.stage === 'practice' && this.practiceIndex > 0) {
-        this.practiceIndex--; this.selectedOpt = null; return
+        this.practiceIndex--; this.selectedOpt = null; this.practiceValidationError = false; return
       }
       if (this.stageIndex > 0) {
-        this.stageIndex--; this.selectedOpt = null
+        this.stageIndex--; this.selectedOpt = null; this.practiceValidationError = false
         if (this.stage === 'practice') this.practiceIndex = (this.currentModule.practice.questions.length - 1)
         return
       }
@@ -300,14 +320,21 @@ export default {
         this.stageIndex = stages.length - 1
         this.practiceIndex = this.currentModule.practice.questions.length - 1
         this.selectedOpt = null
+        this.practiceValidationError = false
       }
     },
 
     // proof-sort
     getStep(id) { return (this.sortModule.challenge.steps || []).find(s => s.id === id) || {} },
-    addStep(id) { if (!this.sortSelected.includes(id)) this.sortSelected.push(id); this.sortResult = null },
-    removeStep(i) { this.sortSelected.splice(i, 1); this.sortResult = null },
+    addStep(id) { if (!this.sortSelected.includes(id)) this.sortSelected.push(id); this.sortResult = null; this.sortValidationError = false },
+    removeStep(i) { this.sortSelected.splice(i, 1); this.sortResult = null; this.sortValidationError = false },
     checkSort() {
+      if (this.sortSelected.length < this.sortModule.challenge.steps.length) {
+        this.sortValidationError = true
+        this.scrollToAnchor('anchor-sort')
+        return
+      }
+      this.sortValidationError = false
       const correct = this.sortModule.challenge.steps.map(s => s.id)
       this.sortResult = JSON.stringify(this.sortSelected) === JSON.stringify(correct)
     },
@@ -316,7 +343,7 @@ export default {
       if (this.sortModuleIndex < this.sortModules.length - 1) { this.sortModuleIndex++; this.resetSort() }
       else this.finishChallenge()
     },
-    resetSort() { this.sortSelected = []; this.sortResult = null },
+    resetSort() { this.sortSelected = []; this.sortResult = null; this.sortValidationError = false },
 
     // proof-interactive
     resetInterFacts() {
@@ -440,6 +467,8 @@ export default {
 /* feedback */
 .fb-ok { background: #e6f3f1; border: 2rpx solid #007a66; }
 .fb-bad { background: #fef2f2; border: 2rpx solid #ef4444; }
+.inline-validation { margin-top: 16rpx; padding: 16rpx 18rpx; border-radius: 12rpx; background: #fff5f5; border: 2rpx solid #ff4d4f; }
+.inline-validation__text { font-size: 22rpx; line-height: 1.5; color: #ff4d4f; font-weight: 700; }
 
 /* bottom */
 .bottom-bar { display: flex; gap: 16rpx; padding: 24rpx 32rpx; background: #fff; border-top: 2rpx solid #f0f0f0; }

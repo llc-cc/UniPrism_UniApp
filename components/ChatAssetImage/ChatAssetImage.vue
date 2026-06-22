@@ -1,9 +1,10 @@
 <template>
   <view class="chat-asset-wrap" :class="wrapClass" :style="wrapStyle">
     <image
-      v-if="displaySrc && !failedAll"
+      v-if="renderSrc && !failedAll"
+      class="chat-asset-image"
       :class="imageClass"
-      :src="displaySrc"
+      :src="renderSrc"
       :mode="mode"
       @error="handleError"
       @load="handleLoad"
@@ -18,6 +19,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { resolveAssetCandidates } from '../../utils/asset-map'
+import { downloadRemoteImage } from '../../utils/remote-image'
 
 const props = defineProps({
   path: { type: String, default: '' },
@@ -32,10 +34,12 @@ const props = defineProps({
 const candidateIndex = ref(0)
 const hasLoaded = ref(false)
 const failedAll = ref(false)
+const renderSrc = ref('')
+let resolveToken = 0
 
 const candidates = computed(() => resolveAssetCandidates(props.path))
 
-const displaySrc = computed(() => {
+const activeCandidate = computed(() => {
   if (!props.path || failedAll.value) return ''
   const list = candidates.value
   if (!list.length) return ''
@@ -54,6 +58,18 @@ const placeholderLabel = computed(() => {
   return props.label
 })
 
+async function resolveRenderSrc(url) {
+  const token = ++resolveToken
+  if (!url) {
+    renderSrc.value = ''
+    return
+  }
+
+  const resolved = await downloadRemoteImage(url)
+  if (token !== resolveToken) return
+  renderSrc.value = resolved || url
+}
+
 watch(
   () => props.path,
   () => {
@@ -61,6 +77,15 @@ watch(
     hasLoaded.value = false
     failedAll.value = false
   },
+)
+
+watch(
+  () => [props.path, candidateIndex.value, candidates.value.join('|')],
+  () => {
+    candidateIndex.value = Math.min(candidateIndex.value, Math.max(candidates.value.length - 1, 0))
+    void resolveRenderSrc(activeCandidate.value)
+  },
+  { immediate: true },
 )
 
 function handleError() {
@@ -84,7 +109,7 @@ function handleLoad() {
   width: 100%;
   overflow: hidden;
 }
-.chat-asset-wrap image {
+.chat-asset-image {
   position: relative;
   z-index: 1;
 }

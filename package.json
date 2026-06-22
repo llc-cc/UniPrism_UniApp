@@ -2,8 +2,9 @@
   "name": "uniprism-uniapp",
   "version": "1.0.0",
   "scripts": {
-    "dev:mp-weixin": "uni -p mp-weixin",
-    "build:mp-weixin": "uni build -p mp-weixin",
+    "dev:mp-weixin": "uni -p mp-weixin --mode development",
+    "dev:mp-weixin:device": "uni -p mp-weixin --mode device",
+    "build:mp-weixin": "uni build -p mp-weixin --mode production",
     "assets:catalog": "node scripts/generate-md-asset-catalog.mjs",
     "assets:fallback": "node scripts/generate-image-fallback-map.mjs",
     "assets:sync": "node scripts/sync-miniapp-assets.mjs",
