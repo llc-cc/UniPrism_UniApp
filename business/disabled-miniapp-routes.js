@@ -1,8 +1,43 @@
 /** 暂未开放的小程序页面（成就、更多）。 */
-export const DISABLED_MINIAPP_ROUTES = [
-  '/pages/achievement/index',
-  '/pages/help/index',
-]
+export const DISABLED_MINIAPP_ROUTES = []
+
+/** 专业体验（学院卡片 / 专业详情）已开放。 */
+export const MAJOR_EXPERIENCE_ENABLED = true
+
+/** 专业体验首页的学院入口当前已开放。 */
+export const DISABLED_MAJOR_EXPERIENCE_COLLEGES = []
+
+export function showMajorExperienceDisabledTip() {
+  uni.showToast({
+    title: '专业体验功能暂未开放',
+    icon: 'none',
+  })
+}
+
+export function showMajorExperienceCollegeDisabledTip() {
+  uni.showToast({
+    title: '该学院内容暂未开放',
+    icon: 'none',
+  })
+}
+
+/** 拦截专业体验跳转；返回 true 表示已拦截。 */
+export function guardMajorExperienceNavigation() {
+  if (MAJOR_EXPERIENCE_ENABLED) return false
+  showMajorExperienceDisabledTip()
+  return true
+}
+
+export function isMajorExperienceCollegeDisabled(collegeId) {
+  return DISABLED_MAJOR_EXPERIENCE_COLLEGES.includes(String(collegeId || '').trim())
+}
+
+/** 拦截学院入口跳转；返回 true 表示已拦截。 */
+export function guardMajorExperienceCollegeNavigation(collegeId) {
+  if (!isMajorExperienceCollegeDisabled(collegeId)) return false
+  showMajorExperienceCollegeDisabledTip()
+  return true
+}
 
 const DISABLED_ROUTE_LABELS = {
   '/pages/achievement/index': '成就',

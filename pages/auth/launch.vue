@@ -59,10 +59,11 @@
 </template>
 
 <script>
-import { buildLoginUrl, hasAppAccess, goAppHome } from '../../business/auth-guard'
+import { buildLoginUrl, hasAppAccess, goAppHome, markOnboardingCompleted } from '../../business/auth-guard'
 import { ensureExploreSessionId } from '../../business/profile-sync'
+import { POST_LOGIN_PROFILE_URL } from '../../business/report-auth-flow'
 
-const DEFAULT_NEXT_URL = '/pages/discover/chat?start=1'
+const DEFAULT_NEXT_URL = POST_LOGIN_PROFILE_URL
 
 export default {
   data() {
@@ -191,6 +192,7 @@ export default {
       this.currentSlide += 1
     },
     async finishLaunch() {
+      markOnboardingCompleted()
       const nextUrl = String(this.nextUrl || DEFAULT_NEXT_URL).trim()
       if (nextUrl) {
         uni.showLoading({ title: '准备探索...' })

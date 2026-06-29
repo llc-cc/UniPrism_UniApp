@@ -1,11 +1,34 @@
 import { api } from '../utils/api'
+import { normalizePhone } from './auth-credential-rules'
 import { guardDisabledMiniAppRoute } from './disabled-miniapp-routes'
+import {
+  clearPendingReportGeneration,
+  hasPendingReportGeneration,
+  POST_LOGIN_PROFILE_URL,
+  POST_LOGIN_REPORT_URL,
+  resolvePostReportLoginTarget,
+} from './report-auth-flow'
 
 const AUTH_PAGE = '/pages/auth/login'
 const HOME_PAGE = '/pages/discover/index'
 const POST_LOGIN_LAUNCH_URL = '/pages/auth/launch'
-const POST_LOGIN_BASIC_INFO_URL = '/pages/discover/chat?start=1'
+const POST_LOGIN_BASIC_INFO_URL = POST_LOGIN_PROFILE_URL
+
+/** 未登录也可访问的页面（满足微信审核：先体验功能，再按需登录）。 */
+const PUBLIC_ROUTE_PREFIXES = [
+  '/pages/discover/',
+  '/pages/placeholder/',
+  '/pages/learn/',
+  '/pages/progress/',
+  '/pages/profile/feedback',
+  '/pages/profile/personal-info',
+  '/subpkg/discover/',
+  '/subpkg/math/',
+]
 export const POST_LOGIN_FLOW_FLAG = 'uniprism.postLoginFlowPending'
+export const ONBOARDING_COMPLETED_FLAG = 'uniprism.onboardingCompleted'
+export const ONBOARDING_USER_ID_KEY = 'uniprism.onboardingCompletedUserId'
+export const KNOWN_LOGIN_PHONES_KEY = 'uniprism.knownLoginPhones'
 
 /** 开发阶段跳过登录；上线前改为 false。 */
 const SKIP_LOGIN = false
@@ -18,11 +41,78 @@ export function hasAppAccess() {
   return api.isLoggedIn()
 }
 
+function readKnownLoginPhones() {
+  const raw = uni.getStorageSync(KNOWN_LOGIN_PHONES_KEY)
+  if (Array.isArray(raw)) {
+    return raw.map((item) => normalizePhone(item)).filter(Boolean)
+  }
+  const single = normalizePhone(raw)
+  return single ? [single] : []
+}
+
+function rememberLoginPhone(phone) {
+  const normalized = normalizePhone(phone)
+  if (!normalized) return
+  const phones = readKnownLoginPhones()
+  if (phones.includes(normalized)) return
+  uni.setStorageSync(KNOWN_LOGIN_PHONES_KEY, [...phones, normalized].slice(-20))
+}
+
+export function hasKnownLoginPhone(phone) {
+  const normalized = normalizePhone(phone)
+  if (!normalized) return false
+  return readKnownLoginPhones().includes(normalized)
+}
+
+function getAuthUserId(res) {
+  return (res && res.data && res.data.user && res.data.user.id) || ''
+}
+
+function getAuthUserPhone(res) {
+  return normalizePhone((res && res.data && res.data.user && res.data.user.phone) || '')
+}
+
+/** 清除登录后引导流程本地标记（保留已登录过的手机号记录）。 */
+export function clearPostLoginFlowState() {
+  uni.removeStorageSync(POST_LOGIN_FLOW_FLAG)
+  uni.removeStorageSync(ONBOARDING_COMPLETED_FLAG)
+}
+
+/** 启动引导完成后调用。 */
+export function markOnboardingCompleted(userId) {
+  const user = api.getUser()
+  const resolvedUserId = userId || (user && user.id) || ''
+  if (resolvedUserId) {
+    uni.setStorageSync(ONBOARDING_USER_ID_KEY, resolvedUserId)
+  }
+  if (user && user.phone) {
+    rememberLoginPhone(user.phone)
+  }
+  uni.setStorageSync(ONBOARDING_COMPLETED_FLAG, '1')
+  uni.removeStorageSync(POST_LOGIN_FLOW_FLAG)
+}
+
+export function hasCompletedLaunchForUser(userId) {
+  if (!userId) return false
+  return uni.getStorageSync(ONBOARDING_USER_ID_KEY) === userId
+}
+
+/** 是否仍有待完成的首次启动引导。 */
+export function needsPendingLaunchFlow() {
+  return Boolean(uni.getStorageSync(POST_LOGIN_FLOW_FLAG))
+}
+
+/** 恢复未完成的启动引导（已登录、从登录页重进时）。 */
+export function resumePostLoginFlow(nextUrl = POST_LOGIN_BASIC_INFO_URL) {
+  safeReLaunch(`${POST_LOGIN_LAUNCH_URL}?next=${encodeURIComponent(nextUrl)}`)
+}
+
 /** 清除历史测试数据（跳过登录残留）。 */
 export function cleanupStaleAuthState() {
   if (SKIP_LOGIN || api.isLoggedIn()) return
   uni.removeStorageSync('uniprism.token')
   uni.removeStorageSync('uniprism.user')
+  clearPostLoginFlowState()
 }
 
 function getCurrentRoute() {
@@ -35,12 +125,24 @@ function isAuthPage(route) {
   return route === AUTH_PAGE || route.endsWith('auth/login')
 }
 
+export function isPublicRoute(url) {
+  const path = getRoutePath(url)
+  if (!path) return true
+  if (isAuthPage(path)) return true
+  if (path === '/pages/profile/index') return true
+  return PUBLIC_ROUTE_PREFIXES.some((prefix) => path.startsWith(prefix))
+}
+
 function isHomePage(route) {
   return route === HOME_PAGE || route.endsWith('discover/index')
 }
 
 function getRoutePath(route) {
   return String(route || '').split('?')[0]
+}
+
+function isInternalAuthRedirect(url) {
+  return url.includes('/pages/auth/login') || url.includes('/pages/auth/launch')
 }
 
 export function buildLoginUrl(redirectUrl = '') {
@@ -67,45 +169,107 @@ function safeReLaunch(url) {
   })
 }
 
-/** 未登录时跳转登录页（登录页本身豁免；启动瞬间 page 栈未就绪时不跳转）。 */
+function routeToHome(redirectUrl = '') {
+  uni.removeStorageSync(POST_LOGIN_FLOW_FLAG)
+
+  if (redirectUrl && !isInternalAuthRedirect(redirectUrl)) {
+    safeReLaunch(redirectUrl)
+    return
+  }
+  goAppHome()
+}
+
+/** 未登录时跳转登录页（仅拦截需登录页面；公开页可自由浏览）。 */
 export function ensureAppAccess() {
   if (hasAppAccess()) return
 
   const route = getCurrentRoute()
-  if (!route || isAuthPage(route)) return
+  if (!route || isPublicRoute(route)) return
 
   safeReLaunch(buildLoginUrl(route))
 }
 
-/**
- * 登录成功后按是否新用户分流：
- * - isNewUser === false（手机号已注册过）→ 兴趣探索主页
- * - 否则 → 启动引导 + 基本信息
- */
-export function routeAfterLogin(res) {
-  const isNewUser = res && res.data && res.data.isNewUser
-  if (isNewUser === false) {
-    uni.removeStorageSync(POST_LOGIN_FLOW_FLAG)
-    goAppHome()
-    return
-  }
-
-  uni.setStorageSync(POST_LOGIN_FLOW_FLAG, '1')
-  uni.reLaunch({
-    url: `${POST_LOGIN_LAUNCH_URL}?next=${encodeURIComponent(POST_LOGIN_BASIC_INFO_URL)}`,
-    fail: () => {
-      uni.reLaunch({ url: POST_LOGIN_LAUNCH_URL })
-    },
-  })
+/** 用户主动触发需登录能力时调用。 */
+export function promptLogin(redirectUrl = '') {
+  safeReLaunch(buildLoginUrl(redirectUrl || getCurrentRoute()))
 }
 
-/** 登录成功后进入首页。 */
-export function goAppHome() {
-  if (!hasAppAccess()) {
-    safeReLaunch(buildLoginUrl(getCurrentRoute()))
+function readIsNewUserFlag(res) {
+  if (!res || !res.data || res.data.isNewUser === undefined || res.data.isNewUser === null) {
+    return null
+  }
+  return res.data.isNewUser === true
+}
+
+/**
+ * 登录成功后是否进入启动引导页。
+ *
+ * - 邀请码注册 / 邮箱注册 / 手机号·微信首次 → 启动页
+ * - 手机号再次登录 / 用户 ID 密码登录 / 邀请码重置密码 → 兴趣探索首页
+ *
+ * @param {import('../utils/api').ApiEnvelope} res
+ * @param {string} [loginMethod]
+ */
+export function shouldRouteToLaunchAfterLogin(res, loginMethod = '') {
+  const userId = getAuthUserId(res)
+  const phone = getAuthUserPhone(res)
+
+  if (loginMethod === 'invite-login' || loginMethod === 'invite-reset') {
+    return false
+  }
+
+  if (hasCompletedLaunchForUser(userId)) {
+    return false
+  }
+
+  if ((loginMethod === 'phone' || loginMethod === 'wechat') && phone && hasKnownLoginPhone(phone)) {
+    return false
+  }
+
+  if (loginMethod === 'invite-register' || loginMethod === 'email-register') {
+    return true
+  }
+
+  const isNewUser = readIsNewUserFlag(res)
+  if (loginMethod === 'phone' || loginMethod === 'wechat') {
+    if (isNewUser === false) return false
+    if (isNewUser === true) return true
+    // 后端未返回 isNewUser 时，保守视为首次，进入启动页
+    return true
+  }
+
+  return isNewUser !== false
+}
+
+/**
+ * @param {import('../utils/api').ApiEnvelope} res
+ * @param {{ loginMethod?: string, redirectUrl?: string }} [options]
+ */
+export function routeAfterLogin(res, options = {}) {
+  const loginMethod = options.loginMethod || ''
+  const redirectUrl = String(options.redirectUrl || '').trim()
+  const userId = getAuthUserId(res)
+  const phone = getAuthUserPhone(res)
+
+  if (hasPendingReportGeneration()) {
+    if (phone) rememberLoginPhone(phone)
+    clearPendingReportGeneration()
+
+    const nextUrl = resolvePostReportLoginTarget(res)
+    if (nextUrl !== POST_LOGIN_REPORT_URL) {
+      uni.setStorageSync(POST_LOGIN_FLOW_FLAG, '1')
+      uni.removeStorageSync(ONBOARDING_COMPLETED_FLAG)
+    }
+    safeReLaunch(nextUrl)
     return
   }
 
+  if (phone) rememberLoginPhone(phone)
+  routeToHome(redirectUrl)
+}
+
+/** 进入兴趣探索首页（不要求已登录）。 */
+export function goAppHome() {
   const route = getCurrentRoute()
   if (isHomePage(route)) return
 
@@ -127,7 +291,7 @@ export function setupAuthNavigationGuard() {
     if (guardDisabledMiniAppRoute(url)) return false
 
     if (hasAppAccess()) return options
-    if (url.includes('auth/login')) return options
+    if (isPublicRoute(url)) return options
 
     safeReLaunch(buildLoginUrl(url || getCurrentRoute()))
     return false
@@ -140,9 +304,7 @@ export function setupAuthNavigationGuard() {
   uni.addInterceptor('reLaunch', {
     invoke(options) {
       const url = (options && options.url) || ''
-      if (url.includes('auth/login') || url.includes('discover/index')) {
-        return options
-      }
+      if (isPublicRoute(url)) return options
       return guard(options)
     },
   })

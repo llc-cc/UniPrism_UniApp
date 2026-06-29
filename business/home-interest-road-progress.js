@@ -33,10 +33,11 @@ const STAGE_LABELS = {
   deep: '深度测评',
 }
 
+/** 路线节点进度（按 interest-road.svg 路径长度校准，对齐各阶段图标位置） */
 const ROAD_NODE_PROGRESS = {
-  personality: 18,
-  holland: 38,
-  deep: 82,
+  personality: 22,
+  holland: 33,
+  deep: 64,
   report: 100,
 }
 
@@ -50,7 +51,8 @@ const CONTINUE_CTA_SIZE = { width: 160, height: 70 }
 export const INTEREST_MAP_CTA_TIP_ANCHORS = {
   personality: { x: 200, y: 300 },
   holland: { x: 480, y: 410 },
-  deep: { x: 615, y: 505 },
+  // 深度测评：路径右侧、箭头与图标之间（对齐 index.vue 深度阶段布局）
+  deep: { x: 520, y: 645 },
 }
 
 /** 报告气泡固定位置（rpx，勿随继续探索锚点改动） */
@@ -120,12 +122,12 @@ function resolveCurrentStageIndex(normalizedStages) {
  */
 export function getContinueExploreUrl(session, anchorNodeId) {
   const anchorIndex = STAGE_ORDER.indexOf(anchorNodeId)
-  if (anchorIndex < 0) return '/pages/discover/chat'
+  if (anchorIndex < 0) return '/subpkg/discover/chat'
 
   const screenId = getSessionScreenId(session)
   const screenStageIndex = getScreenStageIndex(screenId)
   if (screenStageIndex >= anchorIndex && screenId !== 'basic') {
-    return '/pages/discover/chat'
+    return '/subpkg/discover/chat'
   }
   return getStageIntroUrl(anchorNodeId)
 }
@@ -155,7 +157,7 @@ export function buildHomeInterestRoadView({ stages, discoveryCompleted, report, 
       cta: {
         kind: 'view-report',
         label: '查看报告',
-        url: '/pages/discover/results',
+        url: '/subpkg/discover/results',
         anchorNodeId: 'report',
       },
     }
@@ -171,7 +173,7 @@ export function buildHomeInterestRoadView({ stages, discoveryCompleted, report, 
       cta: {
         kind: reportInProgress ? 'report-progress' : 'generate-report',
         label: reportInProgress ? '查看进度' : '生成报告',
-        url: reportInProgress ? '/pages/discover/results' : '/pages/discover/chat?screen=complete',
+        url: reportInProgress ? '/subpkg/discover/results' : '/subpkg/discover/chat?screen=complete',
         anchorNodeId: 'report',
       },
     }
@@ -214,17 +216,21 @@ export function buildHomeInterestRoadView({ stages, discoveryCompleted, report, 
 /** @param {number} percent */
 export function getRoadProgressAsset(percent) {
   const value = clampPercent(percent)
-  if (value >= 92) return '/static/assets/discover/road-progress-4.svg'
-  if (value >= 55) return '/static/assets/discover/road-progress-3.svg'
-  if (value >= 28) return '/static/assets/discover/road-progress-2.svg'
+  const { personality, holland, deep, report } = ROAD_NODE_PROGRESS
+  const hollandMid = (personality + holland) / 2
+  const deepMid = (holland + deep) / 2
+  const reportMid = (deep + report) / 2
+  if (value >= reportMid) return '/static/assets/discover/road-progress-4.svg'
+  if (value >= deepMid) return '/static/assets/discover/road-progress-3.svg'
+  if (value >= hollandMid) return '/static/assets/discover/road-progress-2.svg'
   return '/static/assets/discover/road-progress-1.svg'
 }
 
 /** @param {HomeInterestRoadNodeId} nodeId */
 export function getStageIntroUrl(nodeId) {
-  if (nodeId === 'personality') return '/pages/discover/chat?screen=stage-personality-intro'
-  if (nodeId === 'holland') return '/pages/discover/chat?screen=stage-holland-intro'
-  if (nodeId === 'deep') return '/pages/discover/chat?screen=stage-deep-intro'
-  if (nodeId === 'report') return '/pages/discover/chat?screen=complete'
-  return '/pages/discover/chat'
+  if (nodeId === 'personality') return '/subpkg/discover/chat?screen=stage-personality-intro'
+  if (nodeId === 'holland') return '/subpkg/discover/chat?screen=stage-holland-intro'
+  if (nodeId === 'deep') return '/subpkg/discover/chat?screen=stage-deep-intro'
+  if (nodeId === 'report') return '/subpkg/discover/chat?screen=complete'
+  return '/subpkg/discover/chat'
 }

@@ -29,6 +29,18 @@ function isDevBuild(): boolean {
   }
 }
 
+function isProductionBuild(): boolean {
+  try {
+    return typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'production'
+  } catch {
+    return false
+  }
+}
+
+function shouldUseLocalFallback(): boolean {
+  return true
+}
+
 function getEnvApiBase(): string {
   if (typeof process === 'undefined' || !process.env) return ''
   return (process.env.VUE_APP_API_BASE_URL || process.env.VITE_APP_API_BASE_URL || '').replace(/\/$/, '')
@@ -112,6 +124,8 @@ function buildRemoteAssetUrlCandidates(objectPath: string): string[] {
 }
 
 function appendLocalCandidates(objectPath: string, candidates: string[]): string[] {
+  if (!shouldUseLocalFallback()) return [...new Set(candidates.filter(Boolean))]
+
   const local = getLocalAsset(objectPath)
   if (local) candidates.push(local)
 
@@ -129,16 +143,13 @@ function appendLocalCandidates(objectPath: string, candidates: string[]): string
 }
 
 /**
- * 将相对或站内绝对路径转为可加载 URL。
- * 1. /static/* 等小程序内置资源 → 原样使用
- * 2. OSS 收录路径 → CDN direct URL（上线默认）
- * 3. local-asset-map / remote-asset-registry → 仅作离线兜底
- * 4. /images/* SVG fallback → 最后兜底
+ * OSS/MD 目录资源优先走 CDN，跳过 local-asset-map 的 SVG 兜底。
+ * 报告页麦穗、专业 flat2d 图标等需展示文档中的正式素材时使用。
  */
-export function resolveAsset(src: string | undefined): string {
+export function resolveCatalogAsset(src: string | undefined): string {
   if (!src) return ''
 
-  if (src.startsWith('/static/')) return src
+  if (src.startsWith('/static/') || src.startsWith('/subpkg/')) return src
 
   const objectPath = normalizePath(src)
   if (!objectPath) return ''
@@ -146,9 +157,6 @@ export function resolveAsset(src: string | undefined): string {
   if (isRemoteCatalogPath(objectPath)) {
     return buildRemoteAssetUrlCandidates(objectPath)[0] || ''
   }
-
-  const local = getLocalAsset(objectPath)
-  if (local) return local
 
   const downloaded = getDownloadedRemoteAsset(objectPath)
   if (downloaded) return downloaded
@@ -159,11 +167,96 @@ export function resolveAsset(src: string | undefined): string {
   return ''
 }
 
+/**
+ * 将相对或站内绝对路径转为可加载 URL。
+ * 1. /static/* 等小程序内置资源 → 原样使用
+ * 2. 有本地 SVG 兜底 → 优先本地（保证不出空缺）
+ * 3. OSS 收录路径 → CDN direct URL
+ * 4. 其他本地资源 → local-asset-map / remote-asset-registry
+ */
+export function resolveAsset(src: string | undefined): string {
+  if (!src) return ''
+
+  if (src.startsWith('/static/') || src.startsWith('/subpkg/')) return src
+
+  const objectPath = normalizePath(src)
+  if (!objectPath) return ''
+
+  const local = getLocalAsset(objectPath)
+  if (local) return local
+
+  if (isRemoteCatalogPath(objectPath)) {
+    return buildRemoteAssetUrlCandidates(objectPath)[0] || ''
+  }
+
+  const downloaded = getDownloadedRemoteAsset(objectPath)
+  if (downloaded) return downloaded
+
+  const fallback = getImageFallback(objectPath)
+  if (fallback) return fallback
+
+  return ''
+}
+
+/**
+ * 小程序视频 URL 候选链：CDN → 主站 → OSS 代理 → 本地开发 API。
+ * 微信 `<video>` 对主站安全头较敏感，优先走 assets CDN。
+ */
+export function resolveVideoAssetCandidates(src: string | undefined): string[] {
+  if (!src) return []
+
+  if (src.startsWith('/static/') || src.startsWith('/subpkg/')) return [src]
+
+  if (/^https?:\/\//i.test(src)) {
+    const objectPath = normalizePath(src)
+    if (objectPath?.startsWith('/videos/')) {
+      return buildVideoUrlCandidates(objectPath)
+    }
+    return [src]
+  }
+
+  const objectPath = normalizePath(src)
+  if (!objectPath) return []
+
+  if (objectPath.startsWith('/videos/')) {
+    return buildVideoUrlCandidates(objectPath)
+  }
+
+  const resolved = resolveAsset(src)
+  return resolved ? [resolved] : []
+}
+
+function buildVideoUrlCandidates(objectPath: string): string[] {
+  const candidates: string[] = []
+  const assetHost = getAssetHost().replace(/\/$/, '')
+
+  if (assetHost) {
+    candidates.push(buildDirectUrl(assetHost, objectPath))
+  }
+  if (assetHost !== DEFAULT_ASSET_HOST) {
+    candidates.push(buildDirectUrl(DEFAULT_ASSET_HOST, objectPath))
+  }
+  candidates.push(buildDirectUrl(LEGACY_ASSET_HOST, objectPath))
+  candidates.push(buildDirectUrl(LEGACY_ASSET_HOST, `/api/oss-assets${objectPath}`))
+
+  const devApiBase = getRuntimeDevApiBase()
+  if (devApiBase) {
+    candidates.push(buildDirectUrl(devApiBase, `/api/oss-assets${objectPath}`))
+  }
+
+  return [...new Set(candidates.filter(Boolean))]
+}
+
+/** @deprecated 请优先使用 resolveVideoAssetCandidates + downloadRemoteVideo */
+export function resolveVideoAsset(src: string | undefined): string {
+  return resolveVideoAssetCandidates(src)[0] || ''
+}
+
 /** 返回候选 URL（CDN → 本地 API → local → SVG fallback） */
 export function resolveAssetCandidates(src: string | undefined): string[] {
   if (!src) return []
 
-  if (src.startsWith('/static/')) return [src]
+  if (src.startsWith('/static/') || src.startsWith('/subpkg/')) return [src]
 
   const objectPath = normalizePath(src)
   if (!objectPath) return []

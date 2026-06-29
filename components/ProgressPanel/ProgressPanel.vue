@@ -17,14 +17,14 @@
 </template>
 
 <script>
-import { loadDiscoverSession } from '../../business/discover-session'
+import { loadDiscoverSession } from '../../business/discover-session-storage'
 import { SCREEN_QUESTION_IDS } from '../../business/discover-chat-screens'
 import {
   FINAL_CAREER_CALIBRATION_QUESTION_IDS,
   MBTI_KNOWN_QUESTION_ID,
   computePreCareerRiasecTopDimensions,
   getHollandFineQuestionIdsForDimensions,
-} from '../../business/discover-questions'
+} from '../../business/discover-progress-helpers'
 import { isDiscoveryCompleted } from '../../business/interest-progress-snapshot'
 
 const unique = (items) => [...new Set(items.filter(Boolean))]

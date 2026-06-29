@@ -10,7 +10,7 @@ import { fileURLToPath } from 'url'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const root = path.resolve(__dirname, '..')
 const webPath = path.resolve(root, '..', 'UniPrism_New-main', 'lib', 'discover-questions.ts')
-const appPath = path.join(root, 'business', 'discover-questions.ts')
+const appPath = path.join(root, 'subpkg', 'discover', 'business', 'discover-questions.ts')
 
 function extractActiveIdsBlock(content) {
   const match = content.match(/const ACTIVE_QUESTION_IDS = \[([\s\S]*?)\] as const;/)

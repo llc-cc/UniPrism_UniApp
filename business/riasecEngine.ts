@@ -149,8 +149,9 @@ const MAJOR_PROFILES: MajorProfile[] = [
   { majorId: 'psych-u', name: '心理学', dimensions: ['S', 'I', 'A'], weights: [0.4, 0.3, 0.3], description: '理解人类心理与行为' },
 
   // 经管法
-  { majorId: 'econ-u', name: '经济学', dimensions: ['I', 'E', 'C'], weights: [0.3, 0.4, 0.3], description: '经济现象与政策分析' },
-  { majorId: 'finance-u', name: '金融学', dimensions: ['E', 'I', 'C'], weights: [0.4, 0.3, 0.3], description: '金融市场与投资' },
+  { majorId: 'econ-u', name: '经济学院', dimensions: ['I', 'E', 'C'], weights: [0.3, 0.4, 0.3], description: '经济现象与政策分析' },
+  { majorId: 'finance-u', name: '金融学院', dimensions: ['E', 'I', 'C'], weights: [0.4, 0.3, 0.3], description: '金融市场与投资' },
+  { majorId: 'marketing-u', name: '营销学院', dimensions: ['E', 'A', 'S'], weights: [0.4, 0.3, 0.3], description: '市场营销与品牌增长' },
   { majorId: 'actuarial-u', name: '精算学', dimensions: ['I', 'C', 'E'], weights: [0.4, 0.4, 0.2], description: '保险定价、准备金与风险资本' },
   { majorId: 'acct-u', name: '会计学', dimensions: ['C', 'E', 'I'], weights: [0.4, 0.3, 0.3], description: '财务报告与审计' },
   { majorId: 'law-u', name: '法学', dimensions: ['E', 'S', 'I'], weights: [0.3, 0.4, 0.3], description: '法律制度与司法实践' },
@@ -209,9 +210,6 @@ export function computeProfile(rawScores: RIASECScores): RIASECProfile {
   };
 }
 
-/**
- * Match RIASEC profile to university majors
- */
 export function matchMajors(scores: RIASECScores, topN: number = 3): MajorMatch[] {
   const normalized = normalizeScores(scores);
 
@@ -232,6 +230,13 @@ export function matchMajors(scores: RIASECScores, topN: number = 3): MajorMatch[
 
   results.sort((a, b) => b.matchScore - a.matchScore);
   return results.slice(0, topN);
+}
+
+export function getMajorLabelById(majorId: string): string {
+  const normalizedId = String(majorId || '').trim();
+  if (!normalizedId) return '';
+  const profile = MAJOR_PROFILES.find((item) => item.majorId === normalizedId);
+  return profile?.name || '';
 }
 
 /**

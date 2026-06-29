@@ -3,52 +3,53 @@
     <view class="login-page-bg">
       <view class="bg-glow bg-glow-top" />
       <view class="bg-glow bg-glow-bottom" />
-      <view class="bg-orbit orbit-one" />
-      <view class="bg-orbit orbit-two" />
-      <view class="bg-orbit orbit-three" />
+      <view class="bg-waves">
+        <image
+          class="bg-waves-img"
+          src="/static/assets/auth/login-background-waves.svg?v=5"
+          mode="widthFix"
+        />
+      </view>
     </view>
 
     <view class="login-shell" :style="shellStyle">
       <!-- 落地页 -->
       <view v-if="screen === 'landing'" class="landing-view">
-        <view class="brand-hero">
-          <image class="brand-logo" src="/static/prism-logo.svg" mode="aspectFit" />
+        <view class="landing-brand">
+          <image class="brand-logo" src="/static/assets/auth/login-brand-mark.svg" mode="aspectFit" />
           <text class="brand-title">万有棱镜</text>
           <text class="brand-subtitle">告别专业迷茫，从容规划职业</text>
         </view>
 
-        <view class="entry-button-row">
-          <button class="entry-pill" @tap="openPhone">
-            <image class="entry-icon" src="/static/assets/auth/login-icon-phone.svg" mode="aspectFit" />
-            <text class="entry-label">手机号登录</text>
-          </button>
+        <view class="landing-spacer" />
 
-          <!-- #ifdef MP-WEIXIN -->
-          <button
-            v-if="wechatLoginEnabled"
-            class="entry-pill"
-            :disabled="wechatLoading"
-            @tap="openWechat"
-          >
-            <image class="entry-icon" src="/static/assets/auth/login-icon-wechat.svg" mode="aspectFit" />
-            <text class="entry-label">{{ wechatLoading ? '登录中...' : '微信登录' }}</text>
-          </button>
-          <!-- #endif -->
+        <view class="landing-actions">
+          <view class="entry-button-row">
+            <!-- #ifdef MP-WEIXIN -->
+            <button
+              v-if="wechatLoginEnabled"
+              class="entry-pill entry-pill--primary"
+              plain
+              hover-class="none"
+              :disabled="wechatLoading"
+              @tap="openWechat"
+            >
+              <image class="entry-icon" src="/static/assets/auth/login-icon-wechat.svg" mode="aspectFit" />
+              <text class="entry-label">{{ wechatLoading ? '登录中...' : '一键登录' }}</text>
+            </button>
+            <!-- #endif -->
 
-          <button class="entry-pill" @tap="openInviteCode">
-            <image class="entry-icon" src="/static/assets/auth/login-icon-ticket.svg" mode="aspectFit" />
-            <text class="entry-label">内测资格码</text>
-          </button>
+            <button class="entry-pill entry-pill--primary" plain hover-class="none" @tap="openPhone">
+              <image class="entry-icon" src="/static/assets/auth/login-icon-phone.svg" mode="aspectFit" />
+              <text class="entry-label">手机号登录</text>
+            </button>
+          </view>
+
+          <text v-if="displayError" class="error error--landing">{{ displayError }}</text>
         </view>
-
-        <view class="landing-links">
-          <text class="landing-link" @tap="openInviteLoginFromLanding">已有账号？立即登录</text>
-        </view>
-
-        <text v-if="displayError" class="error error--landing">{{ displayError }}</text>
       </view>
 
-      <!-- 子页面：手机号 / 邀请码 / 邀请表单 -->
+      <!-- 子页面：手机号 / 微信 -->
       <view v-else class="sub-view">
         <view class="sub-nav">
           <view class="back-btn" @tap="goBack">
@@ -92,6 +93,11 @@
           </view>
           <text v-if="smsCodeIssue" class="field-issue">{{ smsCodeIssue }}</text>
 
+          <view v-if="smsDevHint || smsDevCode" class="dev-sms-hint">
+            <text v-if="smsDevHint" class="dev-sms-hint-text">{{ smsDevHint }}</text>
+            <text v-if="smsDevCode" class="dev-sms-code">开发验证码：{{ smsDevCode }}</text>
+          </view>
+
           <text v-if="displayError" class="error">{{ displayError }}</text>
 
           <button
@@ -104,11 +110,11 @@
           </button>
         </view>
 
-        <!-- 微信登录（原生头像 / 昵称 / 手机号授权） -->
+        <!-- 一键登录（原生头像 / 昵称 / 手机号） -->
         <!-- #ifdef MP-WEIXIN -->
         <view v-else-if="screen === 'wechat'" class="sub-content">
-          <text class="sub-title">微信登录</text>
-          <text class="sub-desc">选择头像、填写昵称，并授权手机号。报告中的称呼请在基本信息里单独填写。</text>
+          <text class="sub-title">一键登录</text>
+          <text class="sub-desc">完善头像与昵称，并完成手机号验证。报告中的称呼请在基本信息里单独填写。</text>
 
           <button class="wechat-native-avatar" open-type="chooseAvatar" @chooseavatar="onChooseWechatAvatar">
             <image
@@ -141,127 +147,36 @@
             :loading="wechatLoading"
             @getphonenumber="handleWechatLogin"
           >
-            {{ wechatLoading ? '登录中...' : '授权手机号并登录' }}
+            {{ wechatLoading ? '登录中...' : '确认登录' }}
           </button>
         </view>
         <!-- #endif -->
-
-        <!-- 邀请码（内测） -->
-        <view v-else-if="screen === 'invite-code'" class="sub-content">
-          <text class="sub-title">邀请码用于内测</text>
-          <text class="sub-desc">如未获得邀请码请联系咨询顾问。</text>
-
-          <view class="pill-field">
-            <input
-              class="pill-input"
-              v-model="inviteCode"
-              placeholder="请输入机构邀请码"
-              placeholder-class="pill-placeholder"
-              maxlength="96"
-            />
-          </view>
-          <text v-if="inviteCodeIssue" class="field-issue">{{ inviteCodeIssue }}</text>
-
-          <text v-if="displayError" class="error">{{ displayError }}</text>
-
-          <button
-            class="pill-submit"
-            :class="{ 'pill-submit--active': inviteCode.trim() }"
-            :disabled="loading || !inviteCode.trim()"
-            @tap="handleInviteCodeSubmit"
-          >
-            {{ loading ? '处理中...' : '登录' }}
-          </button>
-        </view>
-
-        <!-- 邀请码账号表单 -->
-        <view v-else-if="screen === 'invite-form'" class="sub-content">
-          <text class="sub-title">{{ inviteFormTitle }}</text>
-          <text class="sub-desc">{{ inviteFormDesc }}</text>
-
-          <view v-if="inviteMode === 'register' && inviteStep === 'details'" class="invite-chip">
-            <view class="invite-chip-copy">
-              <text class="invite-chip-label">当前邀请码</text>
-              <text class="invite-chip-text">{{ inviteCode }}</text>
-            </view>
-            <text class="invite-change" @tap="resetInviteRegister">更换</text>
-          </view>
-
-          <view v-if="inviteMode === 'reset'" class="pill-field">
-            <input
-              class="pill-input"
-              v-model="inviteCode"
-              placeholder="输入初始邀请码"
-              placeholder-class="pill-placeholder"
-              maxlength="96"
-            />
-          </view>
-          <text v-if="inviteCodeIssue" class="field-issue">{{ inviteCodeIssue }}</text>
-
-          <view class="pill-field">
-            <input
-              class="pill-input"
-              v-model="loginId"
-              :placeholder="inviteMode === 'register' ? '设置用户 ID' : '输入用户 ID'"
-              placeholder-class="pill-placeholder"
-              maxlength="32"
-            />
-          </view>
-          <text v-if="loginIdIssue" class="field-issue">{{ loginIdIssue }}</text>
-
-          <view class="pill-field">
-            <input
-              class="pill-input"
-              v-model="password"
-              type="password"
-              :placeholder="passwordPlaceholder"
-              placeholder-class="pill-placeholder"
-              maxlength="32"
-            />
-          </view>
-          <text v-if="passwordIssue" class="field-issue">{{ passwordIssue }}</text>
-
-          <view v-if="inviteMode === 'reset'" class="pill-field">
-            <input
-              class="pill-input"
-              v-model="confirmPassword"
-              type="password"
-              placeholder="确认新密码"
-              placeholder-class="pill-placeholder"
-              maxlength="32"
-            />
-          </view>
-          <text v-if="confirmPasswordIssue" class="field-issue">{{ confirmPasswordIssue }}</text>
-
-          <text v-if="displayError" class="error">{{ displayError }}</text>
-
-          <button
-            class="pill-submit pill-submit--active"
-            :disabled="loading"
-            @tap="handleSubmit"
-          >
-            {{ loading ? '处理中...' : primaryButtonText }}
-          </button>
-
-          <view class="sub-links">
-            <template v-if="inviteMode === 'register'">
-              <text class="sub-link" @tap="openInviteLogin">已有账号？立即登录</text>
-            </template>
-            <template v-else-if="inviteMode === 'login'">
-              <text class="sub-link" @tap="openInviteReset">忘记密码</text>
-            </template>
-            <template v-else>
-              <text class="sub-link" @tap="openInviteLogin">立即登录</text>
-            </template>
-          </view>
-        </view>
       </view>
 
       <view class="legal-row" @tap="toggleAgreement">
         <view class="legal-check" :class="{ 'legal-check--on': agreedToTerms }">
           <text v-if="agreedToTerms" class="legal-check-mark">✓</text>
         </view>
-        <text class="legal-text">我已阅读并同意《用户服务条款》及《隐私政策》</text>
+        <view class="legal-copy">
+          <text class="legal-text">我已阅读并同意</text>
+          <text class="legal-link" @tap.stop="openBetaNotice">《用户服务条款》</text>
+          <text class="legal-text">及</text>
+          <text class="legal-link" @tap.stop="openBetaNotice">《隐私政策》</text>
+        </view>
+      </view>
+    </view>
+
+    <view v-if="showBetaNotice" class="beta-notice-mask" @tap="closeBetaNotice">
+      <view class="beta-notice-dialog" @tap.stop>
+        <text class="beta-notice-title-en">Beta Notice</text>
+        <text class="beta-notice-title">内测期间声明</text>
+        <scroll-view class="beta-notice-scroll" scroll-y>
+          <text class="beta-notice-body">UniPrism 当前处于内测阶段，页面、功能、数据结构、服务内容和体验路径可能根据测试反馈、技术条件或合规要求调整、暂停或终止。</text>
+          <text class="beta-notice-body">邀请码登录用于识别内测账号、恢复探索记录、保存同意状态、改进体验质量和保障系统安全。平台只在提供当前服务所必需的范围内处理相关信息。</text>
+          <text class="beta-notice-body">专业探索、真实任务样本、测评结果、AI 提示和推荐内容仅用于兴趣验证与自我了解，不构成升学、就业、心理、医疗、法律、财务或其他专业意见。</text>
+          <text class="beta-notice-body">点击登录即代表您已知悉当前内测性质，并同意在内测范围内使用 UniPrism。若不同意上述声明，请暂时不要登录或继续使用会产生探索记录的功能。</text>
+        </scroll-view>
+        <button class="beta-notice-btn" @tap="closeBetaNotice">我已知悉</button>
       </view>
     </view>
   </scroll-view>
@@ -270,18 +185,14 @@
 <script>
 import { api } from '../../utils/api'
 import { completeAuthLogin } from '../../business/explore-session-merge'
-import { hasAppAccess, goAppHome, routeAfterLogin, POST_LOGIN_FLOW_FLAG } from '../../business/auth-guard'
+import { hasAppAccess, goAppHome, routeAfterLogin, needsPendingLaunchFlow, resumePostLoginFlow } from '../../business/auth-guard'
 import {
-  getInviteLoginIdIssue,
-  getInvitePinIssue,
   getPhoneIssue,
   getSmsCodeIssue,
   normalizePhone,
 } from '../../business/auth-credential-rules'
 import { WECHAT_LOGIN_ENABLED } from '../../business/wechat-login-config'
 
-const POST_LOGIN_LAUNCH_URL = '/pages/auth/launch'
-const POST_LOGIN_BASIC_INFO_URL = '/pages/discover/chat?start=1'
 
 export default {
   data() {
@@ -289,12 +200,6 @@ export default {
       screen: 'landing',
       agreedToTerms: false,
       shellStyle: '',
-      inviteMode: 'register',
-      inviteStep: 'invite',
-      inviteCode: '',
-      loginId: '',
-      password: '',
-      confirmPassword: '',
       phone: '',
       smsCode: '',
       error: '',
@@ -304,13 +209,15 @@ export default {
       smsSending: false,
       smsCooldown: 0,
       cooldownTimer: null,
+      smsDevHint: '',
+      smsDevCode: '',
       wechatLoading: false,
       wechatLoginEnabled: WECHAT_LOGIN_ENABLED,
       wechatAvatarTemp: '',
       wechatNickname: '',
       wechatProfileIssue: '',
-      inviteLoginFromLanding: false,
       redirectUrl: '',
+      showBetaNotice: false,
     }
   },
   computed: {
@@ -319,49 +226,6 @@ export default {
     },
     canSubmitPhone() {
       return Boolean(normalizePhone(this.phone) && !getSmsCodeIssue(this.smsCode))
-    },
-    primaryButtonText() {
-      if (this.inviteMode === 'register') return '注册并登录'
-      if (this.inviteMode === 'reset') return '重置并登录'
-      return '立即登录'
-    },
-    inviteFormTitle() {
-      if (this.inviteMode === 'register') return '创建你的账号'
-      if (this.inviteMode === 'reset') return '重置登录密码'
-      return '账号登录'
-    },
-    inviteFormDesc() {
-      if (this.inviteMode === 'register') return '设置全站唯一用户 ID 与登录密码'
-      if (this.inviteMode === 'reset') return '通过初始邀请码重设密码并继续登录'
-      return '输入用户 ID 与密码继续使用'
-    },
-    passwordPlaceholder() {
-      if (this.inviteMode === 'register') return '设置密码'
-      if (this.inviteMode === 'reset') return '设置新密码'
-      return '输入密码'
-    },
-    inviteCodeIssue() {
-      if (!this.showFieldValidation) return ''
-      if (this.screen === 'invite-code' || this.inviteMode === 'reset') {
-        return this.inviteCode.trim() ? '' : '请填写邀请码'
-      }
-      return ''
-    },
-    loginIdIssue() {
-      if (!this.showFieldValidation) return ''
-      if (!this.loginId.trim()) return '请填写用户 ID'
-      return getInviteLoginIdIssue(this.loginId) || ''
-    },
-    passwordIssue() {
-      if (!this.showFieldValidation) return ''
-      if (!this.password.trim()) return '请填写密码'
-      return getInvitePinIssue(this.password) || ''
-    },
-    confirmPasswordIssue() {
-      if (this.inviteMode !== 'reset' || !this.showFieldValidation) return ''
-      if (!this.confirmPassword.trim()) return '请确认新密码'
-      if (this.password === this.confirmPassword) return ''
-      return '两次输入的密码不一致。'
     },
     phoneIssue() {
       if (this.screen !== 'phone') return ''
@@ -376,10 +240,6 @@ export default {
     displayError() {
       if (!this.error) return ''
       const fieldErrors = [
-        this.inviteCodeIssue,
-        this.loginIdIssue,
-        this.passwordIssue,
-        this.confirmPasswordIssue,
         this.phoneIssue,
         this.smsCodeIssue,
       ]
@@ -405,11 +265,8 @@ export default {
     }
     this.loadWechatLoginStatus()
     if (hasAppAccess()) {
-      if (uni.getStorageSync(POST_LOGIN_FLOW_FLAG)) {
-        uni.removeStorageSync(POST_LOGIN_FLOW_FLAG)
-        uni.reLaunch({
-          url: `${POST_LOGIN_LAUNCH_URL}?next=${encodeURIComponent(POST_LOGIN_BASIC_INFO_URL)}`,
-        })
+      if (needsPendingLaunchFlow()) {
+        resumePostLoginFlow()
       } else {
         goAppHome()
       }
@@ -433,6 +290,12 @@ export default {
     toggleAgreement() {
       this.agreedToTerms = !this.agreedToTerms
     },
+    openBetaNotice() {
+      this.showBetaNotice = true
+    },
+    closeBetaNotice() {
+      this.showBetaNotice = false
+    },
     ensureAgreement() {
       if (this.agreedToTerms) return true
       uni.showToast({ title: '请先阅读并同意用户条款', icon: 'none' })
@@ -441,74 +304,30 @@ export default {
     openPhone() {
       if (!this.ensureAgreement()) return
       this.error = ''
+      this.smsDevCode = ''
       this.showFieldValidation = false
       this.showPhoneValidation = false
       this.screen = 'phone'
+      this.loadSmsLoginStatus()
     },
-    openInviteCode() {
-      if (!this.ensureAgreement()) return
-      this.error = ''
-      this.showFieldValidation = false
-      this.inviteMode = 'register'
-      this.inviteStep = 'invite'
-      this.screen = 'invite-code'
-    },
-    openInviteLogin(fromLanding = false) {
-      this.error = ''
-      this.showFieldValidation = false
-      this.inviteMode = 'login'
-      this.inviteStep = 'details'
-      this.loginId = ''
-      this.password = ''
-      this.confirmPassword = ''
-      this.inviteLoginFromLanding = fromLanding
-      this.screen = 'invite-form'
-    },
-    openInviteLoginFromLanding() {
-      if (!this.ensureAgreement()) return
-      this.openInviteLogin(true)
-    },
-    openInviteReset() {
-      this.error = ''
-      this.showFieldValidation = false
-      this.inviteMode = 'reset'
-      this.inviteStep = 'details'
-      this.loginId = ''
-      this.password = ''
-      this.confirmPassword = ''
-      this.screen = 'invite-form'
+    async loadSmsLoginStatus() {
+      try {
+        const res = await api.getSmsLoginStatus()
+        const data = (res && res.data) || {}
+        this.smsDevHint = data.mode === 'dev' ? (data.hint || '当前为开发验证码模式，请使用下方验证码完成联调。') : ''
+      } catch {
+        this.smsDevHint = ''
+      }
     },
     goBack() {
       this.error = ''
+      this.smsDevCode = ''
       this.wechatProfileIssue = ''
       this.showFieldValidation = false
-      if (this.screen === 'phone' || this.screen === 'invite-code' || this.screen === 'wechat') {
+      if (this.screen === 'phone' || this.screen === 'wechat') {
         this.screen = 'landing'
         return
       }
-      if (this.screen === 'invite-form') {
-        if (this.inviteLoginFromLanding && this.inviteMode === 'login') {
-          this.inviteLoginFromLanding = false
-          this.screen = 'landing'
-          return
-        }
-        if (this.inviteMode === 'register' && this.inviteStep === 'details') {
-          this.screen = 'invite-code'
-          this.inviteStep = 'invite'
-          return
-        }
-        this.screen = 'invite-code'
-      }
-    },
-    resetInviteRegister() {
-      this.inviteMode = 'register'
-      this.inviteStep = 'invite'
-      this.loginId = ''
-      this.password = ''
-      this.confirmPassword = ''
-      this.error = ''
-      this.showFieldValidation = false
-      this.screen = 'invite-code'
     },
     startCooldown(seconds) {
       this.smsCooldown = seconds
@@ -523,32 +342,9 @@ export default {
         }
       }, 1000)
     },
-    validateInviteCredentials(requireConfirm) {
-      const loginIdIssue = getInviteLoginIdIssue(this.loginId)
-      if (loginIdIssue) return loginIdIssue
-      const pinIssue = getInvitePinIssue(this.password)
-      if (pinIssue) return pinIssue
-      if (requireConfirm && this.password !== this.confirmPassword) {
-        return '两次输入的密码不一致。'
-      }
-      return ''
-    },
-    goAuthorizedFallback() {
-      const redirectUrl = String(this.redirectUrl || '').trim()
-      if (redirectUrl && !redirectUrl.includes('/pages/auth/login') && !redirectUrl.includes('/pages/auth/launch')) {
-        uni.reLaunch({
-          url: redirectUrl,
-          fail: () => {
-            goAppHome()
-          },
-        })
-        return
-      }
-      goAppHome()
-    },
-    async finishAuth(res, fallbackName) {
+    async finishAuth(res, fallbackName, loginMethod) {
       await completeAuthLogin(res, fallbackName)
-      routeAfterLogin(res)
+      routeAfterLogin(res, { loginMethod, redirectUrl: this.redirectUrl })
     },
     wxLogin() {
       return new Promise((resolve, reject) => {
@@ -608,16 +404,16 @@ export default {
       const detail = (e && e.detail) || {}
       if (detail.errMsg !== 'getPhoneNumber:ok') {
         if (detail.errMsg && detail.errMsg.includes('deny')) {
-          this.wechatProfileIssue = '需要授权手机号才能完成微信登录'
+          this.wechatProfileIssue = '需要手机号才能完成登录'
         } else if (detail.errMsg) {
-          this.wechatProfileIssue = '微信授权失败，请重试'
+          this.wechatProfileIssue = '登录失败，请重试'
         }
         return
       }
 
       const phoneCode = detail.code
       if (!phoneCode) {
-        this.wechatProfileIssue = '未获取到手机号授权，请升级微信后重试'
+        this.wechatProfileIssue = '未获取到手机号，请重试'
         return
       }
 
@@ -627,7 +423,7 @@ export default {
       try {
         const loginRes = await this.wxLogin()
         if (!loginRes || !loginRes.code) {
-          throw new Error('微信登录失败，请重试')
+          throw new Error('登录失败，请重试')
         }
         const avatarBase64 = await this.readAvatarBase64(this.wechatAvatarTemp)
         if (!avatarBase64) {
@@ -638,14 +434,15 @@ export default {
           avatarBase64,
         })
         const user = (res && res.data && res.data.user) || {}
-        await this.finishAuth(res, user.wechatNickname || user.phone || user.name)
+        await this.finishAuth(res, user.wechatNickname || user.phone || user.name, 'wechat')
       } catch (err) {
-        this.wechatProfileIssue = (err && err.message) || '微信登录失败'
+        this.wechatProfileIssue = (err && err.message) || '登录失败'
       } finally {
         this.wechatLoading = false
       }
     },
     async handleSendCode() {
+      if (!this.ensureAgreement()) return
       this.showPhoneValidation = true
       if (this.phoneIssue) return
       const phone = normalizePhone(this.phone)
@@ -656,7 +453,16 @@ export default {
       this.error = ''
       this.smsSending = true
       try {
-        await api.sendSmsCode(phone)
+        const res = await api.sendSmsCode(phone)
+        const data = (res && res.data) || {}
+        if (data.devCode) {
+          this.smsDevCode = data.devCode
+          this.smsCode = data.devCode
+          uni.showToast({ title: '验证码已生成', icon: 'none' })
+        } else {
+          this.smsDevCode = ''
+          uni.showToast({ title: '验证码已发送', icon: 'none' })
+        }
         this.startCooldown(60)
       } catch (e) {
         this.error = e.message || '验证码发送失败'
@@ -664,25 +470,8 @@ export default {
         this.smsSending = false
       }
     },
-    async handleInviteCodeSubmit() {
-      this.error = ''
-      this.loading = true
-      this.showFieldValidation = true
-      try {
-        if (this.inviteCodeIssue) return
-        await api.checkInviteStatus(this.inviteCode.trim())
-        this.loginId = ''
-        this.password = ''
-        this.inviteStep = 'details'
-        this.showFieldValidation = false
-        this.screen = 'invite-form'
-      } catch (e) {
-        this.error = e.message || '邀请码无效'
-      } finally {
-        this.loading = false
-      }
-    },
     async handleSubmit() {
+      if (!this.ensureAgreement()) return
       this.error = ''
       this.loading = true
       try {
@@ -695,42 +484,10 @@ export default {
             return
           }
           const res = await api.loginWithPhone(phone, this.smsCode.trim())
-          await this.finishAuth(res, res.data.user.name || res.data.user.phone)
+          const user = (res && res.data && res.data.user) || {}
+          await this.finishAuth(res, user.name || user.phone, 'phone')
           return
         }
-
-        if (this.inviteMode === 'register') {
-          this.showFieldValidation = true
-          const issue = this.validateInviteCredentials(false)
-          if (issue) return
-          const res = await api.registerWithInvite(
-            this.inviteCode.trim(),
-            this.loginId.trim(),
-            this.password,
-          )
-          await this.finishAuth(res, res.data.user.name || res.data.user.email)
-          return
-        }
-
-        if (this.inviteMode === 'reset') {
-          this.showFieldValidation = true
-          if (this.inviteCodeIssue) return
-          const issue = this.validateInviteCredentials(true)
-          if (issue) return
-          const res = await api.resetInvitePassword(
-            this.inviteCode.trim(),
-            this.loginId.trim(),
-            this.password,
-          )
-          await this.finishAuth(res, res.data.user.name || res.data.user.email)
-          return
-        }
-
-        this.showFieldValidation = true
-        const issue = this.validateInviteCredentials(false)
-        if (issue) return
-        const res = await api.loginWithLoginId(this.loginId.trim(), this.password)
-        await this.finishAuth(res, res.data.user.name || res.data.user.email)
       } catch (e) {
         this.error = e.message || '操作失败'
       } finally {
@@ -744,7 +501,7 @@ export default {
 <style scoped>
 .login-page {
   min-height: 100vh;
-  background: linear-gradient(180deg, #e4a99d 0%, #b38cf4 38%, #7e63ff 100%);
+  background: linear-gradient(180deg, #d5a6bd 0%, #b898e8 38%, #9478f5 68%, #8e78ff 100%);
 }
 
 .login-page-bg {
@@ -776,34 +533,21 @@ export default {
   background: radial-gradient(circle, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0) 72%);
 }
 
-.bg-orbit {
+.bg-waves {
   position: absolute;
-  border: 26rpx solid rgba(255, 255, 255, 0.08);
-  border-radius: 280rpx;
-  transform: rotate(12deg);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  pointer-events: none;
+  overflow: hidden;
 }
 
-.orbit-one {
-  left: -150rpx;
-  top: 520rpx;
-  width: 980rpx;
-  height: 980rpx;
-}
-
-.orbit-two {
-  left: 40rpx;
-  top: 760rpx;
-  width: 760rpx;
-  height: 760rpx;
-  opacity: 0.55;
-}
-
-.orbit-three {
-  right: -360rpx;
-  bottom: -120rpx;
-  width: 820rpx;
-  height: 820rpx;
-  opacity: 0.4;
+.bg-waves-img {
+  display: block;
+  width: 100%;
+  min-height: 68vh;
+  opacity: 0.96;
 }
 
 .login-shell {
@@ -820,64 +564,84 @@ export default {
   flex: 1;
   display: flex;
   flex-direction: column;
+  align-items: stretch;
+  min-height: 0;
 }
 
-.brand-hero {
-  flex: 1;
+.landing-brand {
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   text-align: center;
-  padding: 80rpx 0 64rpx;
+  padding-top: 260rpx;
+}
+
+.landing-spacer {
+  flex: 1;
+  min-height: 80rpx;
+}
+
+.landing-actions {
+  flex-shrink: 0;
+  padding-bottom: 18rpx;
+  transform: translateY(-170rpx);
 }
 
 .brand-logo {
-  width: 200rpx;
-  height: 200rpx;
+  margin-top: 20rpx;
+  width: 218rpx;
+  height: 208rpx;
+  filter: drop-shadow(0 8rpx 20rpx rgba(43, 24, 110, 0.22));
 }
 
 .brand-title {
   display: block;
-  margin-top: 36rpx;
-  font-size: 72rpx;
-  line-height: 1.2;
+  margin-top: 28rpx;
+  font-size: 56rpx;
+  line-height: 1.25;
   font-weight: 700;
   color: #ffffff;
-  letter-spacing: 4rpx;
+  letter-spacing: 2rpx;
 }
 
 .brand-subtitle {
   display: block;
-  margin-top: 20rpx;
-  font-size: 28rpx;
-  line-height: 1.7;
-  color: rgba(255, 255, 255, 0.92);
+  margin-top: 30rpx;
+  font-size: 26rpx;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.88);
 }
 
 .entry-button-row {
   display: flex;
   flex-direction: column;
-  gap: 24rpx;
-  margin-bottom: 24rpx;
+  gap: 20rpx;
 }
 
 .entry-pill {
   width: 100%;
   height: 104rpx;
   border-radius: 999rpx;
-  background: #ffffff;
-  color: #1d1d1f;
   font-size: 32rpx;
   font-weight: 600;
   border: none;
-  box-shadow: 0 16rpx 40rpx rgba(67, 39, 172, 0.12);
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 16rpx;
   padding: 0 40rpx;
   box-sizing: border-box;
+}
+
+.entry-pill--primary {
+  background: #ffffff !important;
+  color: #1d1d1f;
+  box-shadow: 0 16rpx 40rpx rgba(67, 39, 172, 0.12);
+}
+
+.entry-pill--primary[disabled] {
+  opacity: 0.72;
 }
 
 .entry-pill::after,
@@ -1039,6 +803,30 @@ export default {
   color: #ffe4e4;
 }
 
+.dev-sms-hint {
+  margin: -8rpx 0 20rpx;
+  padding: 18rpx 22rpx;
+  border-radius: 22rpx;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.dev-sms-hint-text {
+  display: block;
+  font-size: 22rpx;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.dev-sms-code {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 28rpx;
+  line-height: 1.5;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 2rpx;
+}
+
 .error {
   display: block;
   margin: 0 0 20rpx;
@@ -1117,7 +905,9 @@ export default {
   align-items: flex-start;
   gap: 12rpx;
   margin-top: auto;
-  padding-top: 32rpx;
+  padding-top: 24rpx;
+  padding-bottom: 8rpx;
+  transform: translateY(-40rpx);
 }
 
 .legal-check {
@@ -1146,12 +936,99 @@ export default {
   line-height: 1;
 }
 
-.legal-text {
+.legal-copy {
   flex: 1;
   max-width: 560rpx;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.legal-text {
   font-size: 22rpx;
   line-height: 1.7;
   color: rgba(255, 255, 255, 0.92);
+}
+
+.legal-link {
+  font-size: 22rpx;
+  line-height: 1.7;
+  color: #ffffff;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.beta-notice-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40rpx;
+  background: rgba(30, 20, 68, 0.52);
+  box-sizing: border-box;
+}
+
+.beta-notice-dialog {
+  width: 100%;
+  max-width: 640rpx;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  padding: 40rpx 34rpx 34rpx;
+  border-radius: 36rpx;
+  background: rgba(255, 255, 255, 0.98);
+  box-sizing: border-box;
+  box-shadow: 0 18rpx 48rpx rgba(43, 24, 110, 0.22);
+}
+
+.beta-notice-scroll {
+  flex: 1;
+  min-height: 0;
+  margin-top: 10rpx;
+}
+
+.beta-notice-title-en {
+  display: block;
+  font-size: 24rpx;
+  line-height: 1.5;
+  color: #6b23ff;
+  font-weight: 700;
+}
+
+.beta-notice-title {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 34rpx;
+  line-height: 1.4;
+  color: #1d1d1f;
+  font-weight: 700;
+}
+
+.beta-notice-body {
+  display: block;
+  margin-top: 22rpx;
+  font-size: 24rpx;
+  line-height: 1.8;
+  color: #4b5563;
+}
+
+.beta-notice-btn {
+  width: 100%;
+  height: 96rpx;
+  line-height: 96rpx;
+  margin-top: 32rpx;
+  border-radius: 999rpx;
+  border: none;
+  background: #6b23ff;
+  color: #ffffff;
+  font-size: 30rpx;
+  font-weight: 700;
+  box-shadow: 0 12rpx 32rpx rgba(67, 39, 172, 0.28);
+}
+
+.beta-notice-btn::after {
+  border: none;
 }
 
 .wechat-native-avatar {

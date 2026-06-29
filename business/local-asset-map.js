@@ -1,53 +1,115 @@
 /**
- * 小程序离线兜底资源映射（仅 OSS 不可用时使用）。
- * 业务配图默认走 OSS：见 utils/asset-map.ts → resolveAsset()
+ * 本地 SVG 兜底映射。
+ * resolveAsset() 会先查此表，有本地文件则直接用，避免 OSS 缺文件导致空缺。
+ * 没有本地兜底的路径仍走 OSS CDN。
  */
 export const LOCAL_ASSET_MAP = {
-  '/images/explore/discover/icons/atlas/university.png': '/static/assets/atlas/university.svg',
-  '/images/explore/discover/icons/atlas/college-science-alpha-v2.png': '/static/assets/atlas/college-science.svg',
-  '/images/explore/discover/icons/atlas/college-engineering.png': '/static/assets/atlas/college-engineering.svg',
-  '/images/explore/discover/icons/atlas/college-computer-alpha-v2.png': '/static/assets/atlas/college-computer.svg',
-  '/images/explore/discover/icons/atlas/college-literature.png': '/static/assets/atlas/college-literature.svg',
-  '/images/explore/discover/icons/atlas/college-business.png': '/static/assets/atlas/college-business.svg',
-  '/images/explore/discover/icons/atlas/college-arts.png': '/static/assets/atlas/college-arts.svg',
-  '/images/explore/discover/generated/stage-major-experience-crop.png': '/static/assets/discover/stage-major-experience.svg',
-  '/images/explore/discover/stage-hero-major-clean.png': '/static/assets/discover/stage-major-experience.svg',
-  '/images/explore/discover/icons/generated/majors/major-math.png': '/static/assets/majors/major-math.svg',
-  '/images/explore/discover/icons/generated/majors/major-physics.png': '/static/assets/majors/major-physics.svg',
-  '/images/explore/discover/icons/generated/majors/major-cs.png': '/static/assets/majors/major-cs.svg',
-  '/images/explore/discover/icons/generated/majors/major-ai.png': '/static/assets/majors/major-ai.svg',
-  '/images/explore/discover/icons/generated/majors/major-finance.svg': '/static/assets/majors/major-finance.svg',
-  '/images/explore/discover/icons/generated/majors/major-economics.svg': '/static/assets/majors/major-economics.svg',
-  '/images/explore/discover/icons/generated/majors/major-actuarial.svg': '/static/assets/majors/major-actuarial.svg',
-  '/images/explore/discover/icons/generated/majors/major-chemistry.svg': '/static/assets/majors/major-chemistry.svg',
-  '/images/explore/discover/icons/generated/majors/major-mechanical.svg': '/static/assets/majors/major-mechanical.svg',
-  '/images/explore/discover/icons/generated/majors/major-ee.svg': '/static/assets/majors/major-ee.svg',
-  '/images/explore/discover/icons/generated/majors/major-ic.svg': '/static/assets/majors/major-ic.svg',
-  '/images/explore/discover/figma/profile-clipboard-figma-1-6962.svg': '/static/assets/discover/profile-clipboard-figma.svg',
-  '/images/explore/discover/figma/profile-clipboard-figma-1-6962-white-2x.png': '/static/assets/discover/profile-clipboard-figma.svg',
-  '/explore-static/discover/figma/profile-clipboard-figma-1-6962-white-2x.png': '/static/assets/discover/profile-clipboard-figma.svg',
-  '/explore-static/discover/figma/stage-deep-icon-figma-494-542.svg': '/static/assets/discover/stage-deep-icon.svg',
-  '/images/explore/discover/figma/stage-deep-icon-figma-494-542.svg': '/static/assets/discover/stage-deep-icon.svg',
-  '/explore-static/discover/figma/stage-deep-shadow-figma-494-379.svg': '/static/assets/discover/stage-deep-shadow.svg',
-  '/images/explore/discover/figma/stage-deep-shadow-figma-494-379.svg': '/static/assets/discover/stage-deep-shadow.svg',
-  '/explore-static/discover/figma/report-ready-shadow-figma-205-12205.svg': '/static/assets/discover/report-ready-shadow.svg',
-  '/images/explore/discover/figma/home-professional-assets/icon-engineering-494-3715.svg': '/static/assets/home-professional/icon-engineering-494-3715.svg',
-  '/images/explore/discover/figma/home-professional-assets/icon-computer-494-3820.svg': '/static/assets/home-professional/icon-computer-494-3820.svg',
-  '/images/explore/discover/figma/home-professional-assets/icon-law-494-3935.svg': '/static/assets/home-professional/icon-law-494-3935.svg',
-  '/images/explore/discover/figma/home-professional-assets/icon-medical-494-3924.svg': '/static/assets/home-professional/icon-medical-494-3924.svg',
-  '/images/explore/discover/figma/home-professional-assets/icon-literature-494-3911.svg': '/static/assets/home-professional/icon-literature-494-3911.svg',
-  '/images/explore/discover/figma/home-professional-assets/icon-science-base-494-3752.svg': '/static/assets/home-professional/icon-science-base-494-3752.svg',
-  '/images/explore/discover/figma/home-professional-assets/icon-science-paper-494-3796.svg': '/static/assets/home-professional/icon-science-paper-494-3796.svg',
-  '/images/explore/discover/figma/home-professional-assets/icon-science-flask-494-3817.svg': '/static/assets/home-professional/icon-science-flask-494-3817.svg',
-  '/images/explore/home/card-interest@4x.png': '/static/assets/auth/card-interest.svg',
-  '/images/explore/home/card-personality@4x.png': '/static/assets/auth/card-personality.svg',
-  '/images/explore/home/card-career@4x.png': '/static/assets/auth/card-career.svg',
-  '/images/explore/home/card-ability@4x.png': '/static/assets/auth/card-ability.svg',
+  // ── 专业图标（报告页核心，本地 SVG 保底）──────────────────────────────
+  '/images/explore/discover/icons/generated/discover-major-economics-20260610-v2-flat2d.png':
+    '/static/assets/majors/major-economics.svg',
+  '/images/explore/discover/icons/generated/discover-major-artificial-intelligence-20260610-v2-flat2d.png':
+    '/static/assets/majors/major-ai.svg',
+  '/images/explore/discover/icons/generated/discover-major-computer-science-technology-20260610-v2-flat2d.png':
+    '/static/assets/majors/major-cs.svg',
+  '/images/explore/discover/icons/generated/discover-major-finance-20260608-v1.png':
+    '/static/assets/majors/major-finance.svg',
+  '/images/explore/discover/icons/generated/discover-major-data-science-big-data-technology-20260610-v2-flat2d.png':
+    '/static/assets/majors/major-cs.svg',
+  '/images/explore/discover/icons/generated/discover-major-mathematics-applied-mathematics-20260608-v1.png':
+    '/static/assets/majors/major-math.svg',
+  '/images/explore/discover/icons/generated/discover-major-statistics-20260608-v1.png':
+    '/static/assets/majors/major-math.svg',
+  '/images/explore/discover/icons/generated/discover-major-physics-20260608-v1.png':
+    '/static/assets/majors/major-physics.svg',
+  '/images/explore/discover/icons/generated/discover-major-applied-physics-20260610-v2-flat2d.png':
+    '/static/assets/majors/major-physics.svg',
+  '/images/explore/discover/icons/generated/discover-major-cyberspace-security-20260610-v2-flat2d.png':
+    '/static/assets/majors/major-cs.svg',
+  '/images/explore/discover/icons/generated/discover-major-information-security-20260608-v1.png':
+    '/static/assets/majors/major-cs.svg',
+  '/images/explore/discover/icons/generated/discover-major-software-engineering-20260608-v1.png':
+    '/static/assets/majors/major-cs.svg',
+  '/images/explore/discover/icons/generated/discover-major-electronic-information-engineering-20260610-v2-flat2d.png':
+    '/static/assets/majors/major-ee.svg',
+  '/images/explore/discover/icons/generated/discover-major-robotics-engineering-20260608-v1.png':
+    '/static/assets/majors/major-mechanical.svg',
+  '/images/explore/discover/icons/generated/discover-major-intelligent-manufacturing-engineering-20260608-v1.png':
+    '/static/assets/majors/major-mechanical.svg',
+  '/images/explore/discover/icons/generated/discover-major-automation-20260610-v2-flat2d.png':
+    '/static/assets/majors/major-mechanical.svg',
+  '/images/explore/discover/icons/generated/discover-major-information-computing-science-20260608-v1.png':
+    '/static/assets/majors/major-math.svg',
+  '/images/explore/discover/icons/generated/discover-major-digital-media-technology-20260610-v2-flat2d.png':
+    '/static/assets/majors/major-cs.svg',
+  '/images/explore/discover/icons/generated/discover-major-geographic-information-science-20260608-v1.png':
+    '/static/assets/majors/major-cs.svg',
+  '/images/explore/discover/icons/generated/discover-major-biomedical-engineering-20260610-v2-flat2d.png':
+    '/static/assets/majors/major-bio.svg',
+  '/images/explore/discover/icons/generated/discover-major-industrial-design-20260608-v1.png':
+    '/static/assets/majors/major-mechanical.svg',
+  '/images/explore/discover/icons/generated/discover-major-materials-science-engineering-20260608-v1.png':
+    '/static/assets/majors/major-mechanical.svg',
+  '/images/explore/discover/icons/generated/discover-major-accounting-20260610-v2-flat2d.png':
+    '/static/assets/majors/major-finance.svg',
+  '/images/explore/discover/icons/generated/discover-major-financial-engineering-20260608-v1.png':
+    '/static/assets/majors/major-finance.svg',
+  '/images/explore/discover/icons/generated/discover-major-economic-statistics-20260610-v2-flat2d.png':
+    '/static/assets/majors/major-economics.svg',
+  '/images/explore/discover/icons/generated/discover-major-clinical-medicine-20260610-v2-flat2d.png':
+    '/static/assets/majors/major-bio.svg',
+
+  // ── 旧版路径别名 ────────────────────────────────────────────────────────
+  '/images/explore/discover/icons/generated/majors/major-math.png':
+    '/static/assets/majors/major-math.svg',
+  '/images/explore/discover/icons/generated/majors/major-physics.png':
+    '/static/assets/majors/major-physics.svg',
+  '/images/explore/discover/icons/generated/majors/major-cs.png':
+    '/static/assets/majors/major-cs.svg',
+  '/images/explore/discover/icons/generated/majors/major-ai.png':
+    '/static/assets/majors/major-ai.svg',
+  '/images/explore/discover/icons/generated/majors/major-finance.svg':
+    '/static/assets/majors/major-finance.svg',
+  '/images/explore/discover/icons/generated/majors/major-economics.svg':
+    '/static/assets/majors/major-economics.svg',
+  '/images/explore/discover/icons/generated/majors/major-actuarial.svg':
+    '/static/assets/majors/major-actuarial.svg',
+  '/images/explore/discover/icons/generated/majors/major-chemistry.svg':
+    '/static/assets/majors/major-chemistry.svg',
+  '/images/explore/discover/icons/generated/majors/major-mechanical.svg':
+    '/static/assets/majors/major-mechanical.svg',
+  '/images/explore/discover/icons/generated/majors/major-ee.svg':
+    '/static/assets/majors/major-ee.svg',
+  '/images/explore/discover/icons/generated/majors/major-ic.svg':
+    '/static/assets/majors/major-ic.svg',
+  '/images/explore/discover/icons/generated/majors/major-bio.svg':
+    '/static/assets/majors/major-bio.svg',
+
+  // ── 报告/首页关键图 ─────────────────────────────────────────────────────
+  '/explore-static/discover/figma/report/report-v4-top-rank-corner.png':
+    '/static/assets/discover/major-ribbon-left.svg',
+  '/images/explore/discover/figma/report/major-ribbon-left.svg':
+    '/static/assets/discover/major-ribbon-left.svg',
+  '/images/explore/discover/figma/report/major-ribbon-right.svg':
+    '/static/assets/discover/major-ribbon-right.svg',
+
+  // ── 通用 UI SVG ─────────────────────────────────────────────────────────
+  '/images/explore/discover/figma/profile-clipboard-figma-1-6962.svg':
+    '/static/assets/discover/profile-clipboard-figma.svg',
+  '/images/explore/discover/figma/profile-clipboard-figma-1-6962-white-2x.png':
+    '/static/assets/discover/profile-clipboard-figma.svg',
+  '/explore-static/discover/figma/profile-clipboard-figma-1-6962-white-2x.png':
+    '/static/assets/discover/profile-clipboard-figma.svg',
+
+  // ── launch 页卡片 ────────────────────────────────────────────────────────
   '/images/explore/home/card-interest.svg': '/static/assets/auth/card-interest.svg',
   '/images/explore/home/card-personality.svg': '/static/assets/auth/card-personality.svg',
   '/images/explore/home/card-career.svg': '/static/assets/auth/card-career.svg',
   '/images/explore/home/card-ability.svg': '/static/assets/auth/card-ability.svg',
   '/images/explore/home/background-curves.svg': '/static/assets/auth/background-curves.svg',
+  '/images/explore/home/card-interest@4x.png': '/static/assets/auth/card-interest.svg',
+  '/images/explore/home/card-personality@4x.png': '/static/assets/auth/card-personality.svg',
+  '/images/explore/home/card-career@4x.png': '/static/assets/auth/card-career.svg',
+  '/images/explore/home/card-ability@4x.png': '/static/assets/auth/card-ability.svg',
 }
 
 export function getLocalAsset(path) {

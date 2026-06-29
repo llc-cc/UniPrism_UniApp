@@ -6,6 +6,7 @@
         <text v-else class="avatar-text">{{ userInitial }}</text>
       </view>
       <text class="user-id">{{ displayNickname }}</text>
+      <button v-if="!isLoggedIn" class="login-btn" @tap="goLogin">登录 / 注册</button>
     </view>
 
     <view class="card">
@@ -29,21 +30,6 @@
     </view>
 
     <view class="card menu-card">
-      <view class="menu-item" @tap="showDisabledTabTip('成就')">
-        <view class="menu-left">
-          <view class="menu-icon menu-icon--gold">
-            <image class="menu-icon-img" src="/static/assets/discover/tabbar/icon-achievement.svg" mode="aspectFit" />
-          </view>
-          <text class="menu-label">成就</text>
-        </view>
-        <view class="menu-right">
-          <view class="menu-lock">
-            <image class="menu-lock-badge" src="/static/assets/discover/tabbar/icon-lock.svg" mode="aspectFit" />
-          </view>
-          <text class="menu-arrow">›</text>
-        </view>
-      </view>
-      <view class="menu-divider" />
       <view class="menu-item" @tap="goFeedback">
         <view class="menu-left">
           <view class="menu-icon menu-icon--blue">
@@ -78,27 +64,6 @@
         </view>
         <text class="tab-text">专业体验</text>
       </view>
-      <view class="tab-item" @tap="showDisabledTabTip('成就')">
-        <view class="tab-icon tab-icon--locked">
-          <image class="tab-icon-img" src="/static/assets/discover/tabbar/icon-achievement.svg" mode="aspectFit" />
-          <image class="tab-lock-badge" src="/static/assets/discover/tabbar/icon-lock.svg" mode="aspectFit" />
-        </view>
-        <text class="tab-text">成就</text>
-      </view>
-      <view class="tab-item" @tap="showDisabledTabTip('更多')">
-        <view class="tab-icon tab-icon--locked">
-          <view class="tab-more-icon">
-            <view class="tab-more-tile tab-more-tile--top-left" />
-            <view class="tab-more-tile tab-more-tile--bottom-left" />
-            <view class="tab-more-tile tab-more-tile--top-right" />
-            <image class="tab-more-line tab-more-line--middle" src="/static/assets/discover/tabbar/system-line-long.svg" mode="scaleToFill" />
-            <image class="tab-more-line tab-more-line--short" src="/static/assets/discover/tabbar/system-line-short.svg" mode="scaleToFill" />
-            <image class="tab-more-line tab-more-line--bottom" src="/static/assets/discover/tabbar/system-line-long.svg" mode="scaleToFill" />
-          </view>
-          <image class="tab-lock-badge" src="/static/assets/discover/tabbar/icon-lock.svg" mode="aspectFit" />
-        </view>
-        <text class="tab-text">更多</text>
-      </view>
       <view class="tab-item tab-item--active">
         <view class="tab-icon">
           <image class="tab-icon-img" src="/static/assets/discover/tabbar/icon-profile.svg" mode="aspectFit" />
@@ -110,9 +75,11 @@
 </template>
 
 <script>
-import { ALL_QUESTIONS } from '../../business/discover-questions'
-import { loadDiscoverSession } from '../../business/discover-session'
-import { navigateHomeTab, showDisabledMiniAppRouteTip } from '../../business/disabled-miniapp-routes'
+import { DISCOVER_ACTIVE_QUESTION_COUNT } from '../../business/discover-chat-screens'
+import { loadDiscoverSession } from '../../business/discover-session-storage'
+import { navigateHomeTab } from '../../business/disabled-miniapp-routes'
+import { promptLogin } from '../../business/auth-guard'
+import { resolveDisplayAvatarUrl, resolveGuestAvatarUrl } from '../../business/user-avatar'
 import { api } from '../../utils/api'
 
 export default {
@@ -123,8 +90,13 @@ export default {
       avatarUrl: '',
       answeredCount: 0,
       reportCount: 0,
-      totalCount: (ALL_QUESTIONS || []).length,
+      totalCount: DISCOVER_ACTIVE_QUESTION_COUNT,
     }
+  },
+  computed: {
+    isLoggedIn() {
+      return api.isLoggedIn()
+    },
   },
   onShow() {
     this.refreshProfile()
@@ -133,17 +105,23 @@ export default {
     this.reportCount = session.profile ? 1 : 0
   },
   methods: {
-    applyUserProfile(user) {
+    applyUserProfile(user, session) {
       if (!user) return
       const nickname = user.wechatNickname || user.name || user.phone || user.email || '同学'
       this.displayNickname = nickname
       this.userInitial = nickname.charAt(0).toUpperCase()
-      this.avatarUrl = user.avatarUrl ? api.resolveUserAvatarUrl(user.avatarUrl) : ''
+      this.avatarUrl = resolveDisplayAvatarUrl(user, session)
     },
     async refreshProfile() {
+      const session = loadDiscoverSession()
       const localUser = api.getUser()
-      if (localUser) this.applyUserProfile(localUser)
-      if (!api.getToken()) return
+      if (!localUser || !api.getToken()) {
+        this.displayNickname = '同学'
+        this.userInitial = 'U'
+        this.avatarUrl = resolveGuestAvatarUrl(session)
+        return
+      }
+      this.applyUserProfile(localUser, session)
       try {
         const res = await api.getCurrentUser()
         const user = (res && res.data && res.data.user) || null
@@ -159,16 +137,22 @@ export default {
             avatarUrl: user.avatarUrl || '',
             loginAt: (localUser && localUser.loginAt) || Date.now(),
           })
-          this.applyUserProfile(user)
+          this.applyUserProfile(user, session)
         }
       } catch {
         // 离线或 token 失效时沿用本地缓存
       }
     },
     switchTab(url) { navigateHomeTab(url) },
-    showDisabledTabTip(label) { showDisabledMiniAppRouteTip(label) },
+    goLogin() { promptLogin('/pages/profile/index') },
     goFeedback() { uni.navigateTo({ url: '/pages/profile/feedback' }) },
-    goPersonalInfo() { uni.navigateTo({ url: '/pages/profile/personal-info' }) },
+    goPersonalInfo() {
+      if (!this.isLoggedIn) {
+        uni.showToast({ title: '登录后可查看个人信息', icon: 'none' })
+        return
+      }
+      uni.navigateTo({ url: '/pages/profile/personal-info' })
+    },
   },
 }
 </script>
@@ -209,6 +193,17 @@ export default {
   font-size: 30rpx;
   font-weight: 600;
   color: #374151;
+}
+.login-btn {
+  margin-top: 24rpx;
+  padding: 0 48rpx;
+  height: 72rpx;
+  line-height: 72rpx;
+  border-radius: 999rpx;
+  background: #7e63ff;
+  color: #fff;
+  font-size: 28rpx;
+  font-weight: 600;
 }
 .card {
   background: #fff;

@@ -34,21 +34,59 @@
 
 <script>
 import { api } from '../../utils/api'
+import { clearPostLoginFlowState } from '../../business/auth-guard'
+import { clearPendingReportGeneration } from '../../business/report-auth-flow'
 
-const LAUNCH_URL = `/pages/auth/login?redirect=${encodeURIComponent('/pages/auth/launch?next=' + encodeURIComponent('/pages/discover/chat?start=1'))}`
+function maskPhone(phone) {
+  const value = String(phone || '').trim()
+  if (!value) return '未绑定'
+  if (value.length >= 7) return value.slice(0, 3) + '****' + value.slice(-4)
+  return value
+}
 
 export default {
   data() {
     return { maskedPhone: '' }
   },
   onShow() {
-    const user = api.getUser()
-    const phone = (user && user.phone) || ''
-    this.maskedPhone = phone.length >= 7
-      ? phone.slice(0, 3) + '****' + phone.slice(-4)
-      : phone || '未绑定'
+    if (!api.isLoggedIn()) {
+      uni.navigateBack({
+        fail: () => {
+          uni.reLaunch({ url: '/pages/profile/index' })
+        },
+      })
+      return
+    }
+    this.refreshPhone()
   },
   methods: {
+    applyPhone(phone) {
+      this.maskedPhone = maskPhone(phone)
+    },
+    async refreshPhone() {
+      const localUser = api.getUser()
+      this.applyPhone(localUser && localUser.phone)
+      if (!api.getToken()) return
+      try {
+        const res = await api.getCurrentUser()
+        const user = (res && res.data && res.data.user) || null
+        if (!user) return
+        const token = api.getToken()
+        api.setAuthSession(token, {
+          ...(localUser || {}),
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          phone: user.phone || '',
+          wechatNickname: user.wechatNickname || '',
+          avatarUrl: user.avatarUrl || '',
+          loginAt: (localUser && localUser.loginAt) || Date.now(),
+        })
+        this.applyPhone(user.phone)
+      } catch {
+        // 离线时沿用本地缓存
+      }
+    },
     editPhone() {
       uni.showToast({ title: '功能开发中', icon: 'none' })
     },
@@ -59,7 +97,9 @@ export default {
         success: (res) => {
           if (res.confirm) {
             api.clearAuthSession()
-            uni.reLaunch({ url: LAUNCH_URL })
+            clearPostLoginFlowState()
+            clearPendingReportGeneration()
+            uni.reLaunch({ url: '/pages/discover/index' })
           }
         },
       })

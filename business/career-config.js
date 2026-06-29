@@ -40,13 +40,13 @@ export function hasCareerExperience(careerId) {
 
 export function getCareerExperienceRoute(careerId, majorId) {
   if (getCareerExperienceKind(careerId) === 'none') return ''
-  let url = `/pages/discover/career-experience?id=${encodeURIComponent(careerId)}`
+  let url = `/subpkg/discover/career-experience?id=${encodeURIComponent(careerId)}`
   if (majorId) url += `&majorId=${encodeURIComponent(majorId)}`
   return url
 }
 
 export function getCareerDetailRoute(careerId, majorId) {
-  let url = `/pages/discover/career-detail?id=${encodeURIComponent(careerId)}`
+  let url = `/subpkg/discover/career-detail?id=${encodeURIComponent(careerId)}`
   if (majorId) url += `&majorId=${encodeURIComponent(majorId)}`
   return url
 }

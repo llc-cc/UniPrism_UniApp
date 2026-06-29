@@ -39,6 +39,7 @@
 <script>
 import { api } from '../../utils/api'
 import { completeAuthLogin } from '../../business/explore-session-merge'
+import { routeAfterLogin } from '../../business/auth-guard'
 
 export default {
   data() {
@@ -72,7 +73,7 @@ export default {
       try {
         const res = await api.register(this.name.trim() || null, this.email.trim(), this.password)
         await completeAuthLogin(res, res.data.user.name || res.data.user.email)
-        uni.reLaunch({ url: '/pages/discover/index' })
+        routeAfterLogin(res, { loginMethod: 'email-register' })
       } catch (e) {
         this.error = e.message || '注册失败'
       } finally {

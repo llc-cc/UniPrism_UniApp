@@ -3,18 +3,17 @@
  *
  * 自动规则（MANUAL_DEV_API_MODE = null 时）：
  * - 微信开发者工具模拟器 → 127.0.0.1:3000
- * - 手机真机 / 预览 / 真机调试 → 192.168.1.20:3000
+ * - 手机真机 / 预览 / 真机调试 → DEVICE_LAN_HOST:3000（连热点时用 ipconfig 查 WLAN IPv4）
  *
  * 只需维护 DEVICE_LAN_HOST（电脑 WiFi 的 IPv4）。
  */
 
 /** 强制指定：'local' | 'device' | null（null = 自动识别） */
-export const MANUAL_DEV_API_MODE = 'device'
-// export const MANUAL_DEV_API_MODE = 'device'//本地
+export const MANUAL_DEV_API_MODE = null
 
 /** 真机调试：电脑 WiFi 的 IPv4 */
+
 export const DEVICE_LAN_HOST = '192.168.1.20'
-// export const DEVICE_LAN_HOST = '127.0.0.1'//本地
 
 export const DEV_API_PORT = 3000
 

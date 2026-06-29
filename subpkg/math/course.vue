@@ -42,7 +42,7 @@ export default {
   },
   onLoad(options) {
     if (options && options.course) this.courseId = options.course
-    const { getMathCourse } = require('../../business/math-catalog')
+    const { getMathCourse } = require('./business/math-catalog')
     this.course = getMathCourse(this.courseId)
   },
   computed: {
@@ -61,7 +61,7 @@ export default {
     goNext() {
       if (!this.course || this.pageIndex >= this.course.pages.length - 1) {
         try {
-          const { markMathCourseVisited } = require('../../business/math-progress')
+          const { markMathCourseVisited } = require('./business/math-progress')
           markMathCourseVisited(this.courseId)
         } catch (error) {
           console.error('[math-course] mark visited failed', error)

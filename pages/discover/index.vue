@@ -26,6 +26,11 @@
         mode="scaleToFill"
       />
 
+      <view class="map-connector connector-personality" :class="connectorClass(1)" />
+      <view class="map-connector connector-career" :class="connectorClass(2)" />
+      <view class="map-connector connector-deep" :class="connectorClass(3)" />
+      <view class="map-connector connector-report" :class="connectorClass(4)" />
+
       <view class="map-arrow arrow-personality" @tap="goStageIntro('personality')">
         <image class="map-arrow-bg" :src="resolveAsset(arrowAsset('personality'))" mode="scaleToFill" />
         <text class="map-arrow-text">性格测试</text>
@@ -118,27 +123,6 @@
         </view>
         <text class="tab-text">专业体验</text>
       </view>
-      <view class="tab-item" @tap="showDisabledTabTip('成就')">
-        <view class="tab-icon tab-icon--locked">
-          <image class="tab-icon-img" :src="assetPaths.tabAchievement" mode="aspectFit" />
-          <image class="tab-lock-badge" :src="assetPaths.tabLock" mode="aspectFit" />
-        </view>
-        <text class="tab-text">成就</text>
-      </view>
-      <view class="tab-item" @tap="showDisabledTabTip('更多')">
-        <view class="tab-icon tab-icon--locked">
-          <view class="tab-more-icon">
-            <view class="tab-more-tile tab-more-tile--top-left" />
-            <view class="tab-more-tile tab-more-tile--bottom-left" />
-            <view class="tab-more-tile tab-more-tile--top-right" />
-            <image class="tab-more-line tab-more-line--middle" :src="assetPaths.tabMoreLineLong" mode="scaleToFill" />
-            <image class="tab-more-line tab-more-line--short" :src="assetPaths.tabMoreLineShort" mode="scaleToFill" />
-            <image class="tab-more-line tab-more-line--bottom" :src="assetPaths.tabMoreLineLong" mode="scaleToFill" />
-          </view>
-          <image class="tab-lock-badge" :src="assetPaths.tabLock" mode="aspectFit" />
-        </view>
-        <text class="tab-text">更多</text>
-      </view>
       <view class="tab-item" @tap="switchHomeTab('/pages/profile/index')">
         <view class="tab-icon">
           <image class="tab-icon-img" :src="assetPaths.tabProfile" mode="aspectFit" />
@@ -178,9 +162,9 @@
 </template>
 
 <script>
-import { loadDiscoverSession, resetDiscoverSession } from '../../business/discover-session'
+import { loadDiscoverSession, resetDiscoverSession } from '../../business/discover-session-storage'
 import { DISCOVER_ACTIVE_QUESTION_COUNT, SCREEN_QUESTION_IDS } from '../../business/discover-chat-screens'
-import { FINAL_CAREER_CALIBRATION_QUESTION_IDS, MBTI_KNOWN_QUESTION_ID, computePreCareerRiasecTopDimensions, getHollandFineQuestionIdsForDimensions } from '../../business/discover-questions'
+import { FINAL_CAREER_CALIBRATION_QUESTION_IDS, MBTI_KNOWN_QUESTION_ID, computePreCareerRiasecTopDimensions, getHollandFineQuestionIdsForDimensions } from '../../business/discover-progress-helpers'
 import { getRecommendedCareers } from '../../business/explore-data'
 import { loadExploreProgress } from '../../business/explore-progress'
 import {
@@ -204,7 +188,11 @@ import { openCareerSimulation } from '../../business/career-config'
 import { clearDiscoverReportCache, clearExploreBackendSession, clearProfileUploadFlag, ensureExploreSessionId } from '../../business/profile-sync'
 import { api } from '../../utils/api'
 import { resolveAsset } from '../../utils/asset-map'
-import { navigateHomeTab, showDisabledMiniAppRouteTip } from '../../business/disabled-miniapp-routes'
+import { navigateHomeTab } from '../../business/disabled-miniapp-routes'
+import {
+  EXPLORATION_START_URL,
+  promptLoginForReport,
+} from '../../business/report-auth-flow'
 import ProgressPanel from '../../components/ProgressPanel/ProgressPanel.vue'
 
 const ASSET_PATHS = {
@@ -304,8 +292,8 @@ export default {
       return INTEREST_REPORT_PENDING_COPY
     },
     ctaStyle() {
-      const nodeId = (this.roadView && this.roadView.activeNodeId)
-        || (this.roadView && this.roadView.cta && this.roadView.cta.anchorNodeId)
+      const nodeId = (this.roadView && this.roadView.cta && this.roadView.cta.anchorNodeId)
+        || (this.roadView && this.roadView.activeNodeId)
         || 'personality'
       const layout = INTEREST_MAP_CTA_LAYOUT[nodeId] || INTEREST_MAP_CTA_LAYOUT.personality
       return `left:${layout.left}rpx;top:${layout.top}rpx;width:${layout.width}rpx;height:${layout.height}rpx;`
@@ -415,6 +403,17 @@ export default {
       const active = this.activeNodeIdSet.has(nodeId)
       return active ? ASSET_PATHS.arrowPurple : ASSET_PATHS.arrowGray
     },
+    connectorClass(stageIndex) {
+      const order = ['personality', 'holland', 'deep', 'report']
+      if (this.roadView && this.roadView.cta && this.roadView.cta.kind === 'view-report') {
+        return 'map-connector--completed'
+      }
+      const completedIdx = Math.max(
+        0,
+        ...order.map((id, index) => (this.activeNodeIdSet.has(id) ? index + 1 : 0)),
+      )
+      return stageIndex <= completedIdx ? 'map-connector--completed' : 'map-connector--pending'
+    },
     async openChatUrl(url) {
       uni.showLoading({ title: '准备探索...' })
       try {
@@ -441,7 +440,7 @@ export default {
             return
           }
           if (this.roadView.cta.kind === 'report-progress') {
-            this.openChatUrl('/pages/discover/results')
+            this.openChatUrl('/subpkg/discover/results')
             return
           }
         }
@@ -472,21 +471,25 @@ export default {
     closeLockPrompt() {
       this.lockPromptVisible = false
     },
-    handleMapCta() {
+    async handleMapCta() {
       if (!this.roadView || !this.roadView.cta) return
       const { kind, url } = this.roadView.cta
       if (kind === 'view-report') {
         this.goViewReport()
         return
       }
+      if (kind === 'generate-report') {
+        const canProceed = await promptLoginForReport(url || '/subpkg/discover/chat?screen=complete')
+        if (!canProceed) return
+      }
       if (kind === 'continue' && !this.hasAnyAnswers) {
-        this.openChatUrl('/pages/discover/chat?start=1')
+        this.openChatUrl(EXPLORATION_START_URL)
         return
       }
       this.openChatUrl(url)
     },
     goViewReport() {
-      uni.navigateTo({ url: '/pages/discover/results' })
+      uni.navigateTo({ url: '/subpkg/discover/results' })
     },
     handleRestartAssessment() {
       if (this.restartPending) return
@@ -503,7 +506,7 @@ export default {
             clearDiscoverReportCache({})
             clearExploreBackendSession()
             clearProfileUploadFlag()
-            await this.openChatUrl('/pages/discover/chat?retake=1')
+            await this.openChatUrl('/subpkg/discover/chat?retake=1')
           } finally {
             this.restartPending = false
           }
@@ -512,9 +515,6 @@ export default {
     },
     switchHomeTab(url) {
       navigateHomeTab(url)
-    },
-    showDisabledTabTip(label) {
-      showDisabledMiniAppRouteTip(label)
     },
     async handlePrimary() {
       this.handleMapCta()
@@ -527,11 +527,11 @@ export default {
     },
     goProgressReport() {
       this.progressVisible = false
-      uni.navigateTo({ url: '/pages/discover/results' })
+      uni.navigateTo({ url: '/subpkg/discover/results' })
     },
     goMajors() { uni.navigateTo({ url: '/pages/discover/major' }) },
     goMajorDetail(majorId) { navigateToMajor(majorId) },
-    goCareers() { uni.navigateTo({ url: '/pages/discover/career' }) },
+    goCareers() { uni.navigateTo({ url: '/subpkg/discover/career' }) },
     goCareerDetail(careerId) { openCareerSimulation(careerId, '') },
     goInterest() {
       if (this.hasProfile) {
@@ -541,16 +541,16 @@ export default {
           confirmText: '重新答题',
           cancelText: '查看报告',
           success: (res) => {
-            if (res.confirm) uni.navigateTo({ url: '/pages/discover/chat?retake=1' })
-            else if (res.cancel) uni.navigateTo({ url: '/pages/discover/results' })
+            if (res.confirm) uni.navigateTo({ url: '/subpkg/discover/chat?retake=1' })
+            else if (res.cancel) uni.navigateTo({ url: '/subpkg/discover/results' })
           },
         })
         return
       }
       uni.navigateTo({
         url: this.answers && this.answers.length > 0
-          ? '/pages/discover/chat'
-          : '/pages/discover/chat?start=1',
+          ? '/subpkg/discover/chat'
+          : EXPLORATION_START_URL,
       })
     },
   },
@@ -569,12 +569,13 @@ export default {
 .stage-card {
   display: flex;
   align-items: center;
-  height: 126rpx;
-  margin-top: 18rpx;
-  border-radius: 24rpx;
+  width: 660rpx;
+  max-width: 100%;
+  height: 142rpx;
+  margin: 18rpx auto 0;
+  border-radius: 28rpx;
   overflow: hidden;
-  background: linear-gradient(90deg, #9762ff 0%, #8756ff 100%);
-  box-shadow: 0 14rpx 34rpx rgba(135, 86, 255, 0.24);
+  background: #9661ff;
 }
 .card-body {
   flex: 1;
@@ -632,12 +633,45 @@ export default {
 .roadmap {
   position: relative;
   width: 750rpx;
-  height: 1100rpx;
-  margin-left: -28rpx;
   margin-top: 12rpx;
-  --career-arrow-shift-x: 36rpx;
+  /* 顶部 stage-card 右缘：28rpx 页边距 + (694-660)/2 */
+  --road-right-bound: 45rpx;
+  /* 锁/图标安全边距（与左侧 arrow-personality 的 52rpx 对称） */
+  --road-right-gutter: 58rpx;
+  /* 职业箭头 SVG 尖端 + 阴影会超出容器，额外内收 */
+  --road-arrow-right: 78rpx;
+  --career-icon-shift-y: -32rpx;
+  --career-icon-extra-shift-x: -6rpx;
+  --career-icon-extra-shift-y: -55rpx;
+  --career-arrow-extra-shift-y: -80rpx;
+  --career-connector-extra-shift-y: -240rpx;
   --career-arrow-shift-y: 38rpx;
-  --deep-arrow-shift-x: 30rpx;
+  --career-connector-shift-x: 20rpx;
+  /* 职业测试参考：箭头→连接块 +76rpx，连接块高 126rpx；图标下移以露出连接块 */
+  --stage-arrow-height: 102rpx;
+  --stage-connector-from-arrow-y: 76rpx;
+  --stage-connector-height: 126rpx;
+  /* 箭头底边到图标顶边的可见连接块高度（对齐职业测试约 46~50rpx） */
+  --stage-visible-connector-gap: 50rpx;
+  --stage-icon-from-arrow-y: calc(var(--stage-arrow-height) + var(--stage-visible-connector-gap));
+  --stage-personality-icon-extra-shift-y: -30rpx;
+  --stage-deep-icon-extra-shift-y: -24rpx;
+  --stage-report-icon-extra-shift-y: -24rpx;
+  --stage-deep-shift-x: 39rpx;
+  --stage-deep-shift-y: -10rpx;
+  --stage-report-shift-x: -32rpx;
+  --stage-report-shift-y: 84rpx;
+  --stage-personality-arrow-left: 52rpx;
+  --stage-personality-connector-left: 120rpx;
+  --stage-personality-icon-left: 86rpx;
+  --stage-deep-arrow-left: calc(228rpx + var(--stage-deep-shift-x));
+  --stage-deep-arrow-top: calc(532rpx + var(--stage-deep-shift-y));
+  --stage-deep-connector-left: calc(312rpx + var(--stage-deep-shift-x));
+  --stage-deep-icon-left: calc(248rpx + var(--stage-deep-shift-x));
+  --stage-report-arrow-left: calc(82rpx + var(--stage-report-shift-x));
+  --stage-report-arrow-top: calc(812rpx + var(--stage-report-shift-y));
+  --stage-report-connector-left: calc(150rpx + var(--stage-report-shift-x));
+  --stage-report-icon-left: calc(124rpx + var(--stage-report-shift-x));
 }
 .road-img {
   position: absolute;
@@ -650,6 +684,42 @@ export default {
 }
 .road-progress {
   z-index: 2;
+}
+
+.map-connector {
+  position: absolute;
+  width: 35rpx;
+  height: var(--stage-connector-height);
+  background: #cfcfd1;
+  z-index: 4;
+}
+
+.map-connector--completed {
+  background: #b0b0fa;
+}
+
+.map-connector--pending {
+  background: #cfcfd1;
+}
+
+.connector-personality {
+  left: var(--stage-personality-connector-left);
+  top: var(--stage-connector-from-arrow-y);
+}
+
+.connector-career {
+  left: calc(528rpx + var(--career-connector-shift-x));
+  top: calc(604rpx + var(--career-icon-shift-y) + var(--career-connector-extra-shift-y));
+}
+
+.connector-deep {
+  left: var(--stage-deep-connector-left);
+  top: calc(var(--stage-deep-arrow-top) + var(--stage-connector-from-arrow-y));
+}
+
+.connector-report {
+  left: var(--stage-report-connector-left);
+  top: calc(var(--stage-report-arrow-top) + var(--stage-connector-from-arrow-y));
 }
 
 .map-arrow {
@@ -683,20 +753,20 @@ export default {
   z-index: 3;
 }
 .arrow-personality {
-  left: 52rpx;
+  left: var(--stage-personality-arrow-left);
   top: 0;
 }
 .arrow-career {
-  right: calc(52rpx - var(--career-arrow-shift-x));
-  top: calc(330rpx + var(--career-arrow-shift-y));
+  right: var(--road-arrow-right);
+  top: calc(330rpx + var(--career-arrow-shift-y) + var(--career-icon-shift-y) + var(--career-arrow-extra-shift-y));
 }
 .arrow-deep {
-  left: calc(198rpx + var(--deep-arrow-shift-x));
-  top: 532rpx;
+  left: var(--stage-deep-arrow-left);
+  top: var(--stage-deep-arrow-top);
 }
 .arrow-report {
-  left: 82rpx;
-  top: 812rpx;
+  left: var(--stage-report-arrow-left);
+  top: var(--stage-report-arrow-top);
 }
 
 .map-icon {
@@ -706,27 +776,27 @@ export default {
   z-index: 5;
 }
 .icon-personality {
-  left: 86rpx;
-  top: 112rpx;
+  left: var(--stage-personality-icon-left);
+  top: calc(var(--stage-icon-from-arrow-y) + var(--stage-personality-icon-extra-shift-y));
 }
 .icon-career {
-  right: 86rpx;
-  top: 436rpx;
+  right: calc(var(--road-arrow-right) + 48rpx + var(--career-icon-extra-shift-x));
+  top: calc(436rpx + var(--career-icon-shift-y) + var(--career-icon-extra-shift-y));
 }
 .icon-deep {
-  left: 248rpx;
-  top: 626rpx;
+  left: var(--stage-deep-icon-left);
+  top: calc(var(--stage-deep-arrow-top) + var(--stage-icon-from-arrow-y) + var(--stage-deep-icon-extra-shift-y));
 }
 .icon-report {
-  left: 124rpx;
-  top: 934rpx;
+  left: var(--stage-report-icon-left);
+  top: calc(var(--stage-report-arrow-top) + var(--stage-icon-from-arrow-y) + var(--stage-report-icon-extra-shift-y));
   width: 158rpx;
   height: 158rpx;
 }
 
 .lock-badge {
   position: absolute;
-  right: 36rpx;
+  right: var(--road-right-gutter);
   top: 24rpx;
   width: 72rpx;
   height: 72rpx;
@@ -738,6 +808,7 @@ export default {
   align-items: center;
   justify-content: center;
   z-index: 8;
+  box-sizing: border-box;
 }
 .lock-badge--unlocked {
   background: #f3efff;

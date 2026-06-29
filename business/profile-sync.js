@@ -1,4 +1,5 @@
 import { api } from '../utils/api'
+import { REPORT_MAJOR_COUNT } from './report-display-model'
 
 const SESSION_ID_KEY = 'uniprism.sessionId'
 const ANONYMOUS_ID_KEY = 'uniprism.anonymousId'
@@ -80,7 +81,48 @@ export function clearExploreBackendSession() {
 }
 
 const LEGACY_REPORT_CACHE_KEY = 'uniprism.discoverReport'
-const REPORT_CACHE_VERSION = 2
+const REPORT_CACHE_VERSION = 3
+
+function isStructuredMajorEntry(item) {
+  if (!item || typeof item !== 'object') return false
+  return isNonEmptyString(item.majorId) && isNonEmptyString(item.name)
+}
+
+function isStructuredBackendReport(report) {
+  const analysis = report && report.personalityAndCareerAnalysis
+  const career = analysis && analysis.careerTendencyAnalysis
+  const personality = analysis && analysis.personalityTestResult
+  const persona = analysis && analysis.integratedPersona
+  const majors = report
+    && report.majorRecommendations
+    && Array.isArray(report.majorRecommendations.majors)
+    ? report.majorRecommendations.majors
+    : []
+  const advice = report && report.comprehensiveAdvice
+
+  return !!(
+    isNonEmptyString(analysis && analysis.title)
+    && isNonEmptyString(career && career.body)
+    && isNonEmptyString(personality && personality.body)
+    && isNonEmptyString(persona && persona.body)
+    && majors.length === REPORT_MAJOR_COUNT
+    && majors.every(isStructuredMajorEntry)
+    && isNonEmptyString(advice && advice.developmentAdvice)
+  )
+}
+
+function isLegacyBackendReport(report) {
+  if (!isNonEmptyString(report.title) || !isNonEmptyString(report.summary) || !isNonEmptyString(report.disclaimer)) {
+    return false
+  }
+
+  const riasec = report.riasec || {}
+  if (!isNonEmptyString(riasec.code) || !isNonEmptyString(riasec.interpretation)) return false
+
+  const majors = Array.isArray(report.recommendedMajors) ? report.recommendedMajors : []
+  const careers = Array.isArray(report.recommendedCareers) ? report.recommendedCareers : []
+  return majors.length === 3 && careers.length === 3
+}
 
 function isNonEmptyString(value) {
   return typeof value === 'string' && value.trim().length > 0
@@ -89,14 +131,7 @@ function isNonEmptyString(value) {
 function isBackendReportShape(report) {
   if (!report || typeof report !== 'object') return false
   if (String(report.source || '').toLowerCase() === 'local-fallback') return false
-  if (!isNonEmptyString(report.title) || !isNonEmptyString(report.summary) || !isNonEmptyString(report.disclaimer)) return false
-
-  const riasec = report.riasec || {}
-  if (!isNonEmptyString(riasec.code) || !isNonEmptyString(riasec.interpretation)) return false
-
-  const majors = Array.isArray(report.recommendedMajors) ? report.recommendedMajors : []
-  const careers = Array.isArray(report.recommendedCareers) ? report.recommendedCareers : []
-  return majors.length === 3 && careers.length === 3
+  return isStructuredBackendReport(report) || isLegacyBackendReport(report)
 }
 
 export function buildDiscoverReportCacheKey(session) {

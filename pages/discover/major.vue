@@ -6,7 +6,10 @@
           v-for="college in collegeCards"
           :key="college.id"
           class="college-card"
-          :class="{ 'college-card--last-odd': college.isLastOdd }"
+          :class="{
+            'college-card--last-odd': college.isLastOdd,
+            'college-card--disabled': college.disabled,
+          }"
           @tap="openCollege(college)"
         >
           <view v-if="!bgReady[college.id]" class="college-card-fallback" :style="{ background: college.gradient }" />
@@ -22,10 +25,10 @@
           <text class="college-card-en">{{ college.enLabel }}</text>
 
           <view v-if="college.iconKind === 'science'" class="college-icon college-icon--science">
-            <image class="sci-base" :src="assets.iconScienceBase" mode="aspectFit" />
+            <image class="sci-base" :src="resolveAsset(assets.iconScienceBase)" mode="aspectFit" />
             <image class="sci-book" :src="resolveAsset(assets.iconScienceBook)" mode="aspectFit" />
-            <image class="sci-paper" :src="assets.iconSciencePaper" mode="aspectFit" />
-            <image class="sci-flask" :src="assets.iconScienceFlask" mode="aspectFit" />
+            <image class="sci-paper" :src="resolveAsset(assets.iconSciencePaper)" mode="aspectFit" />
+            <image class="sci-flask" :src="resolveAsset(assets.iconScienceFlask)" mode="aspectFit" />
           </view>
 
           <view v-else-if="college.iconKind === 'business'" class="college-icon college-icon--business">
@@ -41,7 +44,7 @@
           </view>
 
           <view v-else class="college-icon" :class="`college-icon--${college.iconKind}`">
-            <image class="college-icon-img" :src="college.icon" mode="aspectFit" />
+            <image class="college-icon-img" :src="resolveAsset(college.icon)" mode="aspectFit" />
           </view>
 
           <text class="college-card-cn">{{ college.label }}</text>
@@ -62,27 +65,6 @@
         </view>
         <text class="tab-text">专业体验</text>
       </view>
-      <view class="tab-item" @tap="showDisabledTabTip('成就')">
-        <view class="tab-icon tab-icon--locked">
-          <image class="tab-icon-img" :src="assetPaths.tabAchievement" mode="aspectFit" />
-          <image class="tab-lock-badge" :src="assetPaths.tabLock" mode="aspectFit" />
-        </view>
-        <text class="tab-text">成就</text>
-      </view>
-      <view class="tab-item" @tap="showDisabledTabTip('更多')">
-        <view class="tab-icon tab-icon--locked">
-          <view class="tab-more-icon">
-            <view class="tab-more-tile tab-more-tile--top-left" />
-            <view class="tab-more-tile tab-more-tile--bottom-left" />
-            <view class="tab-more-tile tab-more-tile--top-right" />
-            <image class="tab-more-line tab-more-line--middle" :src="assetPaths.tabMoreLineLong" mode="scaleToFill" />
-            <image class="tab-more-line tab-more-line--short" :src="assetPaths.tabMoreLineShort" mode="scaleToFill" />
-            <image class="tab-more-line tab-more-line--bottom" :src="assetPaths.tabMoreLineLong" mode="scaleToFill" />
-          </view>
-          <image class="tab-lock-badge" :src="assetPaths.tabLock" mode="aspectFit" />
-        </view>
-        <text class="tab-text">更多</text>
-      </view>
       <view class="tab-item" @tap="switchHomeTab('/pages/profile/index')">
         <view class="tab-icon">
           <image class="tab-icon-img" :src="assetPaths.tabProfile" mode="aspectFit" />
@@ -95,9 +77,14 @@
 
 <script>
 import { resolveAsset } from '../../utils/asset-map'
-import { navigateHomeTab, showDisabledMiniAppRouteTip } from '../../business/disabled-miniapp-routes'
+import {
+  guardMajorExperienceNavigation,
+  guardMajorExperienceCollegeNavigation,
+  isMajorExperienceCollegeDisabled,
+  navigateHomeTab,
+} from '../../business/disabled-miniapp-routes'
 
-const ICON_BASE = '/static/assets/home-professional'
+const ICON_BASE = '/images/explore/discover/figma/home-professional-assets'
 const BG_BASE = '/images/explore/discover/figma/home-professional-assets'
 
 const ASSETS = {
@@ -207,6 +194,7 @@ export default {
       const total = this.colleges.length
       return this.colleges.map((college, index) => ({
         ...college,
+        disabled: isMajorExperienceCollegeDisabled(college.id),
         isLastOdd: total % 2 === 1 && index === total - 1,
       }))
     },
@@ -221,13 +209,12 @@ export default {
     },
     openCollege(college) {
       if (!college) return
-      uni.navigateTo({ url: `/pages/discover/college-subjects?id=${college.id}&label=${encodeURIComponent(college.label)}` })
+      if (guardMajorExperienceNavigation()) return
+      if (guardMajorExperienceCollegeNavigation(college.id)) return
+      uni.navigateTo({ url: `/subpkg/discover/college-subjects?id=${college.id}&label=${encodeURIComponent(college.label)}` })
     },
     switchHomeTab(url) {
       navigateHomeTab(url)
-    },
-    showDisabledTabTip(label) {
-      showDisabledMiniAppRouteTip(label)
     },
   },
 }
@@ -257,6 +244,10 @@ export default {
   overflow: hidden;
   background: #ffffff;
   box-shadow: 0 2rpx 2rpx rgba(0, 0, 0, 0.16);
+}
+
+.college-card--disabled {
+  opacity: 0.78;
 }
 
 .college-card--last-odd {
@@ -335,6 +326,7 @@ export default {
   z-index: 3;
   box-sizing: border-box;
 }
+
 
 .college-icon {
   position: absolute;

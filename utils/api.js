@@ -27,6 +27,9 @@
  *   9. POST /api/miniapp/auth/sms/login    手机号验证码登录
  *   10. POST /api/miniapp/auth/invite/*    邀请码注册/登录/重置
  *   11. POST /api/miniapp/auth/wechat/login 微信一键登录（需授权手机号）
+ *   12. GET  /api/miniapp/explore/math/major-intro 数学专业介绍文案
+ *   13. GET  /api/miniapp/explore/math/course-intro-pages 数学前两阶段页面清单
+ *   14. GET  /api/miniapp/explore/math/professional-page 数学课程介绍互动页内容
  */
 
 import {
@@ -74,10 +77,7 @@ export const API_PATHS = {
   register: '/api/miniapp/auth/register',
   sendSmsCode: '/api/miniapp/auth/sms/send',
   loginWithPhone: '/api/miniapp/auth/sms/login',
-  inviteStatus: '/api/miniapp/auth/invite/status',
-  inviteRegister: '/api/miniapp/auth/invite/register',
-  inviteLogin: '/api/miniapp/auth/invite/login',
-  invitePasswordReset: '/api/miniapp/auth/invite/password-reset',
+  smsLoginStatus: '/api/miniapp/auth/sms/status',
   wechatLogin: '/api/miniapp/auth/wechat/login',
   wechatLoginStatus: '/api/miniapp/auth/wechat/status',
   authMe: '/api/miniapp/auth/me',
@@ -86,6 +86,10 @@ export const API_PATHS = {
   generateReport: '/api/miniapp/reports/generate',
   latestReport: '/api/miniapp/reports/latest',
   reportStatus: '/api/miniapp/reports/status',
+  sharedReport: '/api/miniapp/reports/share',
+  mathMajorIntro: '/api/miniapp/explore/math/major-intro',
+  mathCourseIntroPages: '/api/miniapp/explore/math/course-intro-pages',
+  mathProfessionalPage: '/api/miniapp/explore/math/professional-page',
   sendEvents: '/api/miniapp/explore/events', // 预留，后端暂未提供
 }
 
@@ -198,14 +202,16 @@ function getDefaultBaseUrl() {
   return envUrl || PRODUCTION_BASE_URL
 }
 
-function isKnownDevApiUrl(url) {
+/** 正式版允许的 API 域名（与微信公众平台 request 合法域名保持一致）。 */
+function isAllowedProductionApiUrl(url) {
   const value = normalizeBaseUrl(url)
-  return (
-    value === resolveDevApiBaseUrl(DEV_API_MODES.local) ||
-    value === resolveDevApiBaseUrl(DEV_API_MODES.device) ||
-    value === LOCAL_DEV_BASE_URL ||
-    value === 'http://localhost:3000'
-  )
+  if (!value || !/^https:\/\//i.test(value)) return false
+  try {
+    const host = new URL(value).hostname
+    return host === 'uniprism.cn' || host === 'www.uniprism.cn' || host === 'api.uniprism.cn'
+  } catch {
+    return false
+  }
 }
 
 /**
@@ -227,7 +233,11 @@ function getBaseUrl() {
     return getDefaultBaseUrl()
   }
 
-  return storageUrl || getDefaultBaseUrl()
+  // 正式版只接受线上 HTTPS 域名，忽略调试阶段写入的本地/局域网地址
+  if (storageUrl && isAllowedProductionApiUrl(storageUrl)) {
+    return storageUrl
+  }
+  return getDefaultBaseUrl()
 }
 
 /**
@@ -238,6 +248,10 @@ function initApiConfig() {
   if (!shouldUseLocalDevApi()) {
     uni.removeStorageSync(DEV_API_MODE_KEY)
     uni.removeStorageSync(DEV_API_BUILD_MODE_KEY)
+    const storageUrl = normalizeBaseUrl(uni.getStorageSync(STORAGE_KEYS.apiBaseUrl))
+    if (storageUrl && !isAllowedProductionApiUrl(storageUrl)) {
+      uni.removeStorageSync(STORAGE_KEYS.apiBaseUrl)
+    }
     return getBaseUrl()
   }
 
@@ -540,24 +554,9 @@ export const api = {
     return request('POST', API_PATHS.loginWithPhone, { phone, code })
   },
 
-  /** 校验邀请码是否可用。POST /api/miniapp/auth/invite/status */
-  checkInviteStatus(inviteCode) {
-    return request('POST', API_PATHS.inviteStatus, { inviteCode })
-  },
-
-  /** 邀请码注册并登录。POST /api/miniapp/auth/invite/register */
-  registerWithInvite(inviteCode, loginId, password) {
-    return request('POST', API_PATHS.inviteRegister, { inviteCode, loginId, password })
-  },
-
-  /** 用户 ID + 密码登录（邀请码体系）。POST /api/miniapp/auth/invite/login */
-  loginWithLoginId(loginId, password) {
-    return request('POST', API_PATHS.inviteLogin, { loginId, password })
-  },
-
-  /** 邀请码找回密码并登录。POST /api/miniapp/auth/invite/password-reset */
-  resetInvitePassword(inviteCode, loginId, password) {
-    return request('POST', API_PATHS.invitePasswordReset, { inviteCode, loginId, password })
+  /** 查询短信登录通道状态。GET /api/miniapp/auth/sms/status */
+  getSmsLoginStatus() {
+    return request('GET', API_PATHS.smsLoginStatus)
   },
 
   /**
@@ -678,6 +677,48 @@ export const api = {
         reportId,
       }),
     )
+  },
+
+  /**
+   * 读取好友分享可见的报告快照。GET /api/miniapp/reports/share
+   * 无需登录，仅返回已完成报告的必要展示字段。
+   * @param {string} sessionId
+   * @param {string} reportId
+   * @returns {Promise<ApiEnvelope>}
+   */
+  getSharedReport(sessionId, reportId) {
+    return request(
+      'GET',
+      API_PATHS.sharedReport + encodeQuery({
+        sessionId,
+        reportId,
+      }),
+    )
+  },
+
+  /**
+   * 获取数学专业介绍文案与插图配置。GET /api/miniapp/explore/math/major-intro
+   * @returns {Promise<ApiEnvelope>}
+   */
+  fetchMathMajorIntro() {
+    return request('GET', API_PATHS.mathMajorIntro)
+  },
+
+  /**
+   * 获取数学前两阶段页面清单。GET /api/miniapp/explore/math/course-intro-pages
+   * @returns {Promise<ApiEnvelope>}
+   */
+  fetchMathCourseIntroPages() {
+    return request('GET', API_PATHS.mathCourseIntroPages)
+  },
+
+  /**
+   * 获取数学课程介绍互动页内容。GET /api/miniapp/explore/math/professional-page?pageId=...
+   * @param {string} [pageId]
+   */
+  fetchMathProfessionalPage(pageId) {
+    const query = pageId ? `?pageId=${encodeURIComponent(pageId)}` : ''
+    return request('GET', `${API_PATHS.mathProfessionalPage}${query}`)
   },
 
   /**

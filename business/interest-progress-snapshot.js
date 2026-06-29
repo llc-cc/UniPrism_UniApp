@@ -10,7 +10,7 @@ import {
   MBTI_KNOWN_QUESTION_ID,
   computePreCareerRiasecTopDimensions,
   getHollandFineQuestionIdsForDimensions,
-} from './discover-questions'
+} from './discover-progress-helpers'
 import { isDiscoverReportComplete, readDiscoverReportCache } from './profile-sync'
 
 const unique = (items) => [...new Set(items.filter(Boolean))]

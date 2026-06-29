@@ -1,5 +1,6 @@
 /**
- * 生成 /images/ 路径的本地 fallback 映射，写入 business/image-fallback-map.js
+ * 开发态离线映射生成器（默认写入空 stub，避免增大代码包）。
+ * 完整映射（仅本地调试）：node scripts/generate-image-fallback-map.mjs --full
  * 用法: node scripts/generate-image-fallback-map.mjs
  */
 import fs from 'fs'
@@ -81,6 +82,24 @@ function fallbackFor(objectPath) {
   return ICON
 }
 
+const writeStub = !process.argv.includes('--full')
+
+if (writeStub) {
+  const stub = `/**
+ * 生产环境配图走 OSS（resolveAsset）；本地 fallback 已关闭以控制代码包体积。
+ * 开发态完整映射：node scripts/generate-image-fallback-map.mjs --full
+ */
+export const IMAGE_FALLBACK_MAP = {}
+
+export function getImageFallback() {
+  return null
+}
+`
+  fs.writeFileSync(outPath, stub, 'utf8')
+  console.log(`Wrote OSS-only stub to ${outPath} (use --full for dev fallbacks)`)
+  process.exit(0)
+}
+
 const map = {}
 for (const objectPath of paths) {
   map[objectPath] = fallbackFor(objectPath)
@@ -88,7 +107,7 @@ for (const objectPath of paths) {
 
 const content = `/**
  * AUTO-GENERATED from mini-program-asset-urls.md — local SVG fallbacks for /images/*
- * Run: node scripts/generate-image-fallback-map.mjs
+ * Run: node scripts/generate-image-fallback-map.mjs --full
  * Total: ${Object.keys(map).length}
  */
 export const IMAGE_FALLBACK_MAP = ${JSON.stringify(map, null, 2)}

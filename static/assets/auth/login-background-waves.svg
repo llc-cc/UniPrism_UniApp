@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 390 844" fill="none" preserveAspectRatio="xMidYMax slice">
+  <defs>
+    <linearGradient id="waveGradA" x1="0" y1="500" x2="390" y2="844" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0" />
+      <stop offset="40%" stop-color="#F8F2FF" stop-opacity="0.09" />
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.13" />
+    </linearGradient>
+    <linearGradient id="waveGradB" x1="390" y1="540" x2="0" y2="844" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#EDE4FF" stop-opacity="0.05" />
+      <stop offset="50%" stop-color="#FFFFFF" stop-opacity="0.11" />
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.03" />
+    </linearGradient>
+    <linearGradient id="waveGradC" x1="195" y1="580" x2="195" y2="844" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.02" />
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.10" />
+    </linearGradient>
+  </defs>
+
+  <g opacity="0.95">
+    <path
+      d="M -40 532 C 28 488, 96 568, 182 524 C 268 480, 328 556, 420 512"
+      stroke="url(#waveGradA)"
+      stroke-width="34"
+      stroke-linecap="round"
+      fill="none"
+    />
+    <path
+      d="M -32 598 C 48 642, 128 568, 214 608 C 296 646, 356 572, 432 618"
+      stroke="url(#waveGradB)"
+      stroke-width="38"
+      stroke-linecap="round"
+      fill="none"
+    />
+    <path
+      d="M -24 662 C 62 618, 148 702, 236 664 C 314 630, 374 708, 440 668"
+      stroke="url(#waveGradA)"
+      stroke-width="36"
+      stroke-linecap="round"
+      fill="none"
+    />
+    <path
+      d="M -16 724 C 58 768, 154 692, 248 732 C 328 768, 382 696, 448 734"
+      stroke="url(#waveGradC)"
+      stroke-width="42"
+      stroke-linecap="round"
+      fill="none"
+    />
+    <path
+      d="M -8 786 C 72 748, 168 822, 262 782 C 338 748, 392 816, 450 784"
+      stroke="url(#waveGradB)"
+      stroke-width="30"
+      stroke-linecap="round"
+      fill="none"
+    />
+    <path
+      d="M 12 572 C 88 604, 178 536, 272 574 C 346 604, 388 538, 418 566"
+      stroke="url(#waveGradC)"
+      stroke-width="26"
+      stroke-linecap="round"
+      fill="none"
+      opacity="0.72"
+    />
+    <path
+      d="M -4 688 C 78 652, 168 728, 258 692 C 332 662, 396 738, 444 702"
+      stroke="url(#waveGradA)"
+      stroke-width="22"
+      stroke-linecap="round"
+      fill="none"
+      opacity="0.68"
+    />
+    <path
+      d="M -20 834 C 64 804, 152 858, 244 828 C 318 804, 376 852, 438 824"
+      stroke="url(#waveGradB)"
+      stroke-width="28"
+      stroke-linecap="round"
+      fill="none"
+      opacity="0.52"
+    />
+    <path
+      d="M 36 640 C 112 668, 196 608, 284 642 C 352 668, 402 612, 426 638"
+      stroke="url(#waveGradC)"
+      stroke-width="18"
+      stroke-linecap="round"
+      fill="none"
+      opacity="0.58"
+    />
+  </g>
+</svg>

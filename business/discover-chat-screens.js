@@ -1,15 +1,17 @@
 import {
   FINAL_CAREER_CALIBRATION_QUESTION_IDS,
-  PERSONALITY_HOLLAND_SCALE_DISPLAY_QUESTION_IDS,
-  PERSONALITY_MBTI_DISPLAY_QUESTION_IDS,
   computePreCareerRiasecTopDimensions,
   getHollandFineQuestionIdsForDimensions,
-} from './discover-questions'
+} from './discover-progress-helpers'
+import {
+  PERSONALITY_HOLLAND_SCALE_DISPLAY_QUESTION_IDS,
+  PERSONALITY_MBTI_DISPLAY_QUESTION_IDS,
+} from './discover-screen-question-ids'
 
 /**
  * 问卷分屏配置（对齐 Web /explore/discover/chat SCREEN_ORDER 主流程）
  * 这里额外把深度测评可能出现的 `career-1..career-6` 全部枚举出来，
- * 以兼容 Top2 维度各 3 题的动态分屏。
+ * 以兼容 Top2 维度各 5 题的动态分屏（Holland Fine：每个维度 5 个场景）。
  */
 export const CHAT_SCREEN_ORDER = [
   'basic',
@@ -32,6 +34,10 @@ export const CHAT_SCREEN_ORDER = [
   'career-4',
   'career-5',
   'career-6',
+  'career-7',
+  'career-8',
+  'career-9',
+  'career-10',
   'career-calibration-1',
   'career-calibration-2',
 ]

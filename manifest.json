@@ -1,21 +1,176 @@
 {
+
   "name": "UniPrism",
+
   "appid": "__UNI__UNIPRISM",
+
   "versionName": "1.0.0",
+
   "versionCode": "100",
+
   "transformPx": false,
+
   "vueVersion": "3",
+
   "mp-weixin": {
+
     "appid": "wx531ddd1f08193819",
+
+    "lazyCodeLoading": "requiredComponents",
+
     "setting": {
+
       "urlCheck": false,
+
       "ignoreDevUnusedFiles": true,
+
       "ignoreUploadUnusedFiles": true
+
     },
+
+    "packOptions": {
+
+      "ignore": [
+
+        { "type": "folder", "value": ".sourcemap" },
+
+        { "type": "folder", "value": "scripts" },
+
+        { "type": "suffix", "value": ".map" },
+
+        { "type": "suffix", "value": ".bak-20260612-transition-opt" },
+
+        { "type": "suffix", "value": ".png" },
+
+        { "type": "folder", "value": "static/challenge" },
+
+        { "type": "folder", "value": "static/course" },
+
+        { "type": "folder", "value": "static/discover" },
+
+        { "type": "folder", "value": "static/data" },
+
+        { "type": "folder", "value": "static/assets/home-professional" },
+
+        { "type": "folder", "value": "static/assets/majors/generated" },
+
+        { "type": "folder", "value": "static/assets/atlas" },
+
+        { "type": "folder", "value": "static/assets/careers" },
+
+        { "type": "folder", "value": "static/assets/home-science" },
+
+        { "type": "file", "value": "static/assets/discover/report-v4-top-rank-corner.png" },
+
+        { "type": "file", "value": "static/assets/auth/login-background-waves.png" },
+
+        { "type": "file", "value": "static/assets/discover/interest-report-share-cover.png" },
+
+        { "type": "file", "value": "static/assets/discover/stage-deep-icon.svg" },
+
+        { "type": "file", "value": "static/assets/discover/stage-deep-icon-hd.svg" },
+
+        { "type": "file", "value": "static/assets/auth/stage-deep-icon-hd.svg" },
+
+        { "type": "file", "value": "static/assets/discover/stage-career.svg" },
+
+        { "type": "file", "value": "static/assets/discover/stage-interest.svg" },
+
+        { "type": "file", "value": "static/assets/discover/stage-major-experience.svg" },
+
+        { "type": "file", "value": "static/assets/discover/stage-report.svg" },
+
+        { "type": "file", "value": "static/assets/discover/task-card.svg" },
+
+        { "type": "file", "value": "static/assets/discover/interest-question.svg" },
+
+        { "type": "file", "value": "static/assets/discover/icon-generic.svg" },
+
+        { "type": "file", "value": "static/assets/discover/report-ready-shadow.svg" },
+
+        { "type": "file", "value": "static/assets/discover/road-curve-career.svg" },
+
+        { "type": "file", "value": "static/assets/discover/road-curve-career-gray.svg" },
+
+        { "type": "file", "value": "static/assets/auth/launch-backdrop-assessment.png" },
+
+        { "type": "file", "value": "static/assets/auth/launch-backdrop-career.png" },
+
+        { "type": "file", "value": "static/assets/auth/launch-backdrop-interest.png" },
+
+        { "type": "file", "value": "static/assets/auth/launch-backdrop-personality.png" },
+
+        { "type": "file", "value": "static/assets/auth/launch-career.png" },
+
+        { "type": "file", "value": "static/assets/auth/launch-interest.png" },
+
+        { "type": "file", "value": "static/assets/auth/launch-personality.png" },
+
+        { "type": "file", "value": "static/assets/auth/login-brand-mark.png" },
+
+        { "type": "file", "value": "static/assets/auth/launch-backdrop-assessment.svg" },
+
+        { "type": "file", "value": "static/assets/auth/launch-backdrop-career.svg" },
+
+        { "type": "file", "value": "static/assets/auth/launch-backdrop-interest.svg" },
+
+        { "type": "file", "value": "static/assets/auth/launch-backdrop-personality.svg" },
+
+
+        { "type": "file", "value": "static/prism-logo.svg" },
+
+        { "type": "file", "value": "static/tab-discover-active.png" },
+
+        { "type": "file", "value": "static/tab-discover.png" },
+
+        { "type": "file", "value": "static/tab-math-active.png" },
+
+        { "type": "file", "value": "static/tab-math.png" },
+
+        { "type": "file", "value": "static/tab-profile-active.png" },
+
+        { "type": "file", "value": "static/tab-profile.png" },
+
+        { "type": "file", "value": "static/tab/tab-active.png" },
+
+        { "type": "file", "value": "static/tab/tab-default.png" },
+
+        { "type": "file", "value": "business/discover-questions.js" },
+
+        { "type": "file", "value": "business/hollandFineQuestionBank.js" },
+
+        { "type": "file", "value": "business/discover-session.js" },
+
+        { "type": "file", "value": "business/report-personality-display.js" },
+
+        { "type": "file", "value": "business/report-share-view.js" },
+
+        { "type": "file", "value": "business/discover-report-asset-locations.js" },
+
+        { "type": "file", "value": "business/discoverAbilityModule.js" },
+
+        { "type": "file", "value": "business/report-generation.js" },
+
+        { "type": "file", "value": "business/report-share-poster.js" },
+
+        { "type": "file", "value": "business/report-view-snapshot.js" },
+
+        { "type": "folder", "value": "business/surakarta" }
+
+      ]
+
+    },
+
     "usingComponents": true,
+
     "networkTimeout": {
+
       "request": 60000,
+
       "downloadFile": 60000
+
     }
+
   }
+
 }
